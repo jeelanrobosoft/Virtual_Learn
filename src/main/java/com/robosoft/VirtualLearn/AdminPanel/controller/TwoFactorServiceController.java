@@ -49,7 +49,7 @@ public class TwoFactorServiceController {
     public ResponseEntity<?> sendOtp(@RequestBody MobileAuth auth) {
         int status = service.checkMobileNumber(auth);
         if (status == 0)
-            return ResponseEntity.of(Optional.of(Collections.singletonMap("message","User already exists")));
+            return ResponseEntity.of(Optional.of(Collections.singletonMap("message","Invalid Mobile Number")));
         String twoFaCode = String.valueOf(new Random().nextInt(8999) + 1000);
         return ResponseEntity.of(Optional.of(Collections.singletonMap("message","OTP Valid For " + service.sendOtp(auth, twoFaCode) + " Minutes")));
     }
