@@ -18,13 +18,12 @@ import java.util.Optional;
 public class MyControllerAdvice {
 
     @ExceptionHandler(EmptyResultDataAccessException.class)
-    public ResponseEntity<String> handleEmptyResult(EmptyResultDataAccessException exception){
-        return new ResponseEntity<String>("Input field is incorrect", HttpStatus.BAD_GATEWAY);
+    public ResponseEntity<Map> handleEmptyResult(EmptyResultDataAccessException exception) {
+        return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Input field is incorrect")));
     }
-
     @ExceptionHandler(ParseException.class)
-    public ResponseEntity<String> handleEmptyResult(ParseException exception){
-        return new ResponseEntity<String>("Send Date in dd/mm/yyyy format", HttpStatus.BAD_GATEWAY);
+    public ResponseEntity<Map> handleEmptyResult(ParseException exception){
+        return ResponseEntity.of(Optional.of(Collections.singletonMap("message","Send Date in dd/mm/yyyy format")));
     }
 
     @ExceptionHandler(ApiException.class)
