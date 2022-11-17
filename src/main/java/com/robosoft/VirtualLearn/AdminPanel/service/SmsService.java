@@ -15,14 +15,14 @@ public class SmsService {
     @Autowired
     DataAccessService dataAccessService;
 
-    private final static String ACCOUNT_SID = "AC99ac200a70a89ed9899c95cfd965d006";
-    private final static String AUTH_ID = "b44cc73110645a96475a69cb3fee58f7";
+    private final static String ACCOUNT_SID = "ACd7b80d5a6e82ec89f4be4cc8779fd230";
+    private final static String AUTH_ID = "9f5cb58b2460ffe35d37eef99e3f4fc5";
 
     static {
         Twilio.init(ACCOUNT_SID, AUTH_ID);
     }
     public long sendOtp(MobileAuth mobileAuth, String twoFaCode) {
-        Message.creator(new PhoneNumber(mobileAuth.getMobileNumber()), new PhoneNumber("+18304026893"),
+        Message.creator(new PhoneNumber(mobileAuth.getMobileNumber()), new PhoneNumber("+19896822968"),
                 "Your Two Factor Authentication code is: " + twoFaCode).create();
         return dataAccessService.saveOtp(mobileAuth.getMobileNumber(),twoFaCode);
     }
