@@ -58,7 +58,7 @@ public class TwoFactorServiceController {
     public ResponseEntity<?> resetPassword(@RequestBody MobileAuth auth) {
         int status = service.checkMobileNumber(auth);
         if (status == 0)
-            return ResponseEntity.of(Optional.of(Collections.singletonMap("message","Input Field is  incorrect")));
+            return ResponseEntity.of(Optional.of(Collections.singletonMap("message","Input Field is incorrect")));
         service.resetPassword(auth);
         return ResponseEntity.of(Optional.of(Collections.singletonMap("message","Password Changed Successfully")));
     }

@@ -47,7 +47,6 @@ public class LoginController {
         }
         final UserDetails userDetails = myUserDetailsService.loadUserByUsername(jwtRequest.getUserName());
         final String token = jwtUtility.generateToken(userDetails);
-        System.out.println("Inside Login");
         return new JwtResponse(token);
     }
 
@@ -55,7 +54,6 @@ public class LoginController {
     public JwtResponse refreshToken(HttpServletRequest request) throws Exception {
         // From the HttpRequest get the claims
         DefaultClaims claims = (io.jsonwebtoken.impl.DefaultClaims) request.getAttribute("claims");
-        System.out.println("Inside refresh Token");
         Map<String, Object> expectedMap = getMapFromIoJsonwebtokenClaims(claims);
         String token = jwtUtility.doGenerateRefreshToken(expectedMap, expectedMap.get("sub").toString());
         return new JwtResponse(token);
