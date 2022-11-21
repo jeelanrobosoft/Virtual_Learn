@@ -15,7 +15,7 @@ public class SmsService
     @Autowired
     DataAccessService dataAccessService;
     private final static String ACCOUNT_SID = "ACd7b80d5a6e82ec89f4be4cc8779fd230";
-    private final static String AUTH_ID = "9f5cb58b2460ffe35d37eef99e3f4fc5";
+    private final static String AUTH_ID = "cedfefdd1b6d02c0051b9fc191f0f551";
 
     static
     {
