@@ -11,10 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+
+import java.util.*;
 
 @RestController
 @RequestMapping("/user")
@@ -231,8 +229,9 @@ public class UserController
     @GetMapping("/home/course")
     public ResponseEntity<?> homeTopBarData()
     {
-        List<HomeResponseTopHeader> coursesList= userService.HomePageTopBar();
-        if(coursesList.size() ==0)
+        List<HomeResponseTopHeader> coursesList = new ArrayList<>();
+        coursesList = userService.HomePageTopBar();
+        if(coursesList == null)
         {
             return ResponseEntity.of(Optional.of(Collections.singletonMap("message","courses are not available")));
         }
@@ -271,7 +270,7 @@ public class UserController
     @GetMapping("/home/course/category")
     public ResponseEntity<?> homeGetPopularCoursesOfCategory()
     {
-        Map<Integer,List<PopularCourseInEachCategory>> coursesOfCategory = userService.popularCoursesInCategory();
+        Map<String,List<PopularCourseInEachCategory>> coursesOfCategory = userService.popularCoursesInCategory();
         if (coursesOfCategory == null)
         {
             return ResponseEntity.of(Optional.of(Collections.singletonMap("message","courses are not available")));

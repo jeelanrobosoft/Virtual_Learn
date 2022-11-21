@@ -22,7 +22,7 @@ public class User
     private String twitterLink;
     private String faceBookLink;
 
-    public User(int occupation)
+    public User(Integer occupation)
     {
         this.occupation = occupation;
     }

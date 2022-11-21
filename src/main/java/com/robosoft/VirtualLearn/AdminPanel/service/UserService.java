@@ -338,9 +338,7 @@ public class UserService
         }, userName);
         if(user.getOccupation() == 0)
         {
-            List<HomeResponseTopHeader> courseListForStudent = jdbcTemplate.query("SELECT coursePhoto, courseName FROM course",(rs, rowNum) -> {
-                return new HomeResponseTopHeader(rs.getString("coursePhoto"), rs.getString("courseName"));
-            });
+            List<HomeResponseTopHeader> courseListForStudent = jdbcTemplate.query("SELECT coursePhoto, courseName FROM course",new BeanPropertyRowMapper<>(HomeResponseTopHeader.class));
             return courseListForStudent;
         }
         else
@@ -369,9 +367,10 @@ public class UserService
     //"All" in home page display all the courses
     public List<HomeAllCourse> getAllCourses()
     {
-        List<HomeAllCourse> allCourses = jdbcTemplate.query("SELECT overview.courseId, coursePhoto, courseName,categoryId, chapterCount FROM course,overView WHERE course.courseId = overView.courseId",(rs, rowNum) -> {
+        List<HomeAllCourse> allCourses = jdbcTemplate.query("SELECT overView.courseId, coursePhoto, courseName,categoryId, chapterCount FROM course,overView WHERE course.courseId = overView.courseId",(rs, rowNum) -> {
             return new HomeAllCourse(rs.getInt("courseId"),rs.getString("coursePhoto"), rs.getString("courseName"), rs.getInt("categoryId"),rs.getInt("chapterCount"));
         });
+        System.out.println(allCourses);
         return allCourses;
     }
     //"popular" in home page , filter all the courses with maximum enrollments more than 5
@@ -398,7 +397,7 @@ public class UserService
     public List<HomeAllCourse> getNewCourses()
     {
         List<HomeAllCourse> newCourseList = new ArrayList<>();
-        List<HomeAllCourse> allNewCourses = jdbcTemplate.query("SELECT course.courseId, coursePhoto, courseName,categoryId, chapterCount FROM course,overview WHERE course.courseId = overview.courseId",(rs, rowNum) -> {
+        List<HomeAllCourse> allNewCourses = jdbcTemplate.query("SELECT course.courseId, coursePhoto, courseName,categoryId, chapterCount FROM course,overView WHERE course.courseId = overView.courseId",(rs, rowNum) -> {
             return new HomeAllCourse(rs.getInt("courseId"),rs.getString("coursePhoto"), rs.getString("courseName"), rs.getInt("categoryId"),rs.getInt("chapterCount"));
         });
         //System.out.println(allNewCourses.size());
@@ -414,9 +413,9 @@ public class UserService
         }
         return newCourseList;
     }
-    public Map<Integer,List<PopularCourseInEachCategory>> popularCoursesInCategory()
+    public Map<String,List<PopularCourseInEachCategory>> popularCoursesInCategory()
     {
-        Map<Integer,List<PopularCourseInEachCategory>> topCoursesList  = new HashMap<>();
+        Map<String,List<PopularCourseInEachCategory>> topCoursesList  = new HashMap<>();
         List<Category> categoriesList = jdbcTemplate.query("SELECT * FROM category",(rs, rowNum) -> {
             return new Category(rs.getInt("categoryId"), rs.getString("categoryName"), rs.getString("categoryPhoto"));
         });
@@ -431,11 +430,12 @@ public class UserService
             {
                 try
                 {
-                    List<PopularCourseInEachCategory> popularCourseInEachCategory = jdbcTemplate.query("SELECT c.courseName,o.chapterCount, c.courseDuration,c.previewVideo from course c, overview o , category ct WHERE ct.categoryId = ? and  ct.categoryId = c.categoryId and c.courseId = o.courseId",(rs, rowNum) -> {
+                    List<PopularCourseInEachCategory> popularCourseInEachCategory = jdbcTemplate.query("SELECT c.courseName,o.chapterCount, c.courseDuration,c.previewVideo from course c, overView o , category ct WHERE ct.categoryId = ? and  ct.categoryId = c.categoryId and c.courseId = o.courseId",(rs, rowNum) -> {
                         return new PopularCourseInEachCategory(rs.getString("courseName"), rs.getInt("chapterCount"), rs.getString("courseDuration"),rs.getString("previewVideo"));
                     },categoriesList.get(i).getCategoryId());
                     System.out.println(popularCourseInEachCategory);
-                    topCoursesList.put(categoriesList.get(i).getCategoryId(),popularCourseInEachCategory);
+                    String categoryName = jdbcTemplate.queryForObject("SELECT categoryName FROM category WHERE categoryId=?", new Object[] {categoriesList.get(i).getCategoryId()}, String.class);
+                    topCoursesList.put(categoryName,popularCourseInEachCategory);
 
                 }
                 catch(EmptyResultDataAccessException expn)

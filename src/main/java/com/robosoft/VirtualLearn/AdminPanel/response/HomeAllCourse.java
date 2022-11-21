@@ -12,8 +12,9 @@ import lombok.NoArgsConstructor;
 public class HomeAllCourse
 {
     private Integer courseId;
-    private String coursePhoto;
+
     private String courseName;
+    private String coursePhoto;
     private Integer categoryId;
     private Integer chapterCount;
 
