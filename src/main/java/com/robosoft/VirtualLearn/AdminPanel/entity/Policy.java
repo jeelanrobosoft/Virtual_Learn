@@ -7,7 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Policy {
+public class Policy
+{
     private Integer policyId;
     private String termsAndConditions;
     private String privacyPolicy;

@@ -15,22 +15,19 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/admin")
-public class AdminController {
-
+public class AdminController
+{
     @Autowired
     private AdminService adminService;
-
-
     @PostMapping("/Category")
-    public ResponseEntity<?> addCategory(@ModelAttribute CategoryRequest category) throws IOException {
+    public ResponseEntity<?> addCategory(@ModelAttribute CategoryRequest category) throws IOException
+    {
         int change = adminService.addCategory(category);
-
         if(change > 0)
             return ResponseEntity.of(Optional.of("Category " + category.getCategoryName()+ " has been Added SuccessFully"));
         else
             return new ResponseEntity<>("Category Type Already Exists",HttpStatus.ALREADY_REPORTED);
     }
-
     @PostMapping("/SubCategory")
     public ResponseEntity<?> addSubCategory(@RequestBody SubCategory subcategory)
     {
@@ -41,8 +38,6 @@ public class AdminController {
         else
             return ResponseEntity.status(HttpStatus.ALREADY_REPORTED).build();
     }
-
-
     @PostMapping("/Chapter")
     public ResponseEntity<?> addChapter(@RequestBody Chapter chapter)
     {
@@ -54,7 +49,6 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.ALREADY_REPORTED).build();
     }
 
-
     @PostMapping("/Overview")
     public ResponseEntity<?> addOverview(@RequestBody Overview overview)
     {
@@ -63,16 +57,15 @@ public class AdminController {
         else
             return new ResponseEntity<>("Overview For the Course "+overview.getCourseId()+"has already is Already Present",HttpStatus.ALREADY_REPORTED);
     }
-
     @PostMapping("/Policy")
-    public ResponseEntity<?> addPolicy(@RequestBody Policy policy){
-        if(adminService.addPolicy(policy) != 0){
+    public ResponseEntity<?> addPolicy(@RequestBody Policy policy)
+    {
+        if(adminService.addPolicy(policy) != 0)
+        {
             return new ResponseEntity<>("Privacy Policy and Terms and Condition Updated",HttpStatus.OK);
         }
         return new ResponseEntity<>("You Didn't changed the Privacy Policy and Terms and Conditions or Failed to Update the Privacy Policy and Terms and Condition",HttpStatus.ALREADY_REPORTED);
     }
-
-    //chandana
     @PostMapping("/course")
     public ResponseEntity<String> saveCourse(@ModelAttribute CourseRequest courseRequest) throws IOException
     {
@@ -83,7 +76,6 @@ public class AdminController {
         }
         return new ResponseEntity<String>(courseResponse, HttpStatus.OK);
     }
-
     @PostMapping("/lesson")
     public ResponseEntity<String> saveLesson(@ModelAttribute LessonRequest lessonRequest) throws IOException, ParseException
     {
@@ -94,7 +86,6 @@ public class AdminController {
         }
         return new ResponseEntity<>(lessonResponse, HttpStatus.OK);
     }
-
     @PostMapping("/test")
     public ResponseEntity<String> saveTest(@RequestBody TestRequest testRequest)
     {
@@ -105,7 +96,6 @@ public class AdminController {
         }
         return new ResponseEntity<>(testResponse,HttpStatus.OK);
     }
-
     @PostMapping("/question")
     public ResponseEntity<String> saveQuestion(@RequestBody Question question)
     {
@@ -126,6 +116,4 @@ public class AdminController {
         }
         return new ResponseEntity<>(instructorResponse,HttpStatus.OK);
     }
-
-
 }

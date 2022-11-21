@@ -8,12 +8,13 @@ import org.springframework.web.multipart.MultipartFile;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CategoryRequest {
+public class CategoryRequest
+{
     private Integer categoryId;
     private String categoryName;
     private MultipartFile categoryPhoto;
-
-    public CategoryRequest(String categoryName, MultipartFile categoryPhoto) {
+    public CategoryRequest(String categoryName, MultipartFile categoryPhoto)
+    {
         this.categoryName = categoryName;
         this.categoryPhoto = categoryPhoto;
     }

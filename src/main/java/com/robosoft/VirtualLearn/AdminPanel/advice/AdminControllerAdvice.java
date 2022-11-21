@@ -14,21 +14,21 @@ import java.util.EmptyStackException;
 import java.util.InputMismatchException;
 
 @ControllerAdvice
-public class AdminControllerAdvice extends ResponseEntityExceptionHandler {
-
-    @ExceptionHandler(InputMismatchException.class)
-    public ResponseEntity<String> handleInputMismatchException(InputMismatchException inputMismatchException)
-    {
-        return new ResponseEntity<String>("Please Provide the Valid Input", HttpStatus.BAD_REQUEST);
-    }
-
-    @Override
-    protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        return new ResponseEntity<>("Please Change the Http Method Type",HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler(EmptyStackException.class)
-    public ResponseEntity<String> handleEmptyStackException(EmptyStackException e){
-        return new ResponseEntity<>("Invalid or Empty Input",HttpStatus.BAD_REQUEST);
-    }
+public class AdminControllerAdvice extends ResponseEntityExceptionHandler
+{
+//    @ExceptionHandler(InputMismatchException.class)
+//    public ResponseEntity<String> handleInputMismatchException(InputMismatchException inputMismatchException)
+//    {
+//        return new ResponseEntity<String>("Please Provide the Valid Input", HttpStatus.BAD_REQUEST);
+//    }
+//
+//    @Override
+//    protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+//        return new ResponseEntity<>("Please Change the Http Method Type",HttpStatus.NOT_FOUND);
+//    }
+//
+//    @ExceptionHandler(EmptyStackException.class)
+//    public ResponseEntity<String> handleEmptyStackException(EmptyStackException e){
+//        return new ResponseEntity<>("Invalid or Empty Input",HttpStatus.BAD_REQUEST);
+//    }
 }

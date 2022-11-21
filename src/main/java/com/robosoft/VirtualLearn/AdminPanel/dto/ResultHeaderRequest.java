@@ -3,7 +3,9 @@ package com.robosoft.VirtualLearn.AdminPanel.dto;
 import lombok.Data;
 
 @Data
-public class ResultHeaderRequest {
+public class ResultHeaderRequest
+{
+    private Integer chapterNumber;
     private String chapterName;
     private float chapterTestPercentage;
     private String courseName;
@@ -12,7 +14,8 @@ public class ResultHeaderRequest {
     private Integer wrongAnswers;
     private Integer totalNumberOfQuestions;
 
-    public ResultHeaderRequest(String chapterName, float chapterTestPercentage, String courseName, int correctAnswers, int wrongAnswers, int totalNumberOfQuestions) {
+    public ResultHeaderRequest(Integer chapterNumber,String chapterName, float chapterTestPercentage, String courseName, int correctAnswers, int wrongAnswers, int totalNumberOfQuestions) {
+        this.chapterNumber = chapterNumber;
         this.chapterName = chapterName;
         this.chapterTestPercentage = chapterTestPercentage;
         this.correctAnswers = correctAnswers;

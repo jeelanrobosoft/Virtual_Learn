@@ -7,7 +7,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -15,23 +14,23 @@ import java.time.format.DateTimeFormatter;
 import static com.robosoft.VirtualLearn.AdminPanel.common.Constants.DOWNLOAD_URL;
 
 @Service
-public class ProfileDao {
-
+public class ProfileDao
+{
     @Autowired
     JdbcTemplate jdbcTemplate;
-
-
-    public void saveProfile(SaveProfile saveProfile, String profilePhotoLink, String finalDateOfBirth) {
+    public void saveProfile(SaveProfile saveProfile, String profilePhotoLink, String finalDateOfBirth)
+    {
         String query = "update user set dateOfBirth=?,profilePhoto=?,occupation=?,gender=?,twitterLink=?,faceBookLink=? where userName='" + saveProfile.getUserName() + "'";
         jdbcTemplate.update(query,finalDateOfBirth,profilePhotoLink,saveProfile.getOccupation(),saveProfile.getGender(),saveProfile.getTwitterLink(),saveProfile.getFaceBookLink());
     }
-
-    public String changePassword(ChangePassword password) {
+    public String changePassword(ChangePassword password)
+    {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         String query = "select password from authenticate where userName='" + userName + "'";
         String currentPassword = jdbcTemplate.queryForObject(query, String.class);
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        if(encoder.matches(password.getCurrentPassword(),currentPassword)){
+        if(encoder.matches(password.getCurrentPassword(),currentPassword))
+        {
             query = "update authenticate set password=? where userName='" + userName + "'";
             jdbcTemplate.update(query,new BCryptPasswordEncoder().encode(password.getNewPassword()));
             String message = "Successfully changed your Password";
@@ -42,11 +41,9 @@ public class ProfileDao {
             jdbcTemplate.update("insert into notification(userName,description,timeStamp,notificationUrl) values(?,?,?,?)",userName,message,formatDateTime,photoUrl);
             return "Password Changed Successfully";
         }
-        else {
+        else
+        {
             return "Reset Password Failed";
         }
-
     }
-
-
 }

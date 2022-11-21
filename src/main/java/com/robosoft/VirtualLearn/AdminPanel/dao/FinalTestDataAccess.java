@@ -18,34 +18,37 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
-public class FinalTestDataAccess {
-
+public class FinalTestDataAccess
+{
     @Autowired
     JdbcTemplate jdbcTemplate;
-
-    public FinalTest getFinalTestS(FinalTestRequest request) {
+    public FinalTest getFinalTestS(FinalTestRequest request)
+    {
         List<Question> questions;
         FinalTest finalTest;
         String query = "select questionId,questionName,option_1,option_2,option_3,option_4 from question where testId=?";
-        try {
+        try
+        {
             questions = jdbcTemplate.query(query, new BeanPropertyRowMapper<>(Question.class), request.getTestId());
             finalTest = jdbcTemplate.queryForObject("select testId,testName,testDuration,questionsCount from test where testId=" + request.getTestId(), new BeanPropertyRowMapper<>(FinalTest.class));
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             return null;
         }
         finalTest.setQuestions(questions);
         return finalTest;
     }
-
-    public Float getFinalTestResult(FinalTestRequest request) {
+    public Float getFinalTestResult(FinalTestRequest request)
+    {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         return jdbcTemplate.queryForObject("select coursePercentage from courseProgress where userName='" + userName + "' and courseId=(select courseId from chapterProgress where testId=" + request.getTestId() + ")", Float.class);
     }
-
-    public float userAnswers(UserAnswers userAnswers) {
+    public float userAnswers(UserAnswers userAnswers)
+    {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         float chapterTestPercentage = updateUserAnswerTable(userAnswers);
-        jdbcTemplate.update("update chapterProgress set chapterTestPercentage=" + chapterTestPercentage + ",testCompletedStatus=true where testId=" + userAnswers.getTestId());
+        jdbcTemplate.update("update chapterProgress set chapterTestPercentage=" + chapterTestPercentage + ",chapterCompletedStatus=true,chapterStatus=false where testId=" + userAnswers.getTestId());
         int courseId = jdbcTemplate.queryForObject("select courseId from chapterProgress where testId=" + userAnswers.getTestId(), Integer.class);
         float sumOfChapterPercentage = jdbcTemplate.queryForObject("select sum(chapterTestPercentage) from chapterProgress where courseId=" + courseId + " and userName='" + userName + "'", Float.class);
         float totalPercentage = Integer.parseInt(((String.valueOf(jdbcTemplate.queryForObject("select count(chapterNumber) from chapter where courseId=" + courseId, Integer.class))) + "00"));
@@ -66,15 +69,15 @@ public class FinalTestDataAccess {
         jdbcTemplate.update("update enrollment set completedDate='" + courseCompletedDate + "', courseScore=" + coursePercentage);
         return chapterTestPercentage;
     }
-
-
-    public float updateUserAnswerTable(UserAnswers userAnswers) {
+    public float updateUserAnswerTable(UserAnswers userAnswers)
+    {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         String query = "select chapterId from test where testId=" + userAnswers.getTestId();
         int chapterId = jdbcTemplate.queryForObject(query, Integer.class);
         query = "select courseId from chapter where chapterId=" + chapterId;
         int courseId = jdbcTemplate.queryForObject(query, Integer.class);
-        for (Answers uAnswers : userAnswers.getUserAnswers()) {
+        for (Answers uAnswers : userAnswers.getUserAnswers())
+        {
             query = "insert into userAnswer values('" + userName + "'" + "," + courseId + "," + chapterId + "," + userAnswers.getTestId() + "," + uAnswers.getQuestionId() + "," + "'" + uAnswers.getCorrectAnswer() + "'" + "," + "(select if((select correctAnswer from question where questionId=" + uAnswers.getQuestionId() + ") ='" + uAnswers.getCorrectAnswer() + "'" + ",true,false)))";
             jdbcTemplate.update(query);
         }

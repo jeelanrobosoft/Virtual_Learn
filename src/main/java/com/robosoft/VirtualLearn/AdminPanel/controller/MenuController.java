@@ -12,29 +12,30 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
-public class MenuController {
-
+public class MenuController
+{
     @Autowired
     MenuService menuService;
-
-
     @GetMapping("/Menu")
-    public ResponseEntity<?> getSideBar(@RequestBody SideBarRequest request){
+    public ResponseEntity<?> getSideBar(@RequestBody SideBarRequest request)
+    {
         SideBarResponse response = menuService.getUserDetails(request);
         if (response == null)
             return new ResponseEntity<>("User Not Found",HttpStatus.NOT_FOUND);
         return ResponseEntity.of(Optional.of(response));
     }
-
     @GetMapping("/Notification")
-    public List<NotificationResponse> getNotification(){
+    public ResponseEntity<?> getNotification()
+    {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        return menuService.getNotification(userName);
+        List<NotificationResponse> responses =  menuService.getNotification(userName);
+        if(responses.isEmpty())
+            return ResponseEntity.of(Optional.of(Collections.singletonMap("message","No notifications")));
+        return ResponseEntity.of(Optional.of(responses));
     }
-
-
 }

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ModuleTestRequest {
+public class ModuleTestRequest
+{
     private Integer testId;
 }

@@ -13,34 +13,36 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
-public class ModuleTestDataAccess {
-
+public class ModuleTestDataAccess
+{
     @Autowired
     JdbcTemplate jdbcTemplate;
-
-    public ModuleTest moduleTestQuestions(ModuleTestRequest request) {
+    public ModuleTest moduleTestQuestions(ModuleTestRequest request)
+    {
         List<Question> questions;
         ModuleTest moduleTest;
         String query = "select questionId,questionName,option_1,option_2,option_3,option_4 from question where testId=?";
-        try {
+        try
+        {
             questions = jdbcTemplate.query(query, new BeanPropertyRowMapper<>(Question.class), request.getTestId());
             moduleTest = jdbcTemplate.queryForObject("select testId,testName,testDuration,questionsCount from test where testId=" + request.getTestId(), new BeanPropertyRowMapper<>(ModuleTest.class));
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             return null;
         }
         moduleTest.setQuestions(questions);
         return moduleTest;
     }
-
-    public float userAnswers(UserAnswers userAnswers) {
+    public float userAnswers(UserAnswers userAnswers)
+    {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        jdbcTemplate.update("update chapterProgress set testCompletedStatus=true where testId=" + userAnswers.getTestId());
+        jdbcTemplate.update("update chapterProgress set chapterCompletedStatus=true,chapterStatus=false where testId=" + userAnswers.getTestId());
         float chapterTestPercentage =  updateUserAnswerTable(userAnswers);
         jdbcTemplate.update("update chapterProgress set chapterTestPercentage=" + chapterTestPercentage+ "where testId=" + userAnswers.getTestId());
         String coursePhoto = jdbcTemplate.queryForObject("select coursePhoto from course where courseId=(select courseId from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class);
@@ -55,13 +57,15 @@ public class ModuleTestDataAccess {
         jdbcTemplate.update("insert into notification(userName,description,timeStamp,notificationUrl) values(?,?,?,?)",userName,description1,formatDateTime,coursePhoto);
         return chapterTestPercentage;
     }
-    public float updateUserAnswerTable(UserAnswers userAnswers) {
+    public float updateUserAnswerTable(UserAnswers userAnswers)
+    {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         String query = "select chapterId from test where testId=" + userAnswers.getTestId();
         int chapterId = jdbcTemplate.queryForObject(query, Integer.class);
         query = "select courseId from chapter where chapterId=" + chapterId;
         int courseId = jdbcTemplate.queryForObject(query, Integer.class);
-        for (Answers uAnswers : userAnswers.getUserAnswers()) {
+        for (Answers uAnswers : userAnswers.getUserAnswers())
+        {
             query = "insert into userAnswer values('" + userName + "'" + "," + courseId + "," + chapterId + "," + userAnswers.getTestId() + "," + uAnswers.getQuestionId() + "," + "'" + uAnswers.getCorrectAnswer() + "'" + "," + "(select if((select correctAnswer from question where questionId=" + uAnswers.getQuestionId() + ") ='" + uAnswers.getCorrectAnswer() + "'" + ",true,false)))";
             jdbcTemplate.update(query);
         }
@@ -69,26 +73,23 @@ public class ModuleTestDataAccess {
         int questionCount = jdbcTemplate.queryForObject("select questionsCount from test where testId=" + userAnswers.getTestId(), Integer.class);
         float chapterTestPercentage = (correctAnswerCount / (float) questionCount) * 100;
         return chapterTestPercentage;
-
     }
-
-    public ResultHeaderRequest getResultHeader(ModuleTestRequest testRequest) {
+    public ResultHeaderRequest getResultHeader(ModuleTestRequest testRequest)
+    {
         float chapterTestPercentage = jdbcTemplate.queryForObject("select chapterTestPercentage from chapterProgress where testId=" + testRequest.getTestId(), Float.class);
         String chapterName = jdbcTemplate.queryForObject("select chapterName from chapter where chapterId=(select chapterId from test where testId=" + testRequest.getTestId() + ")", String.class);
+        Integer chapterNumber = jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select chapterId from test where testId=" + testRequest.getTestId() + ")", Integer.class);
         String courseName = jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select chapterId from test where testId=" + testRequest.getTestId() + "))", String.class);
         int totalNumberOfQuestions = jdbcTemplate.queryForObject("select questionsCount from test where testId=" + testRequest.getTestId(), Integer.class);
         int correctAnswers = jdbcTemplate.queryForObject("select count(*) from userAnswer where userAnswerStatus=true and testId=" + testRequest.getTestId(), Integer.class);
         int wrongAnswers = totalNumberOfQuestions - correctAnswers;
-        return new ResultHeaderRequest(chapterName,chapterTestPercentage,courseName,correctAnswers,wrongAnswers,totalNumberOfQuestions);
+        return new ResultHeaderRequest(chapterNumber,chapterName,chapterTestPercentage,courseName,correctAnswers,wrongAnswers,totalNumberOfQuestions);
     }
-
-    public List<ResultAnswerRequest> getResultAnswers(ModuleTest request) {
+    public List<ResultAnswerRequest> getResultAnswers(ModuleTest request)
+    {
         return jdbcTemplate.query("select question.questionId,questionName,option_1,option_2,option_3,option_4,correctAnswer,userAnswer,userAnswerStatus from question inner join userAnswer on question.questionId=userAnswer.questionId where userAnswer.testId=" +request.getTestId(),new BeanPropertyRowMapper<>(ResultAnswerRequest.class));
 
     }
-
-
-
 //    public int getCorrectAnswersCount(UserAnswers userAnswers){
 //        int correctAnswerCount = 0;
 //        List<Answers> correctAnswers = jdbcTemplate.query("select questionId,correctAnswer from question where testId=" + userAnswers.getTestId(),new BeanPropertyRowMapper<>(Answers.class));

@@ -6,7 +6,8 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class NotificationResponse {
+public class NotificationResponse
+{
     private Integer notificationId;
     private String description;
     private Date timeStamp;

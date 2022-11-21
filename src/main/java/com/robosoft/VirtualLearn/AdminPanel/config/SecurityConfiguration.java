@@ -2,6 +2,7 @@ package com.robosoft.VirtualLearn.AdminPanel.config;
 
 
 
+import com.robosoft.VirtualLearn.AdminPanel.config.JwtAuthenticationEntryPoint;
 import com.robosoft.VirtualLearn.AdminPanel.filter.JwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -19,17 +20,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfiguration {
-
+public class SecurityConfiguration
+{
     @Autowired
     private UserDetailsService userDetailsService;
     @Autowired
     private JwtFilter jwtFilter;
     @Autowired
     private JwtAuthenticationEntryPoint authenticationEntryPoint;
-
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception
+    {
         http
                 .csrf().disable()
                 .authorizeHttpRequests()
@@ -40,19 +41,17 @@ public class SecurityConfiguration {
                 .and().httpBasic();
         return http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class).build();
     }
-
     @Bean
-    public AuthenticationProvider authenticationProvider(){
+    public AuthenticationProvider authenticationProvider()
+    {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(this.passwordEncoder());
         return provider;
     }
-
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder()
+    {
         return  new BCryptPasswordEncoder();
     }
-
-
 }

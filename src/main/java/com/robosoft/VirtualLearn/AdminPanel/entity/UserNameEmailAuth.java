@@ -8,9 +8,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserNameEmailAuth {
-
+public class UserNameEmailAuth
+{
     private String userName;
     private String email;
-
 }

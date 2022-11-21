@@ -11,7 +11,10 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CourseChapterResponse {
+public class CourseChapterResponse
+{
+    private Boolean enrolled;
+    private Integer courseId;
     private String courseName;
     private String categoryName;
     private Integer chapterCount;
@@ -20,4 +23,9 @@ public class CourseChapterResponse {
     private String courseDuration;
     private List<ChapterResponse> chapterResponses;
     private Boolean courseCompletedStatus;
+    private Float coursePercentage;
+    private String joinedDate;
+    private String completedDate;
+    private String totalDuration;
+    private String certificateUrl;
 }

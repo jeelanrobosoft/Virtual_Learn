@@ -6,13 +6,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
-
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SaveProfile {
-
+public class SaveProfile
+{
     private MultipartFile profilePhoto;
     private String  userName;
     private Integer  occupation;

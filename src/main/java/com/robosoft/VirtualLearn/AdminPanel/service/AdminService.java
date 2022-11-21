@@ -27,11 +27,10 @@ import java.util.TimeZone;
 import static com.robosoft.VirtualLearn.AdminPanel.common.Constants.*;
 
 @Service
-public class AdminService {
-
+public class AdminService
+{
     @Autowired
     private JdbcTemplate jdbcTemplate;
-
 
     private File convertMultiPartToFile(MultipartFile file) throws IOException
     {
@@ -69,8 +68,10 @@ public class AdminService {
         return "Instructor added successfully";
     }
 
-    public int addCategory(CategoryRequest category) throws IOException {
-        try {
+    public int addCategory(CategoryRequest category) throws IOException
+    {
+        try
+        {
             jdbcTemplate.queryForObject("SELECT * FROM category WHERE categoryName = ?", new BeanPropertyRowMapper<>(Category.class),category.getCategoryName());
             return 0;
         }
@@ -84,12 +85,10 @@ public class AdminService {
         }
     }
 
-
-
-
     public int addSubCategory(SubCategory subCategory)
     {
-        try {
+        try
+        {
             jdbcTemplate.queryForObject("SELECT * FROM subCategory WHERE subCategoryName = ?", new BeanPropertyRowMapper<>(Category.class),subCategory.getSubCategoryName());
             return 0;
         }
@@ -98,7 +97,6 @@ public class AdminService {
             return jdbcTemplate.update("INSERT INTO subCategory(categoryId,subCategoryName) VALUES(?,?)",subCategory.getCategoryId(),subCategory.getSubCategoryName());
         }
     }
-
 
     public String addCourse(CourseRequest courseRequest) throws IOException
     {
@@ -117,31 +115,29 @@ public class AdminService {
         return "course added successfully";
     }
 
-
-    public int addOverView(Overview overview){
-
-        try{
+    public int addOverView(Overview overview)
+    {
+        try
+        {
             jdbcTemplate.queryForObject("SELECT courseId FROM overview WHERE courseId = ?",new BeanPropertyRowMapper<>(Overview.class),overview.getCourseId());
             return 0;
         }
-        catch (Exception e) {
+        catch (Exception e)
+        {
             int chapterCount = jdbcTemplate.queryForObject("SELECT COUNT(courseId) FROM chapter WHERE courseId = ?", Integer.class, overview.getCourseId());
             int lessonCount = 0;
             List<Integer> chapterIds = jdbcTemplate.queryForList("SELECT chapterId FROM chapter WHERE courseId = ?", Integer.class,overview.getCourseId());
-
             for(int i : chapterIds)
             {
                 lessonCount += jdbcTemplate.queryForObject("SELECT COUNT(chapterId) FROM lesson WHERE chapterId = ?", Integer.class, i);
             }
-
-
             List<Integer> chapterIDs = jdbcTemplate.queryForList("SELECT chapterId FROM chapter WHERE courseId = ?", Integer.class, overview.getCourseId());
 
             int testCount = 0;
-            for (int i : chapterIDs) {
+            for (int i : chapterIDs)
+            {
                 testCount += jdbcTemplate.queryForObject("SELECT COUNT(testId) FROM test WHERE chapterId = ?", Integer.class, i);
             }
-
             return jdbcTemplate.update("INSERT INTO overView(courseId,courseTagLine,description,chapterCount,lessonCount,testCount,learningOutCome,requirements,instructorId,difficultyLevel) VALUES(?,?,?,?,?,?,?,?,?,?)",
                     overview.getCourseId(), overview.getCourseTagLine(), overview.getDescription(), chapterCount, lessonCount, testCount, overview.getLearningOutCome(),overview.getRequirements(), overview.getInstructorId(),overview.getDifficultyLevel());
         }
@@ -152,7 +148,8 @@ public class AdminService {
         return jdbcTemplate.update("INSERT INTO chapter(courseId,chapterNumber,chapterName) VALUES(?,?,?)",chapter.getCourseId(),chapter.getChapterNumber(),chapter.getChapterName());
     }
 
-    public String addLesson(LessonRequest lessonRequest) throws IOException, ParseException {
+    public String addLesson(LessonRequest lessonRequest) throws IOException, ParseException
+    {
         String lessonVideoLink = getFileUrl(lessonRequest.getVideoLink());
         String lessonTime = lessonRequest.getLessonDuration().toString();
         jdbcTemplate.update("INSERT INTO lesson(lessonNumber,chapterId,lessonName,lessonDuration,videoLink) VALUES(?,?,?,?,?)",lessonRequest.getLessonNumber(),lessonRequest.getChapterId(),lessonRequest.getLessonName(), lessonTime,lessonVideoLink);
@@ -222,5 +219,4 @@ public class AdminService {
             return jdbcTemplate.update("INSERT INTO policy(termsAndConditions,privacyPolicy) VALUES(?,?)",policy.getTermsAndConditions(),policy.getPrivacyPolicy());
         }
     }
-
 }

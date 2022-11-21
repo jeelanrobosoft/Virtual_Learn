@@ -8,7 +8,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Chapter {
+public class Chapter
+{
     private Integer chapterId;
     private Integer courseId;
     private Integer chapterNumber;

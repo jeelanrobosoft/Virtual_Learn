@@ -12,20 +12,21 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class MenuService {
-
-
+public class MenuService
+{
     @Autowired
     MenuDataAccess dataAccess;
-    public SideBarResponse getUserDetails(SideBarRequest sideBar) {
+    public SideBarResponse getUserDetails(SideBarRequest sideBar)
+    {
         return dataAccess.getDetails(sideBar);
     }
 
-    public MyProfileResponse getMyProfile(SideBarResponse response, SideBarRequest request) {
+    public MyProfileResponse getMyProfile(SideBarResponse response, SideBarRequest request)
+    {
         return dataAccess.getMyProfile(response,request);
     }
-
-    public List<NotificationResponse> getNotification(String userName) {
+    public List<NotificationResponse> getNotification(String userName)
+    {
         return dataAccess.getNotification(userName);
     }
 }

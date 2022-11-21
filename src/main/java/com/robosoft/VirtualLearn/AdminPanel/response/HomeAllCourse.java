@@ -24,6 +24,4 @@ public class HomeAllCourse
         this.categoryId = categoryId;
         this.chapterCount = chapterCount;
     }
-
-    
 }

@@ -11,19 +11,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/user")
-public class UserController {
-
+public class UserController
+{
     @Autowired
     private UserService userService;
-
-
     @GetMapping("/Categories")
     public ResponseEntity<?> getCategories()
     {
@@ -32,9 +30,10 @@ public class UserController {
         if((categories) != null)
             return ResponseEntity.of(Optional.of(categories));
         else
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        {
+            return ResponseEntity.of(Optional.of(Collections.singletonMap("message","No Categories added Yet"))).status(HttpStatus.NOT_FOUND).build();
+        }
     }
-
     @GetMapping("/SubCategories")
     public ResponseEntity<?> getSubcategory(@RequestBody Category category)
     {
@@ -43,115 +42,120 @@ public class UserController {
         if((subCategories) != null)
             return ResponseEntity.of(Optional.of(subCategories));
         else
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            return ResponseEntity.of(Optional.of(Collections.singletonMap("message","No SubCategories added Yet"))).status(HttpStatus.NOT_FOUND).build();
     }
-
     @GetMapping("/CourseOverView")
-    public ResponseEntity<?> getCourseOverview(@RequestBody Course course) {
-        try {
+    public ResponseEntity<?> getCourseOverview(@RequestBody Course course)
+    {
+        try
+        {
             OverviewResponse overviewResponse = userService.getOverviewOfCourse(course.getCourseId());
-            if (overviewResponse != null) {
+            if (overviewResponse != null)
+            {
                 return ResponseEntity.of(Optional.of(overviewResponse));
             }
-           return new ResponseEntity("Overview For the Course is not Available", HttpStatus.NOT_FOUND);
-        }catch (Exception e)
+            return new ResponseEntity("Overview For the Course is not Available", HttpStatus.NOT_FOUND);
+        }
+        catch (Exception e)
         {
             return new ResponseEntity("Invalid Input", HttpStatus.NOT_FOUND);
-
         }
     }
-
     @GetMapping("/BasicCourses")
     public ResponseEntity<?> getBeginnerCourses(@RequestBody Category category)
     {
-        try {
+        try
+        {
             List<CourseResponse> courseResponses = userService.getBasicCourses(category.getCategoryId());
-
             if(courseResponses.isEmpty())
             {
-                return new ResponseEntity("Currently No Courses Avaialable in this Category",HttpStatus.NOT_FOUND);
+                return new ResponseEntity("Currently No Courses Available in this Category",HttpStatus.NOT_FOUND);
             }
             return ResponseEntity.of(Optional.of(courseResponses));
-
-        }catch (Exception e)
+        }
+        catch (Exception e)
         {
             return new ResponseEntity("Invalid Input",HttpStatus.BAD_REQUEST);
         }
-    }  
-
+    }
     @GetMapping("/AdvanceCourses")
     public ResponseEntity<?> getAdvancedCourses(@RequestBody Category category)
     {
-        try {
+        try
+        {
             List<CourseResponse> courseResponses = userService.getAdvanceCourses(category.getCategoryId());
-
             if(courseResponses.isEmpty())
             {
-                return new ResponseEntity("Currently No Courses Avaialable in this Category",HttpStatus.NOT_FOUND);
+                return new ResponseEntity("Currently No Courses Available in this Category",HttpStatus.NOT_FOUND);
             }
             return ResponseEntity.of(Optional.of(courseResponses));
-
-        }catch (Exception e)
+        }
+        catch (Exception e)
         {
             return new ResponseEntity("Invalid Input",HttpStatus.BAD_REQUEST);
         }
     }
-
     @GetMapping("/AllCoursesOfCategory")
     public ResponseEntity<?> getAllCourses(@RequestBody Category category)
     {
-        try {
+        try
+        {
             List<AllCoursesResponse> allCourseResponses = userService.getAllCoursesOf(category.getCategoryId());
-
             if(allCourseResponses.isEmpty())
             {
-                return new ResponseEntity("Currently No Courses Avaialable in this Category",HttpStatus.NOT_FOUND);
+                return new ResponseEntity("Currently No Courses Available in this Category",HttpStatus.NOT_FOUND);
             }
             return ResponseEntity.of(Optional.of(allCourseResponses));
-
-        }catch (Exception e)
+        }
+        catch (Exception e)
         {
             return new ResponseEntity("Invalid Input",HttpStatus.BAD_REQUEST);
         }
     }
 
-
     @GetMapping("/privacyPolicy")
-    public ResponseEntity<?> getPrivacyPolicy() {
-        try {
+    public ResponseEntity<?> getPrivacyPolicy()
+    {
+        try
+        {
             String privacyPolicy = userService.getPolicy();
-                return ResponseEntity.of(Optional.of(privacyPolicy));
-        }catch (Exception e)
+            return ResponseEntity.of(Optional.of(privacyPolicy));
+        }
+        catch (Exception e)
         {
             return new ResponseEntity("Privacy Policy Not Found", HttpStatus.NOT_FOUND);
         }
     }
-
     @GetMapping("/TermsAndConditions")
-    public ResponseEntity<?> getTermsAndConditions() {
-        try {
+    public ResponseEntity<?> getTermsAndConditions()
+    {
+        try
+        {
             String termsAndConditions = userService.getTermsAndConditions();
-                return ResponseEntity.of(Optional.of(termsAndConditions));
-        }catch (Exception e)
+            return ResponseEntity.of(Optional.of(termsAndConditions));
+        }
+        catch (Exception e)
         {
             return new ResponseEntity("Terms and Conditions Not Found", HttpStatus.NOT_FOUND);
         }
     }
-
     @GetMapping("/OngoingCourses")
     public ResponseEntity<?> getOngoingCourses()
     {
-        try {
+        try
+        {
             List<OngoingResponse> ongoingResponses = userService.getOngoingCourses();
-            if(ongoingResponses.isEmpty()){
+            if(ongoingResponses.isEmpty())
+            {
                 return new ResponseEntity<>("No Ongoing Courses or The Course You Enrolled has No Chapters yet.",HttpStatus.NOT_FOUND);
             }
             return ResponseEntity.of(Optional.of(ongoingResponses));
-        }catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             return new ResponseEntity<>("Invalid Input ", HttpStatus.BAD_REQUEST);
         }
     }
-
     @GetMapping("/CompletedCourses")
     public ResponseEntity<?> getCompletedCourses()
     {
@@ -159,17 +163,16 @@ public class UserController {
         if(completedResponse.isEmpty())
             return new ResponseEntity<>("No Completed Courses",HttpStatus.NOT_FOUND);
         return ResponseEntity.of(Optional.of(completedResponse));
-
     }
-
     @GetMapping("/CourseChapterResponse")
     public ResponseEntity<?> getCourseChapterResponse(@RequestBody CourseChapterRequest courseChapterRequest)
     {
-        try {
+        try
+        {
             CourseChapterResponse  courseChapterResponse =userService.getCourseChapterResponse(courseChapterRequest.getCourseId());
             if(courseChapterResponse != null)
             {
-                return ResponseEntity.of(Optional.of(courseChapterRequest));
+                return ResponseEntity.of(Optional.of(courseChapterResponse));
             }
             return new ResponseEntity<>("There are No Chapters Available at the Course yet",HttpStatus.NOT_FOUND);
         }
@@ -178,9 +181,9 @@ public class UserController {
             return new ResponseEntity<>("Invalid Input",HttpStatus.BAD_REQUEST);
         }
     }
-
     @GetMapping("/LessonResponse")
-    public ResponseEntity<?> getLessonResponse(@RequestBody LessonResponseRequest lessonResponseRequest){
+    public ResponseEntity<?> getLessonResponse(@RequestBody LessonResponseRequest lessonResponseRequest)
+    {
         List<LessonResponse> lessonResponses= userService.getLessonResponses(lessonResponseRequest.getChapterId());
         if(lessonResponses.isEmpty())
         {
@@ -188,18 +191,42 @@ public class UserController {
         }
         return ResponseEntity.of(Optional.of(lessonResponses));
     }
-
     @GetMapping("/Continue")
     public ResponseEntity<?> getLastPlayed(@RequestBody CourseChapterRequest courseChapterRequest)
     {
         Continue c = userService.getLastPlayed(courseChapterRequest.getCourseId());
-
-        if(c != null) {
+        if(c != null)
+        {
             return ResponseEntity.of(Optional.of(c));
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+    @GetMapping("/search")
+    public ResponseEntity<?> search(@RequestBody String search)
+    {
+        try
+        {
+            List<AllCoursesResponse> allCoursesResponses =userService.searchCourses(search);
 
+            if(allCoursesResponses.isEmpty())
+                return new ResponseEntity<>("No Matching Course \nTry a Different search or browse categories",HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(allCoursesResponses,HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            return new ResponseEntity<>("Invalid Input",HttpStatus.BAD_REQUEST);
+        }
+    }
+    @GetMapping("applyFilter")
+    public ResponseEntity<?> applyFilter(@RequestBody FilterRequest filterRequest)
+    {
+        List<AllCoursesResponse> allCoursesResponses = userService.searchFilter(filterRequest);
+        if(allCoursesResponses == null || allCoursesResponses.isEmpty())
+        {
+            return new ResponseEntity<>("No Matching Course \nTry a Different search or browse categories",HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(allCoursesResponses,HttpStatus.OK);
+    }
     //chk
     @GetMapping("/home/course")
     public ResponseEntity<?> homeTopBarData()
@@ -207,80 +234,73 @@ public class UserController {
         List<HomeResponseTopHeader> coursesList= userService.HomePageTopBar();
         if(coursesList.size() ==0)
         {
-            return new ResponseEntity<String>("courses are not available", HttpStatus.NOT_FOUND);
+            return ResponseEntity.of(Optional.of(Collections.singletonMap("message","courses are not available")));
         }
-        return new ResponseEntity<>(coursesList,HttpStatus.OK);
+        return ResponseEntity.of(Optional.of(coursesList));
     }
-
-
     @GetMapping("/home/course/all")
     public ResponseEntity<?> homeAllCourses()
     {
         List<HomeAllCourse> allCourses= userService.getAllCourses();
         if(allCourses.size() ==0)
         {
-            return new ResponseEntity<String>("courses are not available", HttpStatus.NOT_FOUND);
+            return ResponseEntity.of(Optional.of(Collections.singletonMap("message","courses are not available")));
         }
-        return new ResponseEntity<>(allCourses,HttpStatus.OK);
+        return ResponseEntity.of(Optional.of(allCourses));
     }
-
-
     @GetMapping("/home/course/popular")
     public ResponseEntity<?> homePopularCourses()
     {
         List<HomeAllCourse> popularCourses= userService.getPopularCourses();
         if(popularCourses.size() ==0)
         {
-            return new ResponseEntity<String>("courses are not available", HttpStatus.NOT_FOUND);
+            return ResponseEntity.of(Optional.of(Collections.singletonMap("message","courses are not available")));
         }
-        return new ResponseEntity<>(popularCourses,HttpStatus.OK);
+        return ResponseEntity.of(Optional.of(popularCourses));
     }
-
     @GetMapping("/home/course/newest")
-    public ResponseEntity<?> homeNewestCourses() {
+    public ResponseEntity<?> homeNewestCourses()
+    {
         List<HomeAllCourse> newestCourses = userService.getNewCourses();
-        if (newestCourses.size() == 0) {
-            return new ResponseEntity<String>("courses are not available", HttpStatus.NOT_FOUND);
+        if (newestCourses.size() == 0)
+        {
+            return ResponseEntity.of(Optional.of(Collections.singletonMap("message","courses are not available")));
         }
-        return new ResponseEntity<>(newestCourses, HttpStatus.OK);
+        return ResponseEntity.of(Optional.of(newestCourses));
     }
-
-    //*********************10-11-20222*****************************************
     @GetMapping("/home/course/category")
-    public ResponseEntity<?> homeGetPopularCoursesOfCategory() {
+    public ResponseEntity<?> homeGetPopularCoursesOfCategory()
+    {
         Map<Integer,List<PopularCourseInEachCategory>> coursesOfCategory = userService.popularCoursesInCategory();
-        if (coursesOfCategory == null) {
-            return new ResponseEntity<String>("courses are not available", HttpStatus.NOT_FOUND);
+        if (coursesOfCategory == null)
+        {
+            return ResponseEntity.of(Optional.of(Collections.singletonMap("message","courses are not available")));
         }
-        return new ResponseEntity<>(coursesOfCategory, HttpStatus.OK);
+        return ResponseEntity.of(Optional.of(coursesOfCategory));
     }
-
-
-    //***********************10-11-2022***************************************
     @PostMapping("/enroll")
-    public ResponseEntity<String> userEnrollment(@RequestBody EnrollmentRequest enrollmentRequest)
+    public ResponseEntity<?> userEnrollment(@RequestBody EnrollmentRequest enrollmentRequest)
     {
         String enrolResponse = userService.enrollment(enrollmentRequest);
-        return new ResponseEntity<>(enrolResponse, HttpStatus.OK);
+        return ResponseEntity.of(Optional.of(Collections.singletonMap("message",enrolResponse)));
     }
 
     @PutMapping("/pauseTime")
-    public ResponseEntity<String> updateLessonCompletionStatus(@RequestBody VideoPauseRequest videoPauseRequest)
+    public ResponseEntity<?> updateLessonCompletionStatus(@RequestBody VideoPauseRequest videoPauseRequest)
     {
         userService.updateVideoPauseTime(videoPauseRequest);
-        return new ResponseEntity<>("Updated SuccessFully",HttpStatus.OK);
+        return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Updated SuccessFully")));
     }
-
-    @GetMapping("/notifications")
-    public ResponseEntity<?> notifications()
-    {
-        Map<Integer, List<Notification>> notifications = userService.pullNotification();
-        if(notifications.size() == 0)
-        {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-        return new ResponseEntity<>(notifications,HttpStatus.OK);
-    }
+//    @GetMapping("/notifications")
+//    public ResponseEntity<?> notifications()
+//    {
+//        Map<Integer, List<Notification>> notifications = userService.pullNotification();
+//        if(notifications.size() == 0)
+//        {
+//            return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Not Available")));
+//        }
+//        return ResponseEntity.of(Optional.of(notifications));
+//    }
 }
 
 

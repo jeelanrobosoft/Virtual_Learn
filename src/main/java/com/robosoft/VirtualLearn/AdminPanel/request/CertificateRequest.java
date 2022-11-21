@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CertificateRequest
 {
-    private int courseId;
+    private int testId;
 }

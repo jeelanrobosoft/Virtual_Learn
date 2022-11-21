@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class OverviewResponse {
-
+public class OverviewResponse
+{
     private String coursePhoto;
     private String courseName;
     private String categoryName;

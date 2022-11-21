@@ -10,7 +10,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ModuleTest {
+public class ModuleTest
+{
     private Integer testId;
     private String testName;
     private String testDuration;

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CourseChapterRequest {
+public class CourseChapterRequest
+{
     private Integer courseId;
 }
