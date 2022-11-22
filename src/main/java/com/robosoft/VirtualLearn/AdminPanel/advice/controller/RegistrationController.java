@@ -1,4 +1,4 @@
-package com.robosoft.VirtualLearn.AdminPanel.controller;
+package com.robosoft.VirtualLearn.AdminPanel.advice.controller;
 
 
 import com.robosoft.VirtualLearn.AdminPanel.entity.UserRegistration;

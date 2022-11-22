@@ -1,4 +1,4 @@
-package com.robosoft.VirtualLearn.AdminPanel.controller;
+package com.robosoft.VirtualLearn.AdminPanel.advice.controller;
 import com.robosoft.VirtualLearn.AdminPanel.entity.FinalTest;
 import com.robosoft.VirtualLearn.AdminPanel.entity.UserAnswers;
 import com.robosoft.VirtualLearn.AdminPanel.request.CertificateRequest;

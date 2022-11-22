@@ -1,4 +1,4 @@
-package com.robosoft.VirtualLearn.AdminPanel.controller;
+package com.robosoft.VirtualLearn.AdminPanel.advice.controller;
 
 import com.robosoft.VirtualLearn.AdminPanel.entity.*;
 import com.robosoft.VirtualLearn.AdminPanel.request.*;
@@ -19,6 +19,9 @@ public class AdminController
 {
     @Autowired
     private AdminService adminService;
+
+
+
     @PostMapping("/Category")
     public ResponseEntity<?> addCategory(@ModelAttribute CategoryRequest category) throws IOException
     {

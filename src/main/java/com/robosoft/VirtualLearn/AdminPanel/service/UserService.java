@@ -70,17 +70,22 @@ public class UserService
 
     public OverviewResponse getOverviewOfCourse(int courseId) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-
         try {
-            jdbcTemplate.queryForObject("SELECT * FROM enrollment WHERE username = ? AND courseId = ?",new BeanPropertyRowMapper<>(Enrollment.class),userName,courseId);
-            OverviewResponse overviewResponse =  jdbcTemplate.queryForObject("SELECT courseName,coursePhoto,categoryName,chapterCount,lessonCount,courseTagLine,previewVideo,overView.description,testCount,courseMaterialId,courseDuration,learningOutCome,requirements,instructorName,url,profilePhoto,instructor.description AS instructorDescription FROM overView INNER JOIN instructor ON overView.instructorId = instructor.instructorId  INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(OverviewResponse.class), courseId);
-            overviewResponse.setEnrolled(true);
-            return overviewResponse;
-        } catch (Exception e) {
-            OverviewResponse overviewResponse = jdbcTemplate.queryForObject("SELECT courseName,coursePhoto,categoryName,chapterCount,lessonCount,courseTagLine,previewVideo,overView.description,testCount,courseMaterialId,courseDuration,learningOutCome,requirements,instructorName,url,profilePhoto,instructor.description AS instructorDescription FROM overView INNER JOIN instructor ON overView.instructorId = instructor.instructorId  INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(OverviewResponse.class), courseId);
-            overviewResponse.setEnrolled(false);
-            return overviewResponse;
 
+            try {
+                jdbcTemplate.queryForObject("SELECT * FROM enrollment WHERE username = ? AND courseId = ?", new BeanPropertyRowMapper<>(Enrollment.class), userName, courseId);
+                OverviewResponse overviewResponse = jdbcTemplate.queryForObject("SELECT courseName,coursePhoto,categoryName,chapterCount,lessonCount,courseTagLine,previewVideo,overView.description,testCount,courseMaterialId,courseDuration,learningOutCome,requirements,instructorName,url,profilePhoto,instructor.description AS instructorDescription FROM overView INNER JOIN instructor ON overView.instructorId = instructor.instructorId  INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(OverviewResponse.class), courseId);
+                overviewResponse.setEnrolled(true);
+                return overviewResponse;
+            } catch (Exception e) {
+                OverviewResponse overviewResponse = jdbcTemplate.queryForObject("SELECT courseName,coursePhoto,categoryName,chapterCount,lessonCount,courseTagLine,previewVideo,overView.description,testCount,courseMaterialId,courseDuration,learningOutCome,requirements,instructorName,url,profilePhoto,instructor.description AS instructorDescription FROM overView INNER JOIN instructor ON overView.instructorId = instructor.instructorId  INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(OverviewResponse.class), courseId);
+                overviewResponse.setEnrolled(false);
+                return overviewResponse;
+            }
+        }
+        catch (Exception e)
+        {
+            return null;
         }
     }
 
@@ -171,7 +176,7 @@ public class UserService
             return courseChapterResponse;
         }catch (Exception e)
         {
-            System.out.println(e);
+            e.printStackTrace();
             List<Integer> chapterIds = jdbcTemplate.queryForList("SELECT chapterId from chapter WHERE courseId = ? order by chapterNumber", Integer.class, courseId);
             CourseChapterResponse courseChapterResponse = jdbcTemplate.queryForObject("SELECT courseName,categoryName,chapterCount,lessonCount,testCount,courseDuration FROM overView INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(CourseChapterResponse.class), courseId);
             List<ChapterResponse> chapterResponses = new ArrayList<>();
@@ -279,7 +284,6 @@ public class UserService
         }
         catch (Exception e)
         {
-            e.printStackTrace();
             return null;
         }
     }

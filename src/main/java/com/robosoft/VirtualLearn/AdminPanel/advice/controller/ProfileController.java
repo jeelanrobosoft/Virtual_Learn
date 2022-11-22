@@ -1,4 +1,4 @@
-package com.robosoft.VirtualLearn.AdminPanel.controller;
+package com.robosoft.VirtualLearn.AdminPanel.advice.controller;
 
 import com.robosoft.VirtualLearn.AdminPanel.dto.SideBarRequest;
 import com.robosoft.VirtualLearn.AdminPanel.dto.SideBarResponse;
@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -34,8 +35,9 @@ public class ProfileController
     }
 
     @PatchMapping("/Save")
-    public void saveMyProfile(@ModelAttribute SaveProfile saveProfile) throws IOException, ParseException {
+    public Map saveMyProfile(@ModelAttribute SaveProfile saveProfile) throws IOException, ParseException {
         profileService.saveMyProfile(saveProfile);
+        return Collections.singletonMap("message","Successfully updated profile");
 
     }
 

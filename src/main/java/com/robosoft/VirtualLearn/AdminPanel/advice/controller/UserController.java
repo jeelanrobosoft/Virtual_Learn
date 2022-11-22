@@ -1,4 +1,4 @@
-package com.robosoft.VirtualLearn.AdminPanel.controller;
+package com.robosoft.VirtualLearn.AdminPanel.advice.controller;
 
 import com.robosoft.VirtualLearn.AdminPanel.entity.Course;
 import com.robosoft.VirtualLearn.AdminPanel.entity.Category;
@@ -117,7 +117,7 @@ public class UserController
     public ResponseEntity<?> getPrivacyPolicy() {
         try {
             String privacyPolicy = userService.getPolicy();
-            return ResponseEntity.of(Optional.of(privacyPolicy));
+            return ResponseEntity.of(Optional.of(Collections.singletonMap("message",privacyPolicy)));
         }catch (Exception e)
         {
             return new ResponseEntity(Collections.singletonMap("message","Privacy Policy Not Found"), HttpStatus.NOT_FOUND);
@@ -128,7 +128,7 @@ public class UserController
     public ResponseEntity<?> getTermsAndConditions() {
         try {
             String termsAndConditions = userService.getTermsAndConditions();
-            return ResponseEntity.of(Optional.of(termsAndConditions));
+            return ResponseEntity.of(Optional.of(Collections.singletonMap("message",termsAndConditions)));
         }catch (Exception e)
         {
             return new ResponseEntity(Collections.singletonMap("message","Terms and Conditions Not Found"), HttpStatus.NOT_FOUND);
@@ -194,7 +194,7 @@ public class UserController
         if(c != null) {
             return ResponseEntity.of(Optional.of(c));
         }
-        return new ResponseEntity<>(Collections.singletonMap("message","null"),HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(Collections.singletonMap("message","null"),HttpStatus.NOT_FOUND);
     }
     @GetMapping("/search")
     public ResponseEntity<?> search(@RequestBody SearchRequest searchRequest)
