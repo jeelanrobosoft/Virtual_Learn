@@ -31,7 +31,7 @@ public class UserService
     private JdbcTemplate jdbcTemplate;
 
 
-    int pages = 2;
+    int pages = 4;
     int lowerLimit = 0;
     int upperLimit = pages;
 
