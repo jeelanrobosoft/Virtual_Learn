@@ -18,18 +18,18 @@ import java.util.Optional;
 public class MyControllerAdvice
 {
 
-//    @ExceptionHandler(EmptyResultDataAccessException.class)
-//    public ResponseEntity<Map> handleEmptyResult(EmptyResultDataAccessException exception) {
-//        return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Input field is incorrect")));
-//    }
-//    @ExceptionHandler(ParseException.class)
-//    public ResponseEntity<Map> handleEmptyResult(ParseException exception){
-//        return ResponseEntity.of(Optional.of(Collections.singletonMap("message","Send Date in dd/mm/yyyy format")));
-//    }
-//
-//    @ExceptionHandler(ApiException.class)
-//    public ResponseEntity<Map> handleApiException(ApiException exception){
-//        return ResponseEntity.of(Optional.of(Collections.singletonMap("message","Please Enter Valid Phone Number")));
-//    }
+    @ExceptionHandler(EmptyResultDataAccessException.class)
+    public ResponseEntity<Map> handleEmptyResult(EmptyResultDataAccessException exception) {
+        return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Input field is incorrect")));
+    }
+    @ExceptionHandler(ParseException.class)
+    public ResponseEntity<Map> handleEmptyResult(ParseException exception){
+        return ResponseEntity.of(Optional.of(Collections.singletonMap("message","Send Date in dd/mm/yyyy format")));
+    }
+
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<Map> handleApiException(ApiException exception){
+        return ResponseEntity.of(Optional.of(Collections.singletonMap("message","Please Enter Valid Phone Number")));
+    }
 
 }

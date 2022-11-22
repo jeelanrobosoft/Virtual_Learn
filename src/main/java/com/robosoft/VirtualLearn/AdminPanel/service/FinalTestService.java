@@ -119,12 +119,12 @@ public class FinalTestService
         g.drawString(certificateNumber, 90,700);
         g.dispose();
         ImageIO.write(image, "jpg", new File("src/main/resources/CerificateData/"+userName+courseId+".png"));
-        File fileItem = new File("C:\\Users\\Chandana I K\\Pictures\\"+userName+courseId+".png");
+        File fileItem = new File("src/main/resources/CerificateData/"+userName+courseId+".png");
         System.out.println(fileItem.getName());
         FileInputStream input = new FileInputStream(fileItem);
         MultipartFile multipartFile = new MockMultipartFile("fileItem", fileItem.getName(), "image/png", IOUtils.toByteArray(input));
         String url =getFileUrl(multipartFile);
-        jdbcTemplate.update("INSERT INTO certificate(,certificateNumber,courseId,UserName,certificateUrl) values(?,?,?,?)", courseId,userName,url);
+        jdbcTemplate.update("INSERT INTO certificate(certificateNumber,courseId,UserName,certificateUrl) values(?,?,?,?)",certificateNumber, courseId,userName,url);
 
     }
 

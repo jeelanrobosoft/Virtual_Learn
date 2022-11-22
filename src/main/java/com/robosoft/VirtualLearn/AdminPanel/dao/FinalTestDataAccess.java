@@ -56,7 +56,7 @@ public class FinalTestDataAccess
         /* Updating in notification*/
         String coursePhoto = jdbcTemplate.queryForObject("select coursePhoto from course where courseId=(select courseId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName + "')", String.class);
         String description = "Completed course" + " - " +jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'))", String.class);
-        String description1 = "You Scored " + jdbcTemplate.queryForObject("select chapterTestPercentage from chapterProgress where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName + "') and userName='" + userName + "'", String.class) + "% in course " + jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName +"))", String.class);
+        String description1 = "You Scored " + jdbcTemplate.queryForObject("select chapterTestPercentage from chapterProgress where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName + "') and userName='" + userName + "'", String.class) + "% in course " + jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName +"'))", String.class);
         //        String photoUrl = String.format(DOWNLOAD_URL, URLEncoder.encode("password_change_success.png"));
         LocalDateTime dateTime = LocalDateTime.now();
         DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
@@ -64,9 +64,9 @@ public class FinalTestDataAccess
         jdbcTemplate.update("insert into notification(userName,description,timeStamp,notificationUrl) values(?,?,?,?)",userName,description,formatDateTime,coursePhoto);
         jdbcTemplate.update("insert into notification(userName,description,timeStamp,notificationUrl) values(?,?,?,?)",userName,description1,formatDateTime,coursePhoto);
         /* Done */
-        jdbcTemplate.update("update courseProgress set coursePercentage=" + coursePercentage + ",courseCompletedStatus=true where courseId=" + courseId);
+        jdbcTemplate.update("update courseProgress set coursePercentage=" + coursePercentage + ",courseCompletedStatus=true where courseId=" + courseId + " and userName='" + userName + "'");
         LocalDate courseCompletedDate = LocalDate.now();
-        jdbcTemplate.update("update enrollment set completedDate='" + courseCompletedDate + "', courseScore=" + coursePercentage);
+        jdbcTemplate.update("update enrollment set completedDate='" + courseCompletedDate + "',courseScore=" + coursePercentage + " where userName='" + userName + "' and courseId=(select courseId from chapter where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName +"'))");
         return chapterTestPercentage;
     }
     public float updateUserAnswerTable(UserAnswers userAnswers)

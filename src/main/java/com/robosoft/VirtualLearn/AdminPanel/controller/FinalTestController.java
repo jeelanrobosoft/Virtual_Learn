@@ -45,7 +45,7 @@ public class FinalTestController
     @GetMapping("/viewCertificate")
     public Map getCertificate(@RequestBody CertificateRequest certificateRequest) throws IOException, ParseException
     {
-        return Collections.singletonMap("Test Percentage", finalTestService.viewCertificate(certificateRequest));
+        return Collections.singletonMap("message", finalTestService.viewCertificate(certificateRequest));
     }
 
 }

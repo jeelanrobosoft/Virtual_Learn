@@ -417,9 +417,9 @@ public class UserService
         }
         return newCourseList;
     }
-    public Map<String,List<PopularCourseInEachCategory>> popularCoursesInCategory()
+    public List<TopCourseResponse> popularCoursesInCategory()
     {
-        Map<String,List<PopularCourseInEachCategory>> topCoursesList  = new HashMap<>();
+       // Map<String,List<PopularCourseInEachCategory>> topCoursesList  = new HashMap<>();
         List<Category> categoriesList = jdbcTemplate.query("SELECT * FROM category",(rs, rowNum) -> {
             return new Category(rs.getInt("categoryId"), rs.getString("categoryName"), rs.getString("categoryPhoto"));
         });

@@ -57,7 +57,7 @@ public class MenuDataAccess
     }
 
     public List<NotificationResponse> getNotification(String userName) {
-        List<NotificationResponse> notifications =  jdbcTemplate.query("select notificationId,description,timeStamp,notificationUrl from notification where userName='" + userName + "'",new BeanPropertyRowMapper<>(NotificationResponse.class));
+        List<NotificationResponse> notifications =  jdbcTemplate.query("select * from notification where userName='" + userName + "'",new BeanPropertyRowMapper<>(NotificationResponse.class));
         Collections.reverse(notifications);
         return notifications;
     }
