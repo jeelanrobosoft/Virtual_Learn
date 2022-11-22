@@ -69,11 +69,18 @@ public class UserService
 
 
     public OverviewResponse getOverviewOfCourse(int courseId) {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+
         try {
-            return jdbcTemplate.queryForObject("SELECT courseName,coursePhoto,categoryName,chapterCount,lessonCount,courseTagLine,previewVideo,overView.description,testCount,courseMaterialId,courseDuration,learningOutCome,requirements,instructorName,url,profilePhoto,instructor.description AS instructorDescription FROM overView INNER JOIN instructor ON overView.instructorId = instructor.instructorId  INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(OverviewResponse.class), courseId);
+            jdbcTemplate.queryForObject("SELECT * FROM enrollment WHERE username = ? AND courseId = ?",new BeanPropertyRowMapper<>(Enrollment.class),userName,courseId);
+            OverviewResponse overviewResponse =  jdbcTemplate.queryForObject("SELECT courseName,coursePhoto,categoryName,chapterCount,lessonCount,courseTagLine,previewVideo,overView.description,testCount,courseMaterialId,courseDuration,learningOutCome,requirements,instructorName,url,profilePhoto,instructor.description AS instructorDescription FROM overView INNER JOIN instructor ON overView.instructorId = instructor.instructorId  INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(OverviewResponse.class), courseId);
+            overviewResponse.setEnrolled(true);
+            return overviewResponse;
         } catch (Exception e) {
-            System.out.println(e);
-            return null;
+            OverviewResponse overviewResponse = jdbcTemplate.queryForObject("SELECT courseName,coursePhoto,categoryName,chapterCount,lessonCount,courseTagLine,previewVideo,overView.description,testCount,courseMaterialId,courseDuration,learningOutCome,requirements,instructorName,url,profilePhoto,instructor.description AS instructorDescription FROM overView INNER JOIN instructor ON overView.instructorId = instructor.instructorId  INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(OverviewResponse.class), courseId);
+            overviewResponse.setEnrolled(false);
+            return overviewResponse;
+
         }
     }
 
