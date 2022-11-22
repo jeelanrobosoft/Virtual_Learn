@@ -266,7 +266,7 @@ public class UserController
     @GetMapping("/home/course/category")
     public ResponseEntity<?> homeGetPopularCoursesOfCategory()
     {
-        Map<String,List<PopularCourseInEachCategory>> coursesOfCategory = userService.popularCoursesInCategory();
+        List<TopCourseResponse> coursesOfCategory = userService.popularCoursesInCategory();
         if (coursesOfCategory == null)
         {
             return ResponseEntity.of(Optional.of(Collections.singletonMap("message","courses are not available")));

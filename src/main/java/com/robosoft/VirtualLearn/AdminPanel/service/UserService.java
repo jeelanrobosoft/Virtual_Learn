@@ -417,9 +417,9 @@ public class UserService
         }
         return newCourseList;
     }
-    public Map<String,List<PopularCourseInEachCategory>> popularCoursesInCategory()
+    public  List<TopCourseResponse> popularCoursesInCategory()
     {
-        Map<String,List<PopularCourseInEachCategory>> topCoursesList  = new HashMap<>();
+          List<TopCourseResponse> topCoursesList  = new ArrayList<>();
         List<Category> categoriesList = jdbcTemplate.query("SELECT * FROM category",(rs, rowNum) -> {
             return new Category(rs.getInt("categoryId"), rs.getString("categoryName"), rs.getString("categoryPhoto"));
         });
@@ -427,8 +427,10 @@ public class UserService
         {
             return null;
         }
+
         for(int i=0;i<categoriesList.size();i++)
         {
+            TopCourseResponse topCourseResponse = new TopCourseResponse();
             int enrollmentCount = jdbcTemplate.queryForObject("SELECT count(c.courseId) FROM enrollment e, course c , category ct WHERE  ct.categoryId = ? and ct.categoryId = c.categoryId and c.courseId = e.courseId", new Object[] {categoriesList.get(i).getCategoryId()}, Integer.class);
             if(enrollmentCount >2)
             {
@@ -439,7 +441,10 @@ public class UserService
                     },categoriesList.get(i).getCategoryId());
                     System.out.println(popularCourseInEachCategory);
                     String categoryName = jdbcTemplate.queryForObject("SELECT categoryName FROM category WHERE categoryId=?", new Object[] {categoriesList.get(i).getCategoryId()}, String.class);
-                    topCoursesList.put(categoryName,popularCourseInEachCategory);
+
+                    topCourseResponse.setPopularCourseInEachCategoryList(popularCourseInEachCategory);
+                    topCourseResponse.setCategoryName(categoryName);
+                    topCoursesList.add(topCourseResponse);
 
                 }
                 catch(EmptyResultDataAccessException expn)

@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class PopularCourseInEachCategory
 {
     private String courseName;
-    private String coursephoto;
+    private String coursePhoto;
     private Integer chapterCount;
     private String courseDuration;
     private String previewVideo;
