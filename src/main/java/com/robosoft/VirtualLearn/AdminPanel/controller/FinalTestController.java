@@ -21,6 +21,7 @@ import java.util.Optional;
 public class FinalTestController
 {
     @Autowired
+
     FinalTestService finalTestService;
     @GetMapping("FinalTest")
     public ResponseEntity<?> getFinalTest(@RequestBody FinalTestRequest request)
@@ -31,18 +32,20 @@ public class FinalTestController
         return ResponseEntity.of(Optional.of(moduleTest));
     }
     @PostMapping("/FinalSubmit")
-    public Map submitUserAnswers(@RequestBody UserAnswers userAnswers)
-    {
-        return Collections.singletonMap("Test Percentage",finalTestService.userAnswers(userAnswers));
+    public Map submitUserAnswers(@RequestBody UserAnswers userAnswers) throws IOException, ParseException {
+        float testPercentage = finalTestService.userAnswers(userAnswers);
+        finalTestService.certificate(userAnswers.getTestId());
+        return Collections.singletonMap("Test Percentage",testPercentage);
     }
     @GetMapping("/Result")
     public Map getFinalTestResult(@RequestBody FinalTestRequest request) throws IOException
     {
         return Collections.singletonMap("Approval Rate",finalTestService.getFinalTestResult(request));
     }
-    @GetMapping("/certificate")
-    public void getcertificate(@RequestBody CertificateRequest certificateRequest) throws IOException, ParseException
+    @GetMapping("/viewCertificate")
+    public Map getCertificate(@RequestBody CertificateRequest certificateRequest) throws IOException, ParseException
     {
-       finalTestService.certificate(certificateRequest);
+        return Collections.singletonMap("Test Percentage", finalTestService.viewCertificate(certificateRequest));
     }
+
 }

@@ -42,12 +42,13 @@ public class ModuleTestDataAccess
     public float userAnswers(UserAnswers userAnswers)
     {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        jdbcTemplate.update("update chapterProgress set chapterCompletedStatus=true,chapterStatus=false where testId=" + userAnswers.getTestId());
+        jdbcTemplate.update("update chapterProgress set chapterCompletedStatus=true,chapterStatus=false where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'");
         float chapterTestPercentage =  updateUserAnswerTable(userAnswers);
-        jdbcTemplate.update("update chapterProgress set chapterTestPercentage=" + chapterTestPercentage+ "where testId=" + userAnswers.getTestId());
-        String coursePhoto = jdbcTemplate.queryForObject("select coursePhoto from course where courseId=(select courseId from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class);
-        String description = "Completed Chapter " + jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class) + " - Setting up a new project, of course - " +jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
-        String description1 = "You Scored " + jdbcTemplate.queryForObject("select chapterTestPercentage from chapterProgress where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class) + "% in Chapter" + jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class) + " - Setting up a new project, of course - " +jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
+        System.out.println(chapterTestPercentage);
+        jdbcTemplate.update("update chapterProgress set chapterTestPercentage=" + chapterTestPercentage+ " where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'");
+        String coursePhoto = jdbcTemplate.queryForObject("select coursePhoto from course where courseId=(select distinct(courseId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class);
+        String description = "Completed Chapter " + jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class) + " - Setting up a new project, of course - " +jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
+        String description1 = "You Scored " + jdbcTemplate.queryForObject("select chapterTestPercentage from chapterProgress where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ") and userName='" + userName + "'", String.class) + "% in Chapter" + jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class) + " - Setting up a new project, of course - " +jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
         /* Inserting into notification */
 //        String photoUrl = String.format(DOWNLOAD_URL, URLEncoder.encode("password_change_success.png"));
         LocalDateTime dateTime = LocalDateTime.now();
@@ -70,13 +71,16 @@ public class ModuleTestDataAccess
             jdbcTemplate.update(query);
         }
         int correctAnswerCount = jdbcTemplate.queryForObject("select count(*) from userAnswer where userAnswerStatus=true and testId=" + userAnswers.getTestId(), Integer.class);
+        System.out.println(correctAnswerCount);
         int questionCount = jdbcTemplate.queryForObject("select questionsCount from test where testId=" + userAnswers.getTestId(), Integer.class);
+        System.out.println(questionCount);
         float chapterTestPercentage = (correctAnswerCount / (float) questionCount) * 100;
         return chapterTestPercentage;
     }
     public ResultHeaderRequest getResultHeader(ModuleTestRequest testRequest)
     {
-        float chapterTestPercentage = jdbcTemplate.queryForObject("select chapterTestPercentage from chapterProgress where testId=" + testRequest.getTestId(), Float.class);
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        float chapterTestPercentage = jdbcTemplate.queryForObject("select chapterTestPercentage from chapterProgress where testId=" + testRequest.getTestId() + " and userName='" + userName + "'", Float.class);
         String chapterName = jdbcTemplate.queryForObject("select chapterName from chapter where chapterId=(select chapterId from test where testId=" + testRequest.getTestId() + ")", String.class);
         Integer chapterNumber = jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select chapterId from test where testId=" + testRequest.getTestId() + ")", Integer.class);
         String courseName = jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select chapterId from test where testId=" + testRequest.getTestId() + "))", String.class);
@@ -87,7 +91,8 @@ public class ModuleTestDataAccess
     }
     public List<ResultAnswerRequest> getResultAnswers(ModuleTest request)
     {
-        return jdbcTemplate.query("select question.questionId,questionName,option_1,option_2,option_3,option_4,correctAnswer,userAnswer,userAnswerStatus from question inner join userAnswer on question.questionId=userAnswer.questionId where userAnswer.testId=" +request.getTestId(),new BeanPropertyRowMapper<>(ResultAnswerRequest.class));
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        return jdbcTemplate.query("select question.questionId,questionName,option_1,option_2,option_3,option_4,correctAnswer,userAnswer,userAnswerStatus from question inner join userAnswer on question.questionId=userAnswer.questionId where userAnswer.testId=" +request.getTestId() + " and userName='" + userName + "'",new BeanPropertyRowMapper<>(ResultAnswerRequest.class));
 
     }
 //    public int getCorrectAnswersCount(UserAnswers userAnswers){

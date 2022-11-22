@@ -17,33 +17,28 @@ public class MenuDataAccess
 {
     @Autowired
     JdbcTemplate jdbcTemplate;
-    public SideBarResponse getDetails(SideBarRequest userName)
-    {
+    public SideBarResponse getDetails(String userName) {
         String query;
         String occupation;
-        int status = jdbcTemplate.queryForObject("select count(*) from user where userName='" + userName.getUserName() + "'", Integer.class);
+        int status = jdbcTemplate.queryForObject("select count(*) from user where userName='" + userName + "'", Integer.class);
         if(status == 0)
             return null;
-        try
-        {
-             occupation = jdbcTemplate.queryForObject("select subCategoryName from subCategory where subCategoryId=(select occupation from user where userName='" + userName.getUserName() + "')", String.class);
+        try{
+            occupation = jdbcTemplate.queryForObject("select subCategoryName from subCategory where subCategoryId=(select occupation from user where userName='" + userName + "')", String.class);
+        } catch (Exception e){
+            query = "select profilePhoto,fullName from user where userName='" + userName + "'";
+            return jdbcTemplate.queryForObject(query,new BeanPropertyRowMapper<>(SideBarResponse.class));
         }
-        catch (Exception e)
-        {
-        query = "select profilePhoto,fullName from user where userName='" + userName.getUserName() + "'";
-        return jdbcTemplate.queryForObject(query,new BeanPropertyRowMapper<>(SideBarResponse.class));
-        }
-        query = "select profilePhoto,fullName from user where userName='" + userName.getUserName()+ "'";
+        query = "select profilePhoto,fullName from user where userName='" + userName+ "'";
         SideBarResponse response =  jdbcTemplate.queryForObject(query,new BeanPropertyRowMapper<>(SideBarResponse.class));
         response.setOccupation(occupation);
         return response;
     }
-    public MyProfileResponse getMyProfile(SideBarResponse response, SideBarRequest userName)
-    {
-        int courseCompleted = jdbcTemplate.queryForObject("select count(*) from enrollment where completedDate>'0000-00-00' and userName='" + userName.getUserName() + "'", Integer.class);
-        int chapterCompletedStatus = jdbcTemplate.queryForObject("select count(*) from chapterProgress where userName='" + userName.getUserName() + "' and courseId=(select courseId from enrollment where userName='" + userName.getUserName() + "') and chapterId=(select chapterId from chapter where courseId=(select courseId from enrollment where userName='" + userName +"')) and chapterCompletedStatus=true", Integer.class);
-        int testCompletedStatus = jdbcTemplate.queryForObject("select count(*) from chapterProgress where userName='" + userName.getUserName() + "' and courseId=(select courseId from enrollment where userName='" + userName.getUserName() + "') and chapterId=(select chapterId from chapter where courseId=(select courseId from enrollment where userName='"+userName +"')) and chapterTestPercentage>=0.00", Integer.class);
-        MyProfileResponse myProfileResponse = jdbcTemplate.queryForObject("select email,dateOfBirth,mobileNumber,userName,occupation from user where userName='" + userName.getUserName() + "'",(rs,rowNum) -> {
+    public MyProfileResponse getMyProfile(SideBarResponse response, String userName) {
+        int courseCompleted = jdbcTemplate.queryForObject("select count(*) from enrollment where completedDate>'0000-00-00' and userName='" + userName + "'", Integer.class);
+        int chapterCompletedStatus = jdbcTemplate.queryForObject("select count(*) from chapterProgress where userName='" + userName + "' and chapterCompletedStatus=true", Integer.class);
+        int testCompletedStatus = jdbcTemplate.queryForObject("select count(distinct(testId)) from userAnswer where userName='" + userName + "'" , Integer.class);
+        MyProfileResponse myProfileResponse = jdbcTemplate.queryForObject("select email,dateOfBirth,mobileNumber,userName,occupation from user where userName='" + userName + "'",(rs,rowNum) -> {
             MyProfileResponse profileResponse = new MyProfileResponse();
             profileResponse.setUserName(rs.getString("userName"));
             profileResponse.setMobileNumber(rs.getString("mobileNumber"));
@@ -60,8 +55,8 @@ public class MenuDataAccess
         myProfileResponse.setFullName(response.getFullName());
         return myProfileResponse;
     }
-    public List<NotificationResponse> getNotification(String userName)
-    {
+
+    public List<NotificationResponse> getNotification(String userName) {
         List<NotificationResponse> notifications =  jdbcTemplate.query("select notificationId,description,timeStamp,notificationUrl from notification where userName='" + userName + "'",new BeanPropertyRowMapper<>(NotificationResponse.class));
         Collections.reverse(notifications);
         return notifications;

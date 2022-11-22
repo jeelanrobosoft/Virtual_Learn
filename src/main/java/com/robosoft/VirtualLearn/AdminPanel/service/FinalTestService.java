@@ -87,12 +87,12 @@ public class FinalTestService
         return String.format(DOWNLOAD_URL, URLEncoder.encode(objectName));
     }
 
-    public void certificate(CertificateRequest certificateRequest) throws IOException, ParseException
+    public void certificate(Integer testId) throws IOException, ParseException
     {
 
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        String courseName = jdbcTemplate.queryForObject("SELECT courseName FROM course WHERE courseId=(SELECT courseId FROM chapter WHERE chapterId=(SELECT chapterId FROM test WHERE testId=?))",new Object[]{certificateRequest.getTestId()}, String.class);
-        Integer courseId= jdbcTemplate.queryForObject("SELECT courseId FROM course WHERE courseId=(SELECT courseId FROM chapter WHERE chapterId=(SELECT chapterId FROM test WHERE testId=?))", new Object[]{certificateRequest.getTestId()}, Integer.class);
+        String courseName = jdbcTemplate.queryForObject("SELECT courseName FROM course WHERE courseId=(SELECT courseId FROM chapter WHERE chapterId=(SELECT chapterId FROM test WHERE testId=?))",new Object[]{testId}, String.class);
+        Integer courseId= jdbcTemplate.queryForObject("SELECT courseId FROM course WHERE courseId=(SELECT courseId FROM chapter WHERE chapterId=(SELECT chapterId FROM test WHERE testId=?))", new Object[]{testId}, Integer.class);
         String joinDate = jdbcTemplate.queryForObject("SELECT joinDate FROM enrollment WHERE userName = ? and courseId=?", new Object[]{userName,courseId},String.class);
         String completedDate = jdbcTemplate.queryForObject("SELECT completedDate FROM enrollment WHERE userName = ? and courseId=?", new Object[]{userName,courseId},String.class);
         String duration = jdbcTemplate.queryForObject("SELECT courseDuration FROM course WHERE courseId = ?", new Object[] {courseId}, String.class);
@@ -125,6 +125,14 @@ public class FinalTestService
         MultipartFile multipartFile = new MockMultipartFile("fileItem", fileItem.getName(), "image/png", IOUtils.toByteArray(input));
         String url =getFileUrl(multipartFile);
         jdbcTemplate.update("INSERT INTO certificate(,certificateNumber,courseId,UserName,certificateUrl) values(?,?,?,?)", courseId,userName,url);
-        System.out.println(url);
+
+    }
+
+    public String viewCertificate(CertificateRequest certificateRequest)
+    {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        Integer courseId= jdbcTemplate.queryForObject("SELECT courseId FROM course WHERE courseId=(SELECT courseId FROM chapter WHERE chapterId=(SELECT chapterId FROM test WHERE testId=?))", new Object[]{certificateRequest.getTestId()}, Integer.class);
+        String certificateUrl = jdbcTemplate.queryForObject("SELECT certificateUrl FROm certificate WHERE userName=? and courseId=?",new Object[] {userName, courseId}, String.class);
+        return certificateUrl;
     }
 }

@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Time;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 
@@ -68,18 +70,19 @@ public class UserService
 
     public OverviewResponse getOverviewOfCourse(int courseId) {
         try {
-            return jdbcTemplate.queryForObject("SELECT courseName,coursePhoto,categoryName,chapterCount,lessonCount,courseTagLine,previewVideo,overview.description,testCount,courseMaterialId,courseDuration,learningOutCome,requirements,instructorName,url,profilePhoto,instructor.description AS instructorDescription FROM overview INNER JOIN instructor ON overview.instructorId = instructor.instructorId  INNER JOIN course ON overview.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(OverviewResponse.class), courseId);
+            return jdbcTemplate.queryForObject("SELECT courseName,coursePhoto,categoryName,chapterCount,lessonCount,courseTagLine,previewVideo,overView.description,testCount,courseMaterialId,courseDuration,learningOutCome,requirements,instructorName,url,profilePhoto,instructor.description AS instructorDescription FROM overView INNER JOIN instructor ON overView.instructorId = instructor.instructorId  INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(OverviewResponse.class), courseId);
         } catch (Exception e) {
+            System.out.println(e);
             return null;
         }
     }
 
     public List<CourseResponse> getBasicCourses(int categoryId) {
-        return jdbcTemplate.query("SELECT course.courseId,courseName,previewVideo,chapterCount,courseDuration FROM overView INNER JOIN course ON course.courseId = overview.courseId WHERE categoryId = " + categoryId + " AND difficultyLevel = 'Beginner'", new BeanPropertyRowMapper<>(CourseResponse.class));
+        return jdbcTemplate.query("SELECT course.courseId,coursePhoto,courseName,previewVideo,chapterCount,courseDuration FROM overView INNER JOIN course ON course.courseId = overView.courseId WHERE categoryId = " + categoryId + " AND difficultyLevel = 'Beginner'", new BeanPropertyRowMapper<>(CourseResponse.class));
     }
 
     public List<CourseResponse> getAdvanceCourses(int categoryId) {
-        return jdbcTemplate.query("SELECT course.courseId,courseName,previewVideo,chapterCount,courseDuration FROM overView INNER JOIN course ON course.courseId = overview.courseId WHERE categoryId = " + categoryId + " AND difficultyLevel = 'Advanced'", new BeanPropertyRowMapper<>(CourseResponse.class));
+        return jdbcTemplate.query("SELECT course.courseId,coursePhoto,courseName,previewVideo,chapterCount,courseDuration FROM overView INNER JOIN course ON course.courseId = overView.courseId WHERE categoryId = " + categoryId + " AND difficultyLevel = 'Advanced'", new BeanPropertyRowMapper<>(CourseResponse.class));
     }
 
     public List<AllCoursesResponse> getAllCoursesOf(int categoryId) {
@@ -133,7 +136,7 @@ public class UserService
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         try {
             List<Integer> chapterIds = jdbcTemplate.queryForList("SELECT chapterId from chapter WHERE courseId = ?", Integer.class, courseId);
-            CourseChapterResponse courseChapterResponse = jdbcTemplate.queryForObject("SELECT courseName,categoryName,chapterCount,lessonCount,testCount,courseDuration,courseCompletedStatus FROM overView INNER JOIN course ON Overview.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId INNER JOIN courseProgress on course.courseId = courseProgress.courseId AND userName = ?", new BeanPropertyRowMapper<>(CourseChapterResponse.class), courseId,userName);
+            CourseChapterResponse courseChapterResponse = jdbcTemplate.queryForObject("SELECT courseName,categoryName,chapterCount,lessonCount,testCount,courseDuration,courseCompletedStatus FROM overView INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId INNER JOIN courseProgress on course.courseId = courseProgress.courseId AND userName = ?", new BeanPropertyRowMapper<>(CourseChapterResponse.class), courseId,userName);
             courseChapterResponse.setEnrolled(true);
             String courseDuration = courseChapterResponse.getCourseDuration();
             SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
@@ -156,14 +159,14 @@ public class UserService
                 courseChapterResponse.setCoursePercentage(jdbcTemplate.queryForObject("SELECT coursePercentage FROM courseProgress WHERE userName = ? AND courseId = ?", Float.class,userName,courseId));
                 courseChapterResponse.setJoinedDate(jdbcTemplate.queryForObject("SELECT joinDate FROM enrollment WHERE userName = ? AND courseId = ?",String.class,userName,courseId));
                 courseChapterResponse.setCompletedDate(jdbcTemplate.queryForObject("SELECT completedDate FROM enrollment WHERE userName = ? AND courseId = ?",String.class,userName,courseId));
-                courseChapterResponse.setCertificateUrl(jdbcTemplate.queryForObject("SELECT certificateUrl FROM certifcate WHERE userName = ? AND courseId = ?",String.class,userName,courseId));
+                courseChapterResponse.setCertificateUrl(jdbcTemplate.queryForObject("SELECT certificateUrl FROM certificate WHERE userName = ? AND courseId = ?",String.class,userName,courseId));
             }
             return courseChapterResponse;
         }catch (Exception e)
         {
             System.out.println(e);
             List<Integer> chapterIds = jdbcTemplate.queryForList("SELECT chapterId from chapter WHERE courseId = ? order by chapterNumber", Integer.class, courseId);
-            CourseChapterResponse courseChapterResponse = jdbcTemplate.queryForObject("SELECT courseName,categoryName,chapterCount,lessonCount,testCount,courseDuration FROM overView INNER JOIN course ON Overview.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(CourseChapterResponse.class), courseId);
+            CourseChapterResponse courseChapterResponse = jdbcTemplate.queryForObject("SELECT courseName,categoryName,chapterCount,lessonCount,testCount,courseDuration FROM overView INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(CourseChapterResponse.class), courseId);
             List<ChapterResponse> chapterResponses = new ArrayList<>();
             courseChapterResponse.setEnrolled(false);
             for (Integer i : chapterIds) {
@@ -244,7 +247,7 @@ public class UserService
     {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         try {
-            return jdbcTemplate.query("SELECT courseName,coursePercentage,coursePhoto FROM course INNER JOIN courseProgress ON course.courseId = courseProgress.courseId AND courseProgress.userName = ? AND courseProgress.courseCompletedStatus = true",new BeanPropertyRowMapper<>(CompletedResponse.class),userName);
+            return jdbcTemplate.query("SELECT course.courseId,courseName,coursePercentage,coursePhoto FROM course INNER JOIN courseProgress ON course.courseId = courseProgress.courseId AND courseProgress.userName = ? AND courseProgress.courseCompletedStatus = true",new BeanPropertyRowMapper<>(CompletedResponse.class),userName);
         }
         catch (Exception e)
         {
@@ -269,6 +272,7 @@ public class UserService
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return null;
         }
     }
@@ -430,8 +434,8 @@ public class UserService
             {
                 try
                 {
-                    List<PopularCourseInEachCategory> popularCourseInEachCategory = jdbcTemplate.query("SELECT c.courseName,o.chapterCount, c.courseDuration,c.previewVideo from course c, overView o , category ct WHERE ct.categoryId = ? and  ct.categoryId = c.categoryId and c.courseId = o.courseId",(rs, rowNum) -> {
-                        return new PopularCourseInEachCategory(rs.getString("courseName"), rs.getInt("chapterCount"), rs.getString("courseDuration"),rs.getString("previewVideo"));
+                    List<PopularCourseInEachCategory> popularCourseInEachCategory = jdbcTemplate.query("SELECT c.courseName,c.coursePhoto,o.chapterCount, c.courseDuration,c.previewVideo from course c, overView o , category ct WHERE ct.categoryId = ? and  ct.categoryId = c.categoryId and c.courseId = o.courseId",(rs, rowNum) -> {
+                        return new PopularCourseInEachCategory(rs.getString("courseName"),rs.getString("coursePhoto"),rs.getInt("chapterCount"), rs.getString("courseDuration"),rs.getString("previewVideo"));
                     },categoriesList.get(i).getCategoryId());
                     System.out.println(popularCourseInEachCategory);
                     String categoryName = jdbcTemplate.queryForObject("SELECT categoryName FROM category WHERE categoryId=?", new Object[] {categoriesList.get(i).getCategoryId()}, String.class);
@@ -490,7 +494,10 @@ public class UserService
         }
         String courseName = jdbcTemplate.queryForObject("SELECT courseName FROM course WHERE courseId = ?", new Object[] {enrollmentRequest.getCourseId()}, String.class);
         String coursePhoto = jdbcTemplate.queryForObject("SELECT coursePhoto FROM course WHERE courseId=?",new Object[] {enrollmentRequest.getCourseId()}, String.class);
-        jdbcTemplate.update("INSERT INTO notification(userName,description,notificationUrl) values(?,?,?)",userName,"Joined a new course - "+courseName, coursePhoto);
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter format = DateTimeFormatter.ofPattern("HH:mm:ss");
+        String formatDateTime = now.format(format);
+        jdbcTemplate.update("INSERT INTO notification(userName,description,notificationUrl,timeStamp) values(?,?,?,?)",userName,"Joined a new course - "+courseName, coursePhoto,formatDateTime);
         return "Enrolled successfully";
     }
     public void updateVideoPauseTime(VideoPauseRequest videoPauseRequest)

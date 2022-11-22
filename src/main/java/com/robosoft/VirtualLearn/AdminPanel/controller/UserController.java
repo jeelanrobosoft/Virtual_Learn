@@ -73,6 +73,7 @@ public class UserController
         }
         catch (Exception e)
         {
+            System.out.println(e);
             return new ResponseEntity("Invalid Input",HttpStatus.BAD_REQUEST);
         }
     }
@@ -176,6 +177,7 @@ public class UserController
         }
         catch (Exception e)
         {
+            System.out.println(e);
             return new ResponseEntity<>("Invalid Input",HttpStatus.BAD_REQUEST);
         }
     }

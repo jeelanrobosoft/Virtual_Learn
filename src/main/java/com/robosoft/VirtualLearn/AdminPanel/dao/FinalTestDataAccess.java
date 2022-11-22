@@ -42,21 +42,21 @@ public class FinalTestDataAccess
     public Float getFinalTestResult(FinalTestRequest request)
     {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        return jdbcTemplate.queryForObject("select coursePercentage from courseProgress where userName='" + userName + "' and courseId=(select courseId from chapterProgress where testId=" + request.getTestId() + ")", Float.class);
+        return jdbcTemplate.queryForObject("select coursePercentage from courseProgress where userName='" + userName + "' and courseId=(select distinct(courseId) from chapterProgress where testId=" + request.getTestId() + ")", Float.class);
     }
     public float userAnswers(UserAnswers userAnswers)
     {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         float chapterTestPercentage = updateUserAnswerTable(userAnswers);
-        jdbcTemplate.update("update chapterProgress set chapterTestPercentage=" + chapterTestPercentage + ",chapterCompletedStatus=true,chapterStatus=false where testId=" + userAnswers.getTestId());
-        int courseId = jdbcTemplate.queryForObject("select courseId from chapterProgress where testId=" + userAnswers.getTestId(), Integer.class);
+        jdbcTemplate.update("update chapterProgress set chapterTestPercentage=" + chapterTestPercentage + ",chapterCompletedStatus=true,chapterStatus=false where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'");
+        int courseId = jdbcTemplate.queryForObject("select courseId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'", Integer.class);
         float sumOfChapterPercentage = jdbcTemplate.queryForObject("select sum(chapterTestPercentage) from chapterProgress where courseId=" + courseId + " and userName='" + userName + "'", Float.class);
         float totalPercentage = Integer.parseInt(((String.valueOf(jdbcTemplate.queryForObject("select count(chapterNumber) from chapter where courseId=" + courseId, Integer.class))) + "00"));
         float coursePercentage = (sumOfChapterPercentage/totalPercentage) * 100;
         /* Updating in notification*/
-        String coursePhoto = jdbcTemplate.queryForObject("select coursePhoto from course where courseId=(select courseId from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class);
-        String description = "Completed course" + " - " +jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
-        String description1 = "You Scored " + jdbcTemplate.queryForObject("select chapterTestPercentage from chapterProgress where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class) + "% in course " + jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
+        String coursePhoto = jdbcTemplate.queryForObject("select coursePhoto from course where courseId=(select courseId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName + "')", String.class);
+        String description = "Completed course" + " - " +jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'))", String.class);
+        String description1 = "You Scored " + jdbcTemplate.queryForObject("select chapterTestPercentage from chapterProgress where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName + "') and userName='" + userName + "'", String.class) + "% in course " + jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName +"))", String.class);
         //        String photoUrl = String.format(DOWNLOAD_URL, URLEncoder.encode("password_change_success.png"));
         LocalDateTime dateTime = LocalDateTime.now();
         DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");

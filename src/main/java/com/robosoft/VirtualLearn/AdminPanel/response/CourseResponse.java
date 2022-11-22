@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CourseResponse
 {
+    private Integer courseId;
+    private String coursePhoto;
     private String previewVideo;
     private String courseName;
     private String chapterCount;

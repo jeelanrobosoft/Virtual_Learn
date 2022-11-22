@@ -21,17 +21,19 @@ public class MenuController
 {
     @Autowired
     MenuService menuService;
+
+
     @GetMapping("/Menu")
-    public ResponseEntity<?> getSideBar(@RequestBody SideBarRequest request)
-    {
-        SideBarResponse response = menuService.getUserDetails(request);
+    public ResponseEntity<?> getSideBar(){
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        SideBarResponse response = menuService.getUserDetails(userName);
         if (response == null)
             return new ResponseEntity<>("User Not Found",HttpStatus.NOT_FOUND);
         return ResponseEntity.of(Optional.of(response));
     }
+
     @GetMapping("/Notification")
-    public ResponseEntity<?> getNotification()
-    {
+    public ResponseEntity<?> getNotification(){
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         List<NotificationResponse> responses =  menuService.getNotification(userName);
         if(responses.isEmpty())

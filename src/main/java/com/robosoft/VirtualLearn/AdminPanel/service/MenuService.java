@@ -16,17 +16,15 @@ public class MenuService
 {
     @Autowired
     MenuDataAccess dataAccess;
-    public SideBarResponse getUserDetails(SideBarRequest sideBar)
-    {
-        return dataAccess.getDetails(sideBar);
+    public SideBarResponse getUserDetails(String userName) {
+        return dataAccess.getDetails(userName);
     }
 
-    public MyProfileResponse getMyProfile(SideBarResponse response, SideBarRequest request)
-    {
-        return dataAccess.getMyProfile(response,request);
+    public MyProfileResponse getMyProfile(SideBarResponse response, String userName) {
+        return dataAccess.getMyProfile(response,userName);
     }
-    public List<NotificationResponse> getNotification(String userName)
-    {
+
+    public List<NotificationResponse> getNotification(String userName) {
         return dataAccess.getNotification(userName);
     }
 }
