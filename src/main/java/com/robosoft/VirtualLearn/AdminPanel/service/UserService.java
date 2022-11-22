@@ -337,6 +337,7 @@ public class UserService
     public List<HomeResponseTopHeader> HomePageTopBar()   // front end should send username when ever they call home api as a response
     {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println(userName);
         User user= jdbcTemplate.queryForObject("SELECT occupation FROM user WHERE userName = ?",(rs, rowNum) -> {
             return new User(rs.getInt("occupation"));
         }, userName);
@@ -350,7 +351,7 @@ public class UserService
             try
             {
                 List<HomeResponseTopHeader> course = jdbcTemplate.query("SELECT coursePhoto, courseName FROM course WHERE subCategoryId= ?",(rs, rowNum) -> {
-                    return new HomeResponseTopHeader(rs.getString("coursePhoto"), rs.getString("courseName"));
+                    return new HomeResponseTopHeader(rs.getString("courseName"), rs.getString("coursePhoto"));
                 }, user.getOccupation());
                 if(course.size() !=0)
                 {
@@ -361,7 +362,7 @@ public class UserService
             {
                 int categoryId = jdbcTemplate.queryForObject("SELECT categoryId from subCategory WHERE subcategoryId = ?", new Object[] {user.getOccupation()}, Integer.class);
                 List<HomeResponseTopHeader> courses = jdbcTemplate.query("SELECT * FROM course WHERE categoryId = ?",(rs, rowNum) -> {
-                    return new HomeResponseTopHeader(rs.getString("coursePhoto"), rs.getString("courseName"));
+                    return new HomeResponseTopHeader(rs.getString("courseName"), rs.getString("coursePhoto"));
                 }, categoryId);
                 return courses;
             }
@@ -372,7 +373,7 @@ public class UserService
     public List<HomeAllCourse> getAllCourses()
     {
         List<HomeAllCourse> allCourses = jdbcTemplate.query("SELECT overView.courseId, coursePhoto, courseName,categoryId, chapterCount FROM course,overView WHERE course.courseId = overView.courseId",(rs, rowNum) -> {
-            return new HomeAllCourse(rs.getInt("courseId"),rs.getString("coursePhoto"), rs.getString("courseName"), rs.getInt("categoryId"),rs.getInt("chapterCount"));
+            return new HomeAllCourse(rs.getInt("courseId"),rs.getString("courseName"), rs.getString("coursePhoto"), rs.getInt("categoryId"),rs.getInt("chapterCount"));
         });
         System.out.println(allCourses);
         return allCourses;

@@ -61,4 +61,9 @@ public class MenuDataAccess
         Collections.reverse(notifications);
         return notifications;
     }
+
+    public String readNotification(String userName,Integer notificationId) {
+        jdbcTemplate.update("update notification set readStatus=true where notificationId=" + notificationId +" and userName='" + userName + "'");
+        return "Successfully";
+    }
 }

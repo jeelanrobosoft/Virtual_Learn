@@ -27,4 +27,8 @@ public class MenuService
     public List<NotificationResponse> getNotification(String userName) {
         return dataAccess.getNotification(userName);
     }
+
+    public String readNotification(String userName, Integer notificationId) {
+        return dataAccess.readNotification(userName,notificationId);
+    }
 }

@@ -113,7 +113,7 @@ public class AdminService
             String categoryName= jdbcTemplate.queryForObject("SELECT categoryName FROM category WHERE categoryId=?", new Object[] {courseRequest.getCategoryId()}, String.class);
             String courseUrl = String.format(DOWNLOAD_URL,URLEncoder.encode("alert_notification.png"));
             LocalDateTime now = LocalDateTime.now();
-            DateTimeFormatter format = DateTimeFormatter.ofPattern("HH:mm:ss");
+            DateTimeFormatter format = DateTimeFormatter.ofPattern("dd:MM:yyyy:HH:mm:ss");
             String formatDateTime = now.format(format);
 
             jdbcTemplate.update("INSERT INTO notification(userName,description,notificationUrl,timeStamp) values(?,?,?,?)",enrolledUsers.get(i).getUserName(),"Hey "+enrolledUsers.get(i).getUserName()+", There is a new course about "+courseRequest.getCourseName()+" added to the topic "+categoryName, courseUrl,formatDateTime);

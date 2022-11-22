@@ -197,13 +197,14 @@ public class UserController
         return new ResponseEntity<>(Collections.singletonMap("message","null"),HttpStatus.NO_CONTENT);
     }
     @GetMapping("/search")
-    public ResponseEntity<?> search(@RequestBody String search)
+    public ResponseEntity<?> search(@RequestBody SearchRequest searchRequest)
     {
         try {
-            List<AllCoursesResponse> allCoursesResponses =userService.searchCourses(search);
+            List<AllCoursesResponse> allCoursesResponses =userService.searchCourses(searchRequest.getSearchKey()
+            );
 
             if(allCoursesResponses.isEmpty())
-                return new ResponseEntity<>("No Matching Course",HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(Collections.singletonMap("message","No Matching Course"),HttpStatus.NOT_FOUND);
             return new ResponseEntity<>(allCoursesResponses,HttpStatus.OK);
         }
         catch (Exception e){

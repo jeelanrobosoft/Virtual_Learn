@@ -8,12 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -39,5 +38,11 @@ public class MenuController
         if(responses.isEmpty())
             return ResponseEntity.of(Optional.of(Collections.singletonMap("message","No notifications")));
         return ResponseEntity.of(Optional.of(responses));
+    }
+
+    @PutMapping("/ReadNotification")
+    public ResponseEntity<Map> readNotification(@RequestBody NotificationResponse notificationResponse){
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.of(Optional.of(Collections.singletonMap("message",menuService.readNotification(userName,notificationResponse.getNotificationId()))));
     }
 }

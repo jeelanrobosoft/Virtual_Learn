@@ -17,12 +17,12 @@ public class User
     private String email;
     private Date dateOfBirth;
     private String profilePhoto;
-    private Integer occupation;
+    private int occupation;
     private String gender;
     private String twitterLink;
     private String faceBookLink;
 
-    public User(Integer occupation)
+    public User(int occupation)
     {
         this.occupation = occupation;
     }
