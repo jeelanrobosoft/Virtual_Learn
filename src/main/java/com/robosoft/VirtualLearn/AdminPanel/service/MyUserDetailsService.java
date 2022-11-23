@@ -11,24 +11,19 @@ import org.springframework.stereotype.Service;
 
 
 @Service
-public class MyUserDetailsService implements UserDetailsService
-{
+public class MyUserDetailsService implements UserDetailsService {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
-    {
-            try
-            {
-                System.out.println(username);
-                UserAuth auth = jdbcTemplate.queryForObject("select * from authenticate where userName='" + username + "'",new BeanPropertyRowMapper<>(UserAuth.class));
-                return new MyUserDetailsImpl(auth);
-            }
-            catch (Exception e)
-            {
-                throw new UsernameNotFoundException("User not found");
-            }
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        try {
+            System.out.println(username);
+            UserAuth auth = jdbcTemplate.queryForObject("select * from authenticate where userName='" + username + "'", new BeanPropertyRowMapper<>(UserAuth.class));
+            return new MyUserDetailsImpl(auth);
+        } catch (Exception e) {
+            throw new UsernameNotFoundException("User not found");
         }
     }
+}
 

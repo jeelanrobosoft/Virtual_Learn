@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class LessonResponse
-{
+public class LessonResponse {
     private Integer lessonNumber;
     private String lessonName;
     private String lessonDuration;

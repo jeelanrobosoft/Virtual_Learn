@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class OverviewResponse
-{
+public class OverviewResponse {
     private Boolean enrolled;
     private String coursePhoto;
     private String courseName;
@@ -22,13 +21,12 @@ public class OverviewResponse
     private String description;
     private String courseDuration;
     private Integer courseMaterialId;
-    private Integer  testCount;
-    private String  learningOutCome;
+    private Integer testCount;
+    private String learningOutCome;
     private String requirements;
     private String instructorName;
     private String url;
     private String instructorDescription;
     private String profilePhoto;
-
 
 }

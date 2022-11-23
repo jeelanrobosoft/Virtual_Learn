@@ -29,7 +29,7 @@ public class LoginController {
     @Autowired
     private MyUserDetailsService myUserDetailsService;
 
-    @PutMapping("/Login")
+    @PutMapping("/login")
     public JwtResponse login(@RequestBody JwtRequest jwtRequest) throws Exception {
         try {
             authenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(jwtRequest.getUserName(), jwtRequest.getPassword()));

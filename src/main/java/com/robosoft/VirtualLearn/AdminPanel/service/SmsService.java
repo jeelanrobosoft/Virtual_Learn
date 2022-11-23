@@ -10,39 +10,35 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class SmsService
-{
+public class SmsService {
     @Autowired
     DataAccessService dataAccessService;
     private final static String ACCOUNT_SID = "ACd7b80d5a6e82ec89f4be4cc8779fd230";
     private final static String AUTH_ID = "cedfefdd1b6d02c0051b9fc191f0f551";
 
-    static
-    {
+    static {
         Twilio.init(ACCOUNT_SID, AUTH_ID);
     }
-    public long sendOtp(MobileAuth mobileAuth, String twoFaCode)
-    {
+
+    public long sendOtp(MobileAuth mobileAuth, String twoFaCode) {
         Message.creator(new PhoneNumber(mobileAuth.getMobileNumber()), new PhoneNumber("+19896822968"),
                 "Your Two Factor Authentication code is: " + twoFaCode).create();
-        return dataAccessService.saveOtp(mobileAuth.getMobileNumber(),twoFaCode);
+        return dataAccessService.saveOtp(mobileAuth.getMobileNumber(), twoFaCode);
     }
-    public void deletePreviousOtp(String mobileNumber)
-    {
+
+    public void deletePreviousOtp(String mobileNumber) {
         dataAccessService.deletePreviousOtp(mobileNumber);
     }
-    public String verifyOtp(MobileAuth otp)
-    {
+
+    public String verifyOtp(MobileAuth otp) {
         return dataAccessService.verifyOtp(otp);
     }
 
-    public int checkMobileNumber(MobileAuth mobileAuth)
-    {
+    public int checkMobileNumber(MobileAuth mobileAuth) {
         return dataAccessService.checkMobileNumber(mobileAuth.getMobileNumber());
     }
 
-    public void resetPassword(MobileAuth auth)
-    {
+    public void resetPassword(MobileAuth auth) {
         dataAccessService.resetPassword(auth);
     }
 }

@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OngoingResponse
-{
+public class OngoingResponse {
     private Integer courseId;
     private String courseName;
     private String coursePhoto;

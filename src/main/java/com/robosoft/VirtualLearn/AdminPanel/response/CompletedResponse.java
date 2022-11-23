@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CompletedResponse
-{
+public class CompletedResponse {
     private Integer courseId;
     private String courseName;
     private String coursePhoto;

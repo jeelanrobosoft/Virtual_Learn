@@ -9,8 +9,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TopCourseResponse
-{
+public class TopCourseResponse {
     private String categoryName;
     List<PopularCourseInEachCategory> popularCourseInEachCategoryList;
 }

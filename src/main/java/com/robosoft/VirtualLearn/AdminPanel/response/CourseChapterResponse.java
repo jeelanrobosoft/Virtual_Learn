@@ -11,8 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CourseChapterResponse
-{
+public class CourseChapterResponse {
     private Boolean enrolled;
     private Integer courseId;
     private String courseName;

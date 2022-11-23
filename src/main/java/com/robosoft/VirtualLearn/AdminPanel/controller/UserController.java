@@ -45,9 +45,9 @@ public class UserController {
     }
 
 
-    @GetMapping("/subCategories")
-    public ResponseEntity<?> getSubcategory(@RequestBody Category category) {
-        List<SubCategory> subCategories = userService.getSubCategories(category);
+    @GetMapping("/subCategories/{categoryId}")
+    public ResponseEntity<?> getSubcategory(@PathVariable Integer categoryId) {
+        List<SubCategory> subCategories = userService.getSubCategories(categoryId);
 
         if ((subCategories) != null)
             return ResponseEntity.of(Optional.of(subCategories));
@@ -134,6 +134,21 @@ public class UserController {
         }
     }
 
+    @GetMapping("/allCoursesOfCategory/{categoryId}")
+    public ResponseEntity<?> getAllCoursesOfSubcategory(@PathVariable Integer subCategoryId) {
+        try {
+            List<AllCoursesResponse> allCourseResponses = userService.getAllCoursesOfSub(subCategoryId);
+
+            if (allCourseResponses.isEmpty()) {
+                return new ResponseEntity(Collections.singletonMap("message", "Currently No Courses Available in this SubCategory"), HttpStatus.NOT_FOUND);
+            }
+            return ResponseEntity.of(Optional.of(allCourseResponses));
+
+        } catch (Exception e) {
+            return new ResponseEntity(Collections.singletonMap("message", "Invalid Input"), HttpStatus.BAD_REQUEST);
+        }
+    }
+
 
     @GetMapping("/privacyPolicy")
     public ResponseEntity<?> getPrivacyPolicy() {
@@ -201,11 +216,10 @@ public class UserController {
         return new ResponseEntity<>(Collections.singletonMap("message", "null"), HttpStatus.NOT_FOUND);
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<?> search(@RequestBody SearchRequest searchRequest) {
+    @GetMapping("/search/{searchKey}")
+    public ResponseEntity<?> search(@PathVariable String searchKey) {
         try {
-            List<AllCoursesResponse> allCoursesResponses = userService.searchCourses(searchRequest.getSearchKey()
-            );
+            List<AllCoursesResponse> allCoursesResponses = userService.searchCourses(searchKey);
 
             if (allCoursesResponses.isEmpty())
                 return new ResponseEntity<>(Collections.singletonMap("message", "No Matching Course"), HttpStatus.NOT_FOUND);

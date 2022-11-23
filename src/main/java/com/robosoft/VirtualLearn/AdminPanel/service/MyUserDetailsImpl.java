@@ -11,48 +11,47 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MyUserDetailsImpl implements UserDetails
-{
+public class MyUserDetailsImpl implements UserDetails {
     @Autowired
     private UserAuth userAuth;
-    public MyUserDetailsImpl(UserAuth auth)
-    {
+
+    public MyUserDetailsImpl(UserAuth auth) {
         this.userAuth = auth;
     }
+
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities()
-    {
+    public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorityList = Arrays.stream(userAuth.getRole().split(",")).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
         return authorityList;
     }
+
     @Override
-    public String getPassword()
-    {
+    public String getPassword() {
         return userAuth.getPassword();
     }
+
     @Override
-    public String getUsername()
-    {
+    public String getUsername() {
         return userAuth.getUserName();
     }
+
     @Override
-    public boolean isAccountNonExpired()
-    {
+    public boolean isAccountNonExpired() {
         return true;
     }
+
     @Override
-    public boolean isAccountNonLocked()
-    {
+    public boolean isAccountNonLocked() {
         return true;
     }
+
     @Override
-    public boolean isCredentialsNonExpired()
-    {
+    public boolean isCredentialsNonExpired() {
         return true;
     }
+
     @Override
-    public boolean isEnabled()
-    {
+    public boolean isEnabled() {
         return true;
     }
 }

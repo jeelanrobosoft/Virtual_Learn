@@ -9,17 +9,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class HomeAllCourse
-{
+public class HomeAllCourse {
     private Integer courseId;
-
     private String courseName;
     private String coursePhoto;
     private Integer categoryId;
     private Integer chapterCount;
 
-    public HomeAllCourse(String coursePhoto, String courseName, int categoryId, int chapterCount)
-    {
+    public HomeAllCourse(String coursePhoto, String courseName, int categoryId, int chapterCount) {
         this.coursePhoto = coursePhoto;
         this.courseName = courseName;
         this.categoryId = categoryId;
