@@ -25,7 +25,7 @@ public class FinalTestController {
 
     FinalTestService finalTestService;
 
-    @GetMapping("finalTest")
+    @GetMapping("/finalTest")
     public ResponseEntity<?> getFinalTest(@RequestBody FinalTestRequest request) {
         FinalTest moduleTest = finalTestService.finalTestService(request);
         if (moduleTest == null)

@@ -86,7 +86,6 @@ public class UserController {
             return new ResponseEntity(Collections.singletonMap("message", "Overview For the Course is not Available"), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             return new ResponseEntity(Collections.singletonMap("message", "Invalid Input"), HttpStatus.NOT_FOUND);
-
         }
     }
 
@@ -178,10 +177,10 @@ public class UserController {
 
     }
 
-    @GetMapping("/courseChapterResponse")
-    public ResponseEntity<?> getCourseChapterResponse(@RequestBody CourseChapterRequest courseChapterRequest) {
+    @GetMapping("/courseChapterResponse/{courseId}")
+    public ResponseEntity<?> getCourseChapterResponse(@PathVariable Integer courseId) {
         try {
-            CourseChapterResponse courseChapterResponse = userService.getCourseChapterResponse(courseChapterRequest.getCourseId());
+            CourseChapterResponse courseChapterResponse = userService.getCourseChapterResponse(courseId);
             if (courseChapterResponse != null) {
                 return ResponseEntity.of(Optional.of(courseChapterResponse));
             }
