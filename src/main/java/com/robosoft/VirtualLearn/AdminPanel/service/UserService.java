@@ -175,7 +175,7 @@ public class UserService {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         try {
             List<Integer> chapterIds = jdbcTemplate.queryForList("SELECT chapterId from chapter WHERE courseId = ?", Integer.class, courseId);
-            CourseChapterResponse courseChapterResponse = jdbcTemplate.queryForObject("SELECT courseName,categoryName,chapterCount,lessonCount,testCount,courseDuration,courseCompletedStatus FROM overView INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId INNER JOIN courseProgress on course.courseId = courseProgress.courseId AND userName = ?", new BeanPropertyRowMapper<>(CourseChapterResponse.class), courseId, userName);
+            CourseChapterResponse courseChapterResponse = jdbcTemplate.queryForObject("SELECT course.courseId,courseName,categoryName,chapterCount,lessonCount,testCount,courseDuration,courseCompletedStatus FROM overView INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId INNER JOIN courseProgress on course.courseId = courseProgress.courseId AND userName = ?", new BeanPropertyRowMapper<>(CourseChapterResponse.class), courseId, userName);
             if (courseChapterResponse != null)
             {
                 courseChapterResponse.setEnrolled(true);
@@ -210,7 +210,7 @@ public class UserService {
             return courseChapterResponse;
         } catch (Exception e) {
             List<Integer> chapterIds = jdbcTemplate.queryForList("SELECT chapterId from chapter WHERE courseId = ? order by chapterNumber", Integer.class, courseId);
-            CourseChapterResponse courseChapterResponse = jdbcTemplate.queryForObject("SELECT courseName,categoryName,chapterCount,lessonCount,testCount,courseDuration FROM overView INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(CourseChapterResponse.class), courseId);
+            CourseChapterResponse courseChapterResponse = jdbcTemplate.queryForObject("SELECT course.courseId, courseName,categoryName,chapterCount,lessonCount,testCount,courseDuration FROM overView INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(CourseChapterResponse.class), courseId);
             if(courseChapterResponse != null) {
                 List<ChapterResponse> chapterResponses = new ArrayList<>();
                 courseChapterResponse.setEnrolled(false);
@@ -225,7 +225,7 @@ public class UserService {
 
     public ChapterResponse getChapterResponse(String userName, Integer chapterId) {
         try {
-            ChapterResponse chapterResponse = jdbcTemplate.queryForObject("SELECT chapterNumber,chapterName,chapterCompletedStatus,chapterStatus FROM chapter INNER JOIN chapterProgress ON chapter.chapterId = chapterProgress.chapterId WHERE chapter.chapterId = ? AND chapterProgress.userName = ?", new BeanPropertyRowMapper<>(ChapterResponse.class), chapterId, userName);
+            ChapterResponse chapterResponse = jdbcTemplate.queryForObject("SELECT chapter.chapterId,chapterNumber,chapterName,chapterCompletedStatus,chapterStatus FROM chapter INNER JOIN chapterProgress ON chapter.chapterId = chapterProgress.chapterId WHERE chapter.chapterId = ? AND chapterProgress.userName = ?", new BeanPropertyRowMapper<>(ChapterResponse.class), chapterId, userName);
             List<LessonResponse> lessonResponses = getLessonResponses(chapterId);
             try {
                 Integer testId = jdbcTemplate.queryForObject("SELECT testId FROM test WHERE chapterId = ?", Integer.class, chapterId);
