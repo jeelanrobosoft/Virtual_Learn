@@ -47,14 +47,12 @@ public class JwtUtility implements Serializable {
     }
 
     private String doGenerateToken(Map<String, Object> claims, String subject) {
-        System.out.println("Token Generation");
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
                 .signWith(SignatureAlgorithm.HS512, secret).compact();
     }
 
     public String doGenerateRefreshToken(Map<String, Object> claims, String subject) {
-        System.out.println("Inside Do Token Generation");
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + refreshExpirationDateInMs))
                 .signWith(SignatureAlgorithm.HS512, secret).compact();

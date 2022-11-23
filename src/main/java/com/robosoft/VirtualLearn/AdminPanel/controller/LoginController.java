@@ -1,24 +1,23 @@
 package com.robosoft.VirtualLearn.AdminPanel.controller;
 
+import com.robosoft.VirtualLearn.AdminPanel.entity.MobileAuth;
 import com.robosoft.VirtualLearn.AdminPanel.request.JwtRequest;
 import com.robosoft.VirtualLearn.AdminPanel.response.JwtResponse;
 import com.robosoft.VirtualLearn.AdminPanel.service.MyUserDetailsService;
+import com.robosoft.VirtualLearn.AdminPanel.service.RegistrationServiceImpl;
 import com.robosoft.VirtualLearn.AdminPanel.utility.JwtUtility;
 import io.jsonwebtoken.impl.DefaultClaims;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 public class LoginController {
@@ -28,6 +27,8 @@ public class LoginController {
     private AuthenticationProvider authenticationProvider;
     @Autowired
     private MyUserDetailsService myUserDetailsService;
+    @Autowired
+    RegistrationServiceImpl service;
 
     @PutMapping("/login")
     public JwtResponse login(@RequestBody JwtRequest jwtRequest) throws Exception {
@@ -45,7 +46,6 @@ public class LoginController {
 
     @GetMapping("/refreshToken")
     public JwtResponse refreshToken(HttpServletRequest request) throws Exception {
-        // From the HttpRequest get the claims
         DefaultClaims claims = (io.jsonwebtoken.impl.DefaultClaims) request.getAttribute("claims");
         Map<String, Object> expectedMap = getMapFromIoJsonwebtokenClaims(claims);
         String token = jwtUtility.doGenerateRefreshToken(expectedMap, expectedMap.get("sub").toString());
@@ -58,5 +58,23 @@ public class LoginController {
             expectedMap.put(entry.getKey(), entry.getValue());
         }
         return expectedMap;
+    }
+
+    @PostMapping("/send")
+    public ResponseEntity<?> sendOtp(@RequestBody MobileAuth auth) {
+        int status = service.checkMobileNumber(auth);
+        if (status == 0)
+            return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Mobile Number not registered")));
+        String twoFaCode = String.valueOf(new Random().nextInt(8999) + 1000);
+        return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "OTP Valid For " + service.sendOtp(auth, twoFaCode) + " Minutes")));
+    }
+
+    @PostMapping("/resetPassword")
+    public ResponseEntity<?> resetPassword(@RequestBody MobileAuth auth) {
+        int status = service.checkMobileNumber(auth);
+        if (status == 0)
+            return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Input Field is incorrect")));
+        service.resetPassword(auth);
+        return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Password Changed Successfully")));
     }
 }
