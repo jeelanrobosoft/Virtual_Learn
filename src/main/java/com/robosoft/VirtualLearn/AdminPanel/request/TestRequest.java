@@ -9,8 +9,7 @@ import java.sql.Time;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TestRequest
-{
+public class TestRequest {
     private Integer testId;
     private String testName;
     private Integer chapterId;

@@ -8,8 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MobileAuth
-{
+public class MobileAuth {
     private String mobileNumber;
     private String oneTimePassword;
 

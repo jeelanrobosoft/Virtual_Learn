@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Course
-{
+public class Course {
     private Integer courseId;
     private String coursePhoto;
     private String courseName;
@@ -17,19 +16,16 @@ public class Course
     private Integer subCategoryId;
     private String courseDuration;
 
-    public Course(Integer courseId)
-    {
+    public Course(Integer courseId) {
         this.courseId = courseId;
     }
 
     //chk
-    public Course(String courseDuration)
-    {
+    public Course(String courseDuration) {
         this.courseDuration = courseDuration;
     }
 
-    public Course(String coursePhoto, String courseName)
-    {
+    public Course(String coursePhoto, String courseName) {
         this.coursePhoto = coursePhoto;
         this.courseName = courseName;
     }

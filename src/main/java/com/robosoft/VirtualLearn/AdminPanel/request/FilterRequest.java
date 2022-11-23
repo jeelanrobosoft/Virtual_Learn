@@ -10,8 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class FilterRequest
-{
+public class FilterRequest {
     private List<Integer> categoryId;
     private List<Integer> chapterStartCount;
     private List<Integer> chapterEndCount;

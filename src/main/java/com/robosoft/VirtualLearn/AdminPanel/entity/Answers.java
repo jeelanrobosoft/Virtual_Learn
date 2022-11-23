@@ -8,8 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Answers
-{
+public class Answers {
     private Integer questionId;
     private String correctAnswer;
 }

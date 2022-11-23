@@ -9,24 +9,22 @@ import java.sql.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Enrollment
-{
+public class Enrollment {
     private String userName;
     private Integer courseId;
     private Date joinDate;
     private Date completedDate;
     private Integer courseScore;
 
-    public Enrollment(String userName)
-    {
+    public Enrollment(String userName) {
         this.userName = userName;
     }
-    public Enrollment(Integer courseId)
-    {
+
+    public Enrollment(Integer courseId) {
         this.courseId = courseId;
     }
-    public Enrollment(String userName, Integer courseId, Date joinDate, Integer courseScore)
-    {
+
+    public Enrollment(String userName, Integer courseId, Date joinDate, Integer courseScore) {
         this.userName = userName;
         this.courseId = courseId;
         this.joinDate = joinDate;

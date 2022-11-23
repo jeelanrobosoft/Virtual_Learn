@@ -8,8 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OtpVerification
-{
+public class OtpVerification {
     private String otp;
     private String expiryTime;
 

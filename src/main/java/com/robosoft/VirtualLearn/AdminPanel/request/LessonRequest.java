@@ -8,8 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LessonRequest
-{
+public class LessonRequest {
     private int lessonNumber;
     private int courseId;
     private int chapterId;

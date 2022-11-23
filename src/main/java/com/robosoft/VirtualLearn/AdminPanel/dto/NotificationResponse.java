@@ -4,8 +4,7 @@ package com.robosoft.VirtualLearn.AdminPanel.dto;
 import lombok.Data;
 
 @Data
-public class NotificationResponse
-{
+public class NotificationResponse {
     private Integer notificationId;
     private String description;
     private String timeStamp;

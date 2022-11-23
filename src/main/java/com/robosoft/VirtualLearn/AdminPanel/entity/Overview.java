@@ -9,22 +9,20 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Overview
-{
-   private Integer courseId;
-   private String courseTagLine;
-   private String description;
-   private Integer chapterCount;
-   private Integer lessonCount;
-   private Integer courseMaterialId;
-   private Integer testCount;
-   private String  learningOutCome;
-   private String requirements;
-   private Integer   instructorId;
-   private String difficultyLevel;
+public class Overview {
+    private Integer courseId;
+    private String courseTagLine;
+    private String description;
+    private Integer chapterCount;
+    private Integer lessonCount;
+    private Integer courseMaterialId;
+    private Integer testCount;
+    private String learningOutCome;
+    private String requirements;
+    private Integer instructorId;
+    private String difficultyLevel;
 
-    public Overview(Integer courseId, String courseTagLine, String description, String learningOutCome, String requirements, Integer instructorId,String difficultyLevel)
-    {
+    public Overview(Integer courseId, String courseTagLine, String description, String learningOutCome, String requirements, Integer instructorId, String difficultyLevel) {
         this.courseId = courseId;
         this.courseTagLine = courseTagLine;
         this.description = description;

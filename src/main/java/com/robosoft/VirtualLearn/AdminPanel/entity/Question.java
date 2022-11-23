@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Question
-{
+public class Question {
     private Integer questionId;
     private String questionName;
     private Integer testId;
@@ -20,8 +19,7 @@ public class Question
     private String option_4;
     private String correctAnswer;
 
-    public Question(Integer questionId, String questionName, String option_1, String option_2, String option_3, String option_4, String correctAnswer)
-    {
+    public Question(Integer questionId, String questionName, String option_1, String option_2, String option_3, String option_4, String correctAnswer) {
         this.questionId = questionId;
         this.questionName = questionName;
         this.option_1 = option_1;

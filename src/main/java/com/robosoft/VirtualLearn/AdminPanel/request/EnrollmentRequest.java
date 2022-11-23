@@ -9,8 +9,7 @@ import java.sql.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class EnrollmentRequest
-{
+public class EnrollmentRequest {
     private Integer courseId;
-    private Date joinDate;   //Front end should take in the format of yyyy-mm-dd
+    private Date joinDate;
 }

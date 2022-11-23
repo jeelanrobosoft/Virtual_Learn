@@ -9,8 +9,7 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class User
-{
+public class User {
     private String mobileNo;
     private String fullName;
     private String userName;
@@ -22,8 +21,7 @@ public class User
     private String twitterLink;
     private String faceBookLink;
 
-    public User(int occupation)
-    {
+    public User(int occupation) {
         this.occupation = occupation;
     }
 }

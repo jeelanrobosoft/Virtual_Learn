@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SideBarRequest
-{
+public class SideBarRequest {
     private String userName;
 }

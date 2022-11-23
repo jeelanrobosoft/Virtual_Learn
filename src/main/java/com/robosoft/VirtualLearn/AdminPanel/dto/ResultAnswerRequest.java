@@ -4,8 +4,7 @@ package com.robosoft.VirtualLearn.AdminPanel.dto;
 import lombok.Data;
 
 @Data
-public class ResultAnswerRequest
-{
+public class ResultAnswerRequest {
     private Integer questionId;
     private String questionName;
     private String option_1;

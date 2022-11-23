@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OtpInformation
-{
+public class OtpInformation {
     private String generatedTime;
     private String expiryTime;
     private long ValidUntil;

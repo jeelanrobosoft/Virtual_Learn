@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Lesson
-{
+public class Lesson {
     private Integer lessonId;
     private Integer lessonNumber;
     private Integer chapterId;

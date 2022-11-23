@@ -9,8 +9,7 @@ import java.sql.Time;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class VideoPauseRequest
-{
+public class VideoPauseRequest {
     private Time pauseTime;
     private Integer lessonId;
     private Integer chapterId;

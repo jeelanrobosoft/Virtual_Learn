@@ -60,7 +60,7 @@ public class ProfileService
         return String.format(DOWNLOAD_URL, URLEncoder.encode(objectName));
     }
 
-    public void saveMyProfile(SaveProfile saveProfile) throws IOException, ParseException
+    public void saveMyProfile(SaveProfile saveProfile,String userName) throws IOException, ParseException
     {
         String profilePhotoLink = null;
         String finalDateOfBirth = null;
@@ -74,7 +74,7 @@ public class ProfileService
         SimpleDateFormat newFormat = new SimpleDateFormat("yyyy-MM-dd");
         finalDateOfBirth = newFormat.format(dateOfBirth);
         }
-        profileDao.saveProfile(saveProfile, profilePhotoLink, finalDateOfBirth);
+        profileDao.saveProfile(saveProfile, profilePhotoLink, finalDateOfBirth,userName);
     }
     public String changePassword(ChangePassword password)
     {

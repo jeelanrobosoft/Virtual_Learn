@@ -4,13 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Timestamp;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Notification {
-    private String description;
-    private Timestamp timestamp;
-    private String notificationUrl;
+public class AdminRegistration {
+    private String userName;
+    private String fullName;
+    private String mobileNumber;
+    private String password;
 }

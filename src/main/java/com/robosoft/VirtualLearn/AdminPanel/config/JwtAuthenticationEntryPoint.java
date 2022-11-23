@@ -13,30 +13,20 @@ import java.io.IOException;
 import java.util.Collections;
 
 @Component
-public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint
-{
+public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException
-    {
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         String message;
-        // Check if the request as any exception that we have stored in Request
         Exception exception = (Exception) request.getAttribute("exception");
-        // If yes then use it to create the response message else use the authException
-        if (exception != null)
-        {
+        if (exception != null) {
             byte[] body = new ObjectMapper().writeValueAsBytes(Collections.singletonMap("cause", exception.toString()));
             response.getOutputStream().write(body);
-        }
-        else
-        {
-            if (authException.getCause() != null)
-            {
+        } else {
+            if (authException.getCause() != null) {
                 message = authException.getCause().toString() + " " + authException.getMessage();
-            }
-            else
-            {
+            } else {
                 message = authException.getMessage();
             }
             byte[] body = new ObjectMapper().writeValueAsBytes(Collections.singletonMap("error", message));

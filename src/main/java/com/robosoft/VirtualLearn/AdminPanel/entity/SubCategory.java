@@ -8,8 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SubCategory
-{
+public class SubCategory {
     private Integer categoryId;
     private Integer subCategoryId;
     private String subCategoryName;

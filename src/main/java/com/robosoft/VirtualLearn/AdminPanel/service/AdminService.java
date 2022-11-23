@@ -7,6 +7,7 @@ import com.robosoft.VirtualLearn.AdminPanel.request.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -224,5 +225,17 @@ public class AdminService
         {
             return jdbcTemplate.update("INSERT INTO policy(termsAndConditions,privacyPolicy) VALUES(?,?)",policy.getTermsAndConditions(),policy.getPrivacyPolicy());
         }
+    }
+
+    public String addAdminDetails(AdminRegistration adminRegistration) {
+        if(adminRegistration.getUserName() != null && adminRegistration.getPassword() != null && adminRegistration.getFullName() != null){
+            if(adminRegistration.getFullName().length() >=  5 && adminRegistration.getPassword().length() > 5 && adminRegistration.getUserName().length() >= 5 ){
+        jdbcTemplate.update("insert into admin values(?,?,?)",adminRegistration.getUserName(),adminRegistration.getFullName(),adminRegistration.getMobileNumber());
+        jdbcTemplate.update("insert into authenticate values(?,?,?)",adminRegistration.getUserName(),new BCryptPasswordEncoder().encode(adminRegistration.getPassword()),"ROLE_ADMIN");
+        return "registered successfully";
+            }
+        else { return "enter all the fields" ;}
+        }
+        else { return "enter all the fields" ;}
     }
 }

@@ -51,6 +51,12 @@ public class UserService
         return categories;
     }
 
+    public List<Category> getCategoriesWithoutPagination()
+    {
+        List<Category> categories = jdbcTemplate.query("SELECT * FROM category",new BeanPropertyRowMapper<>(Category.class));
+        return categories;
+    }
+
 
     public List<SubCategory> getSubCategories(Category category)
     {
@@ -67,17 +73,29 @@ public class UserService
         return subCategories;
     }
 
+    public List<SubCategory> getSubCategoriesWithoutPagination(Category category)
+    {
+        List<SubCategory> subCategories = jdbcTemplate.query("SELECT * FROM subCategory WHERE categoryId = ?",new BeanPropertyRowMapper<>(SubCategory.class),category.getCategoryId());
+        return subCategories;
+    }
+
+    public List<SubCategory> getAllSubCategoriesWithoutPagination() {
+        List<SubCategory> subCategories = jdbcTemplate.query("SELECT * FROM subCategory",new BeanPropertyRowMapper<>(SubCategory.class));
+        return subCategories;
+    }
+
 
     public OverviewResponse getOverviewOfCourse(int courseId) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         try {
 
             try {
-                jdbcTemplate.queryForObject("SELECT * FROM enrollment WHERE username = ? AND courseId = ?", new BeanPropertyRowMapper<>(Enrollment.class), userName, courseId);
+                jdbcTemplate.queryForObject("SELECT userName FROM enrollment WHERE userName = ? AND courseId = ?", new BeanPropertyRowMapper<>(Enrollment.class), userName, courseId);
                 OverviewResponse overviewResponse = jdbcTemplate.queryForObject("SELECT courseName,coursePhoto,categoryName,chapterCount,lessonCount,courseTagLine,previewVideo,overView.description,testCount,courseMaterialId,courseDuration,learningOutCome,requirements,instructorName,url,profilePhoto,instructor.description AS instructorDescription FROM overView INNER JOIN instructor ON overView.instructorId = instructor.instructorId  INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(OverviewResponse.class), courseId);
                 overviewResponse.setEnrolled(true);
                 return overviewResponse;
             } catch (Exception e) {
+                e.printStackTrace();
                 OverviewResponse overviewResponse = jdbcTemplate.queryForObject("SELECT courseName,coursePhoto,categoryName,chapterCount,lessonCount,courseTagLine,previewVideo,overView.description,testCount,courseMaterialId,courseDuration,learningOutCome,requirements,instructorName,url,profilePhoto,instructor.description AS instructorDescription FROM overView INNER JOIN instructor ON overView.instructorId = instructor.instructorId  INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(OverviewResponse.class), courseId);
                 overviewResponse.setEnrolled(false);
                 return overviewResponse;
@@ -157,11 +175,17 @@ public class UserService
             long sum = date1.getTime();
             List<ChapterResponse> chapterResponses = new ArrayList<>();
             for (Integer i : chapterIds) {
-                chapterResponses.add(getChapterResponse(userName, i));
-                String testDuration = jdbcTemplate.queryForObject("SELECT testDuration FROM test WHERE chapterId = ?", String.class,i);
-                timeFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-                Date date2 = timeFormat.parse(testDuration);
-                sum += date2.getTime();
+                try {
+                    chapterResponses.add(getChapterResponse(userName, i));
+                    String testDuration = jdbcTemplate.queryForObject("SELECT testDuration FROM test WHERE chapterId = ?", String.class, i);
+                    timeFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+                    Date date2 = timeFormat.parse(testDuration);
+                    sum += date2.getTime();
+                }
+                catch (Exception e)
+                {
+                    continue;
+                }
             }
             String totalDuration = timeFormat.format(new Date(sum));
             courseChapterResponse.setTotalDuration(totalDuration);
@@ -540,6 +564,8 @@ public class UserService
             System.out.println("updated++");
         }
     }
+
+
 //    public Map<Integer, List<Notification>> pullNotification()
 //    {
 //        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
