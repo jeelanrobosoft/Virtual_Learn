@@ -23,13 +23,13 @@ public class ModuleTestDataAccess {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    public ModuleTest moduleTestQuestions(ModuleTestRequest request) {
+    public ModuleTest moduleTestQuestions(Integer testId) {
         List<Question> questions;
         ModuleTest moduleTest;
         String query = "select questionId,questionName,option_1,option_2,option_3,option_4 from question where testId=?";
         try {
-            questions = jdbcTemplate.query(query, new BeanPropertyRowMapper<>(Question.class), request.getTestId());
-            moduleTest = jdbcTemplate.queryForObject("select testId,testName,testDuration,questionsCount from test where testId=" + request.getTestId(), new BeanPropertyRowMapper<>(ModuleTest.class));
+            questions = jdbcTemplate.query(query, new BeanPropertyRowMapper<>(Question.class), testId);
+            moduleTest = jdbcTemplate.queryForObject("select testId,testName,testDuration,questionsCount from test where testId=" + testId, new BeanPropertyRowMapper<>(ModuleTest.class));
         } catch (Exception e) {
             return null;
         }
@@ -72,21 +72,21 @@ public class ModuleTestDataAccess {
         return chapterTestPercentage;
     }
 
-    public ResultHeaderRequest getResultHeader(ModuleTestRequest testRequest) {
+    public ResultHeaderRequest getResultHeader(Integer testId) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        float chapterTestPercentage = jdbcTemplate.queryForObject("select chapterTestPercentage from chapterProgress where testId=" + testRequest.getTestId() + " and userName='" + userName + "'", Float.class);
-        String chapterName = jdbcTemplate.queryForObject("select chapterName from chapter where chapterId=(select chapterId from test where testId=" + testRequest.getTestId() + ")", String.class);
-        Integer chapterNumber = jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select chapterId from test where testId=" + testRequest.getTestId() + ")", Integer.class);
-        String courseName = jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select chapterId from test where testId=" + testRequest.getTestId() + "))", String.class);
-        int totalNumberOfQuestions = jdbcTemplate.queryForObject("select questionsCount from test where testId=" + testRequest.getTestId(), Integer.class);
-        int correctAnswers = jdbcTemplate.queryForObject("select count(*) from userAnswer where userAnswerStatus=true and testId=" + testRequest.getTestId(), Integer.class);
+        float chapterTestPercentage = jdbcTemplate.queryForObject("select chapterTestPercentage from chapterProgress where testId=" + testId + " and userName='" + userName + "'", Float.class);
+        String chapterName = jdbcTemplate.queryForObject("select chapterName from chapter where chapterId=(select chapterId from test where testId=" + testId + ")", String.class);
+        Integer chapterNumber = jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select chapterId from test where testId=" + testId+ ")", Integer.class);
+        String courseName = jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select chapterId from test where testId=" + testId + "))", String.class);
+        int totalNumberOfQuestions = jdbcTemplate.queryForObject("select questionsCount from test where testId=" + testId, Integer.class);
+        int correctAnswers = jdbcTemplate.queryForObject("select count(*) from userAnswer where userAnswerStatus=true and testId=" + testId, Integer.class);
         int wrongAnswers = totalNumberOfQuestions - correctAnswers;
         return new ResultHeaderRequest(chapterNumber, chapterName, chapterTestPercentage, courseName, correctAnswers, wrongAnswers, totalNumberOfQuestions);
     }
 
-    public List<ResultAnswerRequest> getResultAnswers(ModuleTest request) {
+    public List<ResultAnswerRequest> getResultAnswers(Integer testId) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        return jdbcTemplate.query("select question.questionId,questionName,option_1,option_2,option_3,option_4,correctAnswer,userAnswer,userAnswerStatus from question inner join userAnswer on question.questionId=userAnswer.questionId where userAnswer.testId=" + request.getTestId() + " and userName='" + userName + "'", new BeanPropertyRowMapper<>(ResultAnswerRequest.class));
+        return jdbcTemplate.query("select question.questionId,questionName,option_1,option_2,option_3,option_4,correctAnswer,userAnswer,userAnswerStatus from question inner join userAnswer on question.questionId=userAnswer.questionId where userAnswer.testId=" + testId + " and userName='" + userName + "'", new BeanPropertyRowMapper<>(ResultAnswerRequest.class));
 
     }
 }

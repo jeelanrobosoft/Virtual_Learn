@@ -9,10 +9,7 @@ import com.robosoft.VirtualLearn.AdminPanel.service.ModuleTestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,8 +22,8 @@ public class ChapterModuleTestController {
     ModuleTestService testService;
 
     @GetMapping("/moduleTest")
-    public ResponseEntity<?> moduleTest(@RequestBody ModuleTestRequest request) {
-        ModuleTest moduleTest = testService.moduleTestQuestions(request);
+    public ResponseEntity<?> moduleTest(@RequestParam Integer testId) {
+        ModuleTest moduleTest = testService.moduleTestQuestions(testId);
         if (moduleTest == null)
             return new ResponseEntity<>("Invalid Test Id", HttpStatus.NOT_FOUND);
         return ResponseEntity.of(Optional.of(moduleTest));
@@ -38,12 +35,12 @@ public class ChapterModuleTestController {
     }
 
     @GetMapping("resultHeader")
-    public ResultHeaderRequest getResultHeader(@RequestBody ModuleTestRequest testRequest) {
-        return testService.getResultHeader(testRequest);
+    public ResultHeaderRequest getResultHeader(@RequestParam Integer testId) {
+        return testService.getResultHeader(testId);
     }
 
     @GetMapping("resultAnswers")
-    public List<ResultAnswerRequest> getResultAnswers(@RequestBody ModuleTest request) {
-        return testService.getResultAnswers(request);
+    public List<ResultAnswerRequest> getResultAnswers(@RequestParam Integer testId) {
+        return testService.getResultAnswers(testId);
     }
 }

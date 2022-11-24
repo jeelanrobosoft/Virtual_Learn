@@ -17,19 +17,19 @@ public class ModuleTestService {
     @Autowired
     ModuleTestDataAccess dataAccess;
 
-    public ModuleTest moduleTestQuestions(ModuleTestRequest request) {
-        return dataAccess.moduleTestQuestions(request);
+    public ModuleTest moduleTestQuestions(Integer testId) {
+        return dataAccess.moduleTestQuestions(testId);
     }
 
     public float userAnswers(UserAnswers userAnswers) {
         return dataAccess.userAnswers(userAnswers);
     }
 
-    public ResultHeaderRequest getResultHeader(ModuleTestRequest testRequest) {
-        return dataAccess.getResultHeader(testRequest);
+    public ResultHeaderRequest getResultHeader(Integer testId) {
+        return dataAccess.getResultHeader(testId);
     }
 
-    public List<ResultAnswerRequest> getResultAnswers(ModuleTest request) {
-        return dataAccess.getResultAnswers(request);
+    public List<ResultAnswerRequest> getResultAnswers(Integer testId) {
+        return dataAccess.getResultAnswers(testId);
     }
 }

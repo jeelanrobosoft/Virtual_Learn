@@ -22,13 +22,13 @@ public class FinalTestDataAccess {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    public FinalTest getFinalTestS(FinalTestRequest request) {
+    public FinalTest getFinalTestS(Integer testId) {
         List<Question> questions;
         FinalTest finalTest;
         String query = "select questionId,questionName,option_1,option_2,option_3,option_4 from question where testId=?";
         try {
-            questions = jdbcTemplate.query(query, new BeanPropertyRowMapper<>(Question.class), request.getTestId());
-            finalTest = jdbcTemplate.queryForObject("select testId,testName,testDuration,questionsCount from test where testId=" + request.getTestId(), new BeanPropertyRowMapper<>(FinalTest.class));
+            questions = jdbcTemplate.query(query, new BeanPropertyRowMapper<>(Question.class), testId);
+            finalTest = jdbcTemplate.queryForObject("select testId,testName,testDuration,questionsCount from test where testId=" + testId, new BeanPropertyRowMapper<>(FinalTest.class));
         } catch (Exception e) {
             return null;
         }

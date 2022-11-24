@@ -8,10 +8,7 @@ import com.robosoft.VirtualLearn.AdminPanel.service.FinalTestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -26,8 +23,8 @@ public class FinalTestController {
     FinalTestService finalTestService;
 
     @GetMapping("/finalTest")
-    public ResponseEntity<?> getFinalTest(@RequestBody FinalTestRequest request) {
-        FinalTest moduleTest = finalTestService.finalTestService(request);
+    public ResponseEntity<?> getFinalTest(@RequestParam Integer testId) {
+        FinalTest moduleTest = finalTestService.finalTestService(testId);
         if (moduleTest == null)
             return new ResponseEntity<>("Invalid Test Id", HttpStatus.NOT_FOUND);
         return ResponseEntity.of(Optional.of(moduleTest));
@@ -46,8 +43,8 @@ public class FinalTestController {
     }
 
     @GetMapping("/viewCertificate")
-    public Map getCertificate(@RequestBody CertificateRequest certificateRequest) throws IOException, ParseException {
-        return Collections.singletonMap("message", finalTestService.viewCertificate(certificateRequest));
+    public Map getCertificate(@RequestParam Integer testId) throws IOException, ParseException {
+        return Collections.singletonMap("message", finalTestService.viewCertificate(testId));
     }
 
 }

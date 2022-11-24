@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,8 +24,8 @@ public class OverviewResponse {
     private String courseDuration;
     private Integer courseMaterialId;
     private Integer testCount;
-    private String[] learningOutCome;
-    private String[] requirements;
+    private List<String> learningOutCome;
+    private List<String> requirements;
     private String instructorName;
     private String url;
     private String instructorDescription;

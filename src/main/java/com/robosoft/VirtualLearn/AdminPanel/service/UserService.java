@@ -18,10 +18,7 @@ import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -61,8 +58,8 @@ public class UserService {
         return subCategories;
     }
 
-    public List<SubCategory> getSubCategoriesWithoutPagination(Category category) {
-        return jdbcTemplate.query("SELECT * FROM subCategory WHERE categoryId = ?", new BeanPropertyRowMapper<>(SubCategory.class), category.getCategoryId());
+    public List<SubCategory> getSubCategoriesWithoutPagination(Integer categoryId) {
+        return jdbcTemplate.query("SELECT * FROM subCategory WHERE categoryId = ?", new BeanPropertyRowMapper<>(SubCategory.class), categoryId);
     }
 
     public List<SubCategory> getAllSubCategoriesWithoutPagination() {
@@ -81,8 +78,8 @@ public class UserService {
                 String requirement = jdbcTemplate.queryForObject("SELECT requirements FROM oveView WHERE courseId = ?",String.class,courseId);
                 if (overviewResponse != null) {
                     if(learningOutcome != null && requirement != null) {
-                        overviewResponse.setLearningOutCome(learningOutcome.split(System.lineSeparator()));
-                        overviewResponse.setRequirements(requirement.split(System.lineSeparator()));
+                        overviewResponse.setLearningOutCome(Arrays.asList(learningOutcome.split("\n")));
+                        overviewResponse.setRequirements(Arrays.asList(requirement.split("\n")));
                     }
                     overviewResponse.setEnrolled(true);
                 }

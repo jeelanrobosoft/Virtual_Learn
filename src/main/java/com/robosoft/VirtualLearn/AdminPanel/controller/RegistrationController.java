@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.Random;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/newUser")
 public class RegistrationController {
 
     @Autowired
@@ -42,8 +42,6 @@ public class RegistrationController {
     public Map verifyOtp(@RequestBody MobileAuth otp) {
         return Collections.singletonMap("message", service.verifyOtp(otp));
     }
-
-
 
 
 

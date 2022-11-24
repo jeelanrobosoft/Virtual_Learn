@@ -37,12 +37,17 @@ public class JwtFilter extends OncePerRequestFilter {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 //                /************************************* Experiment **************************************/
 //                String userName = jwtTokenUtil.getUsernameFromToken(jwtToken);
+//                System.out.println(userName);
 //                String loginUserName = SecurityContextHolder.getContext().getAuthentication().getName();
-//
+//                System.out.println(loginUserName);
+//                if(userName.equals(loginUserName) == false)
+//                    throw new NullPointerException();
 //                /************************************* Experiment **************************************/
 
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             } else {
+
+
             }
         } catch (ExpiredJwtException ex) {
             String isRefreshToken = request.getHeader("isRefreshToken");
@@ -55,6 +60,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
         } catch (BadCredentialsException ex) {
             request.setAttribute("exception", ex);
+        } catch (NullPointerException exception){
+            request.setAttribute("exception", exception);
         }
         filterChain.doFilter(request, response);
     }

@@ -6,9 +6,7 @@ import com.google.cloud.storage.*;
 import com.robosoft.VirtualLearn.AdminPanel.dao.FinalTestDataAccess;
 import com.robosoft.VirtualLearn.AdminPanel.entity.FinalTest;
 import com.robosoft.VirtualLearn.AdminPanel.entity.UserAnswers;
-import com.robosoft.VirtualLearn.AdminPanel.request.CertificateRequest;
 import com.robosoft.VirtualLearn.AdminPanel.request.FinalTestRequest;
-
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
-
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -33,8 +30,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 
-
-
 import static com.robosoft.VirtualLearn.AdminPanel.common.Constants.*;
 
 @Service
@@ -46,8 +41,8 @@ public class FinalTestService {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    public FinalTest finalTestService(FinalTestRequest request) {
-        return testDataAccess.getFinalTestS(request);
+    public FinalTest finalTestService(Integer testId) {
+        return testDataAccess.getFinalTestS(testId);
     }
 
     public Float getFinalTestResult(FinalTestRequest request) {
@@ -79,25 +74,25 @@ public class FinalTestService {
         BlobId blobId = BlobId.of(FIREBASE_BUCKET, objectName);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(multipartFile.getContentType()).build();
         storage.create(blobInfo, Files.readAllBytes(filePath));
-        Blob blob = storage.create(blobInfo, Files.readAllBytes(filePath));
         file.delete();
+//        Blob blob = storage.create(blobInfo, Files.readAllBytes(filePath));
         return String.format(DOWNLOAD_URL, URLEncoder.encode(objectName));
     }
 
     public void certificate(Integer testId) throws IOException, ParseException {
 
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        String courseName = jdbcTemplate.queryForObject("SELECT courseName FROM course WHERE courseId=(SELECT courseId FROM chapter WHERE chapterId=(SELECT chapterId FROM test WHERE testId=?))", new Object[]{testId}, String.class);
-        Integer courseId = jdbcTemplate.queryForObject("SELECT courseId FROM course WHERE courseId=(SELECT courseId FROM chapter WHERE chapterId=(SELECT chapterId FROM test WHERE testId=?))", new Object[]{testId}, Integer.class);
-        String joinDate = jdbcTemplate.queryForObject("SELECT joinDate FROM enrollment WHERE userName = ? and courseId=?", new Object[]{userName, courseId}, String.class);
-        String completedDate = jdbcTemplate.queryForObject("SELECT completedDate FROM enrollment WHERE userName = ? and courseId=?", new Object[]{userName, courseId}, String.class);
-        String duration = jdbcTemplate.queryForObject("SELECT courseDuration FROM course WHERE courseId = ?", new Object[]{courseId}, String.class);
+        String courseName = jdbcTemplate.queryForObject("SELECT courseName FROM course WHERE courseId=(SELECT courseId FROM chapter WHERE chapterId=(SELECT chapterId FROM test WHERE testId=?))", String.class, testId);
+        Integer courseId = jdbcTemplate.queryForObject("SELECT courseId FROM course WHERE courseId=(SELECT courseId FROM chapter WHERE chapterId=(SELECT chapterId FROM test WHERE testId=?))", Integer.class, testId);
+        String joinDate = jdbcTemplate.queryForObject("SELECT joinDate FROM enrollment WHERE userName = ? and courseId=?", String.class, userName, courseId);
+        String completedDate = jdbcTemplate.queryForObject("SELECT completedDate FROM enrollment WHERE userName = ? and courseId=?", String.class, userName, courseId);
+        String duration = jdbcTemplate.queryForObject("SELECT courseDuration FROM course WHERE courseId = ?", String.class, courseId);
         BufferedImage image = ImageIO.read(new File("src/main/resources/Final Certificate.png"));
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm"); // 12 hour format
-        java.util.Date d1 = (java.util.Date) format.parse(duration);
-        java.sql.Time ppstime = new java.sql.Time(d1.getTime());
-        Integer hour = ppstime.getHours();
-        Integer minute = ppstime.getMinutes();
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm"); // 12-hour format
+        java.util.Date d1 = format.parse(duration);
+        java.sql.Time pastime = new java.sql.Time(d1.getTime());
+        int hour = pastime.getHours();
+        int minute = pastime.getMinutes();
         Graphics g = image.getGraphics();
         g.setFont(g.getFont().deriveFont(25f));
         g.setColor(Color.BLACK);
@@ -108,7 +103,9 @@ public class FinalTestService {
         g.drawString(userName, 90, 310);
         g.setFont(new Font("TimesRoman", Font.PLAIN, 50));
         g.setColor(Color.BLACK);
-        g.drawString(courseName, 90, 460);
+        if(courseName != null) {
+            g.drawString(courseName, 90, 460);
+        }
         g.setFont(new Font("TimesRoman", Font.PLAIN, 35));
         g.drawString("Join Date: " + joinDate + " Completed Date: " + completedDate + " " + hour + "h " + minute + "m ", 90, 590);
         String certificateNumber = " Certificate Number: CER57RF9" + userName + "S978" + courseId;
@@ -123,10 +120,9 @@ public class FinalTestService {
     }
 
 
-    public String viewCertificate(CertificateRequest certificateRequest) {
+    public String viewCertificate(Integer testId) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        Integer courseId = jdbcTemplate.queryForObject("SELECT courseId FROM course WHERE courseId=(SELECT courseId FROM chapter WHERE chapterId=(SELECT chapterId FROM test WHERE testId=?))", new Object[]{certificateRequest.getTestId()}, Integer.class);
-        String certificateUrl = jdbcTemplate.queryForObject("SELECT certificateUrl FROm certificate WHERE userName=? and courseId=?", new Object[]{userName, courseId}, String.class);
-        return certificateUrl;
+        Integer courseId = jdbcTemplate.queryForObject("SELECT courseId FROM course WHERE courseId=(SELECT courseId FROM chapter WHERE chapterId=(SELECT chapterId FROM test WHERE testId=?))", Integer.class, testId);
+        return jdbcTemplate.queryForObject("SELECT certificateUrl FROm certificate WHERE userName=? and courseId=?", String.class, userName, courseId);
     }
 }
