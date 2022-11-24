@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
-import javax.swing.text.Document;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -34,8 +34,7 @@ import java.util.Date;
 import java.util.Objects;
 
 
-import com.itextpdf.text.pdf.PdfWriter;
-import com.itextpdf.text.Image;
+
 import static com.robosoft.VirtualLearn.AdminPanel.common.Constants.*;
 
 @Service
