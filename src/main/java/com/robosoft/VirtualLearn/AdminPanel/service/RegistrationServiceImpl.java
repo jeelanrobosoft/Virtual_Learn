@@ -22,7 +22,7 @@ public class RegistrationServiceImpl implements RegistrationService{
     JdbcTemplate jdbcTemplate;
 
     private final static String ACCOUNT_SID = "ACd7b80d5a6e82ec89f4be4cc8779fd230";
-    private final static String AUTH_ID = "cedfefdd1b6d02c0051b9fc191f0f551";
+    private final static String AUTH_ID = "39e3d1b7d8afb09ba645714abbd184c6";
 
     static {
         Twilio.init(ACCOUNT_SID, AUTH_ID);

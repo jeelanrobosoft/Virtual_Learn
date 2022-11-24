@@ -8,6 +8,7 @@ import com.robosoft.VirtualLearn.AdminPanel.entity.FinalTest;
 import com.robosoft.VirtualLearn.AdminPanel.entity.UserAnswers;
 import com.robosoft.VirtualLearn.AdminPanel.request.CertificateRequest;
 import com.robosoft.VirtualLearn.AdminPanel.request.FinalTestRequest;
+
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
+import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -31,6 +33,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 
+
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.Image;
 import static com.robosoft.VirtualLearn.AdminPanel.common.Constants.*;
 
 @Service
@@ -116,8 +121,8 @@ public class FinalTestService {
         MultipartFile multipartFile = new MockMultipartFile("fileItem", fileItem.getName(), "image/png", IOUtils.toByteArray(input));
         String url = getFileUrl(multipartFile);
         jdbcTemplate.update("INSERT INTO certificate(certificateNumber,courseId,UserName,certificateUrl) values(?,?,?,?)", certificateNumber, courseId, userName, url);
-
     }
+
 
     public String viewCertificate(CertificateRequest certificateRequest) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
