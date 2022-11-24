@@ -245,7 +245,7 @@ public class UserController {
     }
 
     @GetMapping("/searchByKeyword/{keyword}")
-    public ResponseEntity<?> searchByKeyword(@RequestBody String keyword)
+    public ResponseEntity<?> searchByKeyword(@PathVariable String keyword)
     {
         List<AllCoursesResponse> allCoursesResponses = userService.searchByKeyword(keyword);
         if (allCoursesResponses == null || allCoursesResponses.isEmpty()) {
