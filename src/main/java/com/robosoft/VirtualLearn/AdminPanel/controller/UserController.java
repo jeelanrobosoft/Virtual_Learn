@@ -135,7 +135,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("/allCoursesOfCategory/{categoryId}")
+    @GetMapping("/allCoursesOfSubCategory/{categoryId}")
     public ResponseEntity<?> getAllCoursesOfSubcategory(@PathVariable Integer subCategoryId) {
         try {
             List<AllCoursesResponse> allCourseResponses = userService.getAllCoursesOfSub(subCategoryId);
@@ -213,10 +213,9 @@ public class UserController {
     }
 
 
-    @GetMapping("/continue")
-    public ResponseEntity<?> getLastPlayed(@RequestBody CourseChapterRequest courseChapterRequest) {
-        Continue c = userService.getLastPlayed(courseChapterRequest.getCourseId());
-
+    @GetMapping("/continue/{courseId}")
+    public ResponseEntity<?> getLastPlayed(@PathVariable Integer courseId) {
+        Continue c = userService.getLastPlayed(courseId);
         if (c != null) {
             return ResponseEntity.of(Optional.of(c));
         }
