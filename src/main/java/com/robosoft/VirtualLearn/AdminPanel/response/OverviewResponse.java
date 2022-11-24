@@ -22,8 +22,8 @@ public class OverviewResponse {
     private String courseDuration;
     private Integer courseMaterialId;
     private Integer testCount;
-    private String learningOutCome;
-    private String requirements;
+    private String[] learningOutCome;
+    private String[] requirements;
     private String instructorName;
     private String url;
     private String instructorDescription;

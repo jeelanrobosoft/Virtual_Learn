@@ -110,9 +110,8 @@ public class FinalTestService {
         String certificateNumber = " Certificate Number: CER57RF9" + userName + "S978" + courseId;
         g.drawString(certificateNumber, 90, 700);
         g.dispose();
-        ImageIO.write(image, "jpg", new File("src/main/resources/CerificateData/" + userName + courseId + ".png"));
-        File fileItem = new File("src/main/resources/CerificateData/" + userName + courseId + ".png");
-        System.out.println(fileItem.getName());
+        ImageIO.write(image, "jpg", new File("src/main/resources/CertificateData/" + userName + courseId + ".png"));
+        File fileItem = new File("src/main/resources/CertificateData/" + userName + courseId + ".png");
         FileInputStream input = new FileInputStream(fileItem);
         MultipartFile multipartFile = new MockMultipartFile("fileItem", fileItem.getName(), "image/png", IOUtils.toByteArray(input));
         String url = getFileUrl(multipartFile);

@@ -108,6 +108,15 @@ public class AdminController {
         return new ResponseEntity<String>(courseResponse, HttpStatus.OK);
     }
 
+    @PostMapping("/keyword")
+    public ResponseEntity<?> addCourseKeyword(@RequestBody  CourseKeywordRequest courseKeywordRequest){
+       String keyword= adminService.addCourseKeywords(courseKeywordRequest);
+       if(keyword == null)
+       {
+           return new ResponseEntity<String>("course keyword addition is unsuccessful", HttpStatus.NOT_MODIFIED);
+       }
+        return new ResponseEntity<String>(keyword, HttpStatus.OK);
+    }
     @PostMapping("/lesson")
     public ResponseEntity<String> saveLesson(@ModelAttribute LessonRequest lessonRequest) throws IOException, ParseException {
         String lessonResponse = adminService.addLesson(lessonRequest);

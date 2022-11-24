@@ -126,6 +126,11 @@ public class AdminService {
         }
     }
 
+    public String addCourseKeywords(CourseKeywordRequest courseKeywordRequest) {
+         jdbcTemplate.update("INSERT INTO courseKeywords(courseId,keyword) values(?,?)", courseKeywordRequest.getCourseId(), courseKeywordRequest.getKeyword());
+         return "Updated";
+    }
+
     public int addChapter(Chapter chapter) {
         return jdbcTemplate.update("INSERT INTO chapter(courseId,chapterNumber,chapterName) VALUES(?,?,?)", chapter.getCourseId(), chapter.getChapterNumber(), chapter.getChapterName());
     }

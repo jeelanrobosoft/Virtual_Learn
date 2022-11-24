@@ -76,8 +76,14 @@ public class UserService {
 
             try {
                 jdbcTemplate.queryForObject("SELECT userName FROM enrollment WHERE userName = ? AND courseId = ?", new BeanPropertyRowMapper<>(Enrollment.class), userName, courseId);
-                OverviewResponse overviewResponse = jdbcTemplate.queryForObject("SELECT courseName,coursePhoto,categoryName,chapterCount,lessonCount,courseTagLine,previewVideo,overView.description,testCount,courseMaterialId,courseDuration,learningOutCome,requirements,instructorName,url,profilePhoto,instructor.description AS instructorDescription FROM overView INNER JOIN instructor ON overView.instructorId = instructor.instructorId  INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(OverviewResponse.class), courseId);
+                OverviewResponse overviewResponse = jdbcTemplate.queryForObject("SELECT courseName,coursePhoto,categoryName,chapterCount,lessonCount,courseTagLine,previewVideo,overView.description,testCount,courseMaterialId,courseDuration,instructorName,url,profilePhoto,instructor.description AS instructorDescription FROM overView INNER JOIN instructor ON overView.instructorId = instructor.instructorId  INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(OverviewResponse.class), courseId);
+                String learningOutcome = jdbcTemplate.queryForObject("SELECT learningOutCome FROM overView WHERE courseId = ?",String.class,courseId);
+                String requirement = jdbcTemplate.queryForObject("SELECT requirements FROM oveView WHERE courseId = ?",String.class,courseId);
                 if (overviewResponse != null) {
+                    if(learningOutcome != null && requirement != null) {
+                        overviewResponse.setLearningOutCome(learningOutcome.split(System.lineSeparator()));
+                        overviewResponse.setRequirements(requirement.split(System.lineSeparator()));
+                    }
                     overviewResponse.setEnrolled(true);
                 }
                 return overviewResponse;
@@ -168,6 +174,27 @@ public class UserService {
                 }
             }
             return ongoingResponses;
+    }
+    public List<CompletedResponse> getCourseCompletedResponse() {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        try {
+            return jdbcTemplate.query("SELECT course.courseId,courseName,coursePercentage,coursePhoto FROM course INNER JOIN courseProgress ON course.courseId = courseProgress.courseId AND courseProgress.userName = ? AND courseProgress.courseCompletedStatus = true", new BeanPropertyRowMapper<>(CompletedResponse.class), userName);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public Boolean checkMyCourses()
+    {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        try {
+            jdbcTemplate.queryForObject("SELECT userName FROM enrollment WHERE userName = ?",String.class,userName);
+            return true;
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
     }
 
 
@@ -297,15 +324,6 @@ public class UserService {
         }
     }
 
-    public List<CompletedResponse> getCourseCompletedResponse() {
-        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        try {
-            return jdbcTemplate.query("SELECT course.courseId,courseName,coursePercentage,coursePhoto FROM course INNER JOIN courseProgress ON course.courseId = courseProgress.courseId AND courseProgress.userName = ? AND courseProgress.courseCompletedStatus = true", new BeanPropertyRowMapper<>(CompletedResponse.class), userName);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     public Continue getLastPlayed(Integer courseId) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         try {
@@ -373,7 +391,41 @@ public class UserService {
             return null;
         }
     }
-    //chk
+
+    public List<AllCoursesResponse> searchByKeyword(String keyword)
+    {
+        List<Integer> courseIds = jdbcTemplate.queryForList("SELECT courseId from courseKeywords WHERE keyword = ?", Integer.class,keyword);
+        List<AllCoursesResponse> allCoursesResponses = new ArrayList<>();
+        for (Integer courseId : courseIds) {
+            AllCoursesResponse allCoursesResponse = jdbcTemplate.queryForObject("SELECT courseId,courseName,coursePhoto,categoryName FROM course INNER JOIN category ON category.categoryId = course.categoryId WHERE courseId = ?", new BeanPropertyRowMapper<>(AllCoursesResponse.class), courseId);
+            Integer chapterCount = jdbcTemplate.queryForObject("SELECT COUNT(courseId) FROM chapter WHERE courseId = ?", Integer.class, courseId);
+            if (chapterCount != null && allCoursesResponse != null) {
+                allCoursesResponse.setChapterCount(chapterCount);
+                allCoursesResponses.add(allCoursesResponse);
+            }
+        }
+        return allCoursesResponses;
+    }
+
+    public void topSearches(Integer courseId)
+    {
+        int searchCount = jdbcTemplate.queryForObject("SELECT searchCount FROM courseKeywords WHERE courseId=?", Integer.class, courseId);
+        jdbcTemplate.update("UPDATE courseKeywords set searchCount=? WHERE courseId=?",searchCount+1,courseId);
+    }
+
+    public List<String> searchKeywords()
+    {
+        List<String> keyWords = new ArrayList<>();
+        List<CourseKeywords> courseList = jdbcTemplate.query("SELECT * FROM courseKeywords", new BeanPropertyRowMapper<>(CourseKeywords.class));
+        for(CourseKeywords c: courseList)
+        {
+            if(c.getSearchCount()>3)
+            {
+                keyWords.add(c.getKeyword());
+            }
+        }
+        return keyWords;
+    }
 
     public List<HomeResponseTopHeader> HomePageTopBar()   // front end should send username when ever they call home api as a response
     {
@@ -381,6 +433,7 @@ public class UserService {
         User user = jdbcTemplate.queryForObject("SELECT occupation FROM user WHERE userName = ?", (rs, rowNum) -> new User(rs.getInt("occupation")), userName);
         if(user != null) {
             if (user.getOccupation() == 0) {
+                List<HomeResponseTopHeader> list = jdbcTemplate.query("SELECT coursePhoto, courseName FROM course", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class));
                 return jdbcTemplate.query("SELECT coursePhoto, courseName FROM course", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class));
             } else {
                 try {

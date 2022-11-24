@@ -2,6 +2,7 @@ package com.robosoft.VirtualLearn.AdminPanel.controller;
 
 import com.robosoft.VirtualLearn.AdminPanel.entity.Category;
 import com.robosoft.VirtualLearn.AdminPanel.entity.Course;
+import com.robosoft.VirtualLearn.AdminPanel.entity.CourseKeywords;
 import com.robosoft.VirtualLearn.AdminPanel.entity.SubCategory;
 import com.robosoft.VirtualLearn.AdminPanel.request.*;
 import com.robosoft.VirtualLearn.AdminPanel.response.*;
@@ -119,10 +120,10 @@ public class UserController {
         }
     }
 
-    @GetMapping("/allCoursesOfCategory")
-    public ResponseEntity<?> getAllCourses(@RequestBody Category category) {
+    @GetMapping("/allCoursesOfCategory/{categoryId}")
+    public ResponseEntity<?> getAllCourses(@PathVariable Integer categoryId) {
         try {
-            List<AllCoursesResponse> allCourseResponses = userService.getAllCoursesOf(category.getCategoryId());
+            List<AllCoursesResponse> allCourseResponses = userService.getAllCoursesOf(categoryId);
 
             if (allCourseResponses.isEmpty()) {
                 return new ResponseEntity(Collections.singletonMap("message", "Currently No Courses Available in this Category"), HttpStatus.NOT_FOUND);
@@ -166,8 +167,14 @@ public class UserController {
             String termsAndConditions = userService.getTermsAndConditions();
             return ResponseEntity.of(Optional.of(Collections.singletonMap("message", termsAndConditions)));
         } catch (Exception e) {
-            return new ResponseEntity(Collections.singletonMap("message", "Terms and Conditions Not Found"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(Collections.singletonMap("message", "Terms and Conditions Not Found"), HttpStatus.NOT_FOUND);
         }
+    }
+
+    @GetMapping("/checkMyCourses")
+    public ResponseEntity<?> checkMyCourses()
+    {
+        return ResponseEntity.of(Optional.of(Collections.singletonMap("message", userService.checkMyCourses())));
     }
 
     @GetMapping("/ongoingCourses")
@@ -229,13 +236,40 @@ public class UserController {
         }
     }
 
-    @GetMapping("applyFilter")
+    @PostMapping("/applyFilter")
     public ResponseEntity<?> applyFilter(@RequestBody FilterRequest filterRequest) {
         List<AllCoursesResponse> allCoursesResponses = userService.searchFilter(filterRequest);
         if (allCoursesResponses == null || allCoursesResponses.isEmpty()) {
             return new ResponseEntity<>(Collections.singletonMap("message", "No Matching Course"), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(allCoursesResponses, HttpStatus.OK);
+    }
+
+    @GetMapping("/searchByKeyword/{keyword}")
+    public ResponseEntity<?> searchByKeyword(@RequestBody String keyword)
+    {
+        List<AllCoursesResponse> allCoursesResponses = userService.searchByKeyword(keyword);
+        if (allCoursesResponses == null || allCoursesResponses.isEmpty()) {
+            return new ResponseEntity<>(Collections.singletonMap("message", "No Matching Course"), HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(allCoursesResponses, HttpStatus.OK);
+    }
+
+    @PutMapping("/keywords/{courseId}")
+    public ResponseEntity<?> updateSearchCount(@PathVariable Integer courseId){
+        userService.topSearches(courseId);
+        return new ResponseEntity<>(Collections.singletonMap("message", "Updated"), HttpStatus.OK);
+    }
+
+    @GetMapping("/topSearches")
+    public ResponseEntity<?> getTopSearches()
+    {
+        List<String> keywordsList = userService.searchKeywords();
+        if(keywordsList.size() == 0)
+        {
+            return new ResponseEntity<>(Collections.singletonMap("message", "No Top Searches"), HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(keywordsList, HttpStatus.OK);
     }
 
     @GetMapping("/home/course")
