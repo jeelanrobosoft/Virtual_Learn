@@ -27,6 +27,7 @@ public class RegistrationController {
         int status = service.checkMobileNumber(mobileAuth);
         if (status == 1)
             return Collections.singletonMap("message", "User already exists");
+        service.deletePreviousOtp(mobileAuth.getMobileNumber());
         String twoFaCode = String.valueOf(new Random().nextInt(8999) + 1000);
         return Collections.singletonMap("message", "OTP Valid For " + service.sendOtp(mobileAuth, twoFaCode) + " Minutes");
     }

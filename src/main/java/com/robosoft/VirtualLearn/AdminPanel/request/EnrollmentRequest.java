@@ -11,5 +11,4 @@ import java.sql.Date;
 @NoArgsConstructor
 public class EnrollmentRequest {
     private Integer courseId;
-    private Date joinDate;
 }

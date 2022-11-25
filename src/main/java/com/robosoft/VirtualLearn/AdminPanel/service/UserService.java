@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Time;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -474,7 +475,7 @@ public class UserService {
             Integer enrolmentCount = jdbcTemplate.queryForObject("SELECT count(courseId) FROM enrollment WHERE courseId= ?", Integer.class, allEnrolledCourse.getCourseId());
             if (enrolmentCount != null) {
                 if (enrolmentCount > 1) {
-                    HomeAllCourse homeAllCourse = jdbcTemplate.queryForObject("SELECT c.coursePhoto, c.courseName,c.categoryId, o.chapterCount FROM course c,overView o WHERE c.courseId=? and c.courseId = o.courseId", (rs, rowNum) -> new HomeAllCourse(rs.getString("coursePhoto"), rs.getString("courseName"), rs.getInt("categoryId"), rs.getInt("chapterCount")), allEnrolledCourse.getCourseId());
+                    HomeAllCourse homeAllCourse = jdbcTemplate.queryForObject("SELECT c.courseId,c.coursePhoto, c.courseName,c.categoryId, o.chapterCount FROM course c,overView o WHERE c.courseId=? and c.courseId = o.courseId", (rs, rowNum) -> new HomeAllCourse(rs.getInt("courseId"),rs.getString("coursePhoto"), rs.getString("courseName"), rs.getInt("categoryId"), rs.getInt("chapterCount")), allEnrolledCourse.getCourseId());
                     popularCourseList.add(homeAllCourse);
                 }
             }
@@ -488,7 +489,7 @@ public class UserService {
         int size = allNewCourses.size() - 1;
         int newCourseLimit = size / 2;
         for (int i = size; i >= newCourseLimit; i--) {
-            HomeAllCourse homeAllCourse = jdbcTemplate.queryForObject("SELECT c.coursePhoto, c.courseName,c.categoryId, o.chapterCount FROM course c,overView o WHERE c.courseId=? and c.courseId = o.courseId", (rs, rowNum) -> new HomeAllCourse(rs.getString("coursePhoto"), rs.getString("courseName"), rs.getInt("categoryId"), rs.getInt("chapterCount")), allNewCourses.get(i).getCourseId());
+            HomeAllCourse homeAllCourse = jdbcTemplate.queryForObject("SELECT c.courseId,c.coursePhoto, c.courseName,c.categoryId, o.chapterCount FROM course c,overView o WHERE c.courseId=? and c.courseId = o.courseId", new BeanPropertyRowMapper<>(HomeAllCourse.class), allNewCourses.get(i).getCourseId());
             newCourseList.add(homeAllCourse);
         }
         return newCourseList;
@@ -509,7 +510,7 @@ public class UserService {
                     try {
                         List<PopularCourseInEachCategory> popularCourseInEachCategory = jdbcTemplate.query("SELECT c.courseName,c.coursePhoto,o.chapterCount, c.courseDuration,c.previewVideo from course c, overView o , category ct WHERE ct.categoryId = ? and  ct.categoryId = c.categoryId and c.courseId = o.courseId", (rs, rowNum) -> new PopularCourseInEachCategory(rs.getString("courseName"), rs.getString("coursePhoto"), rs.getInt("chapterCount"), rs.getString("courseDuration"), rs.getString("previewVideo")), category.getCategoryId());
                         String categoryName = jdbcTemplate.queryForObject("SELECT categoryName FROM category WHERE categoryId=?", String.class, category.getCategoryId());
-
+                        topCourseResponse.setCategoryId(category.getCategoryId());
                         topCourseResponse.setPopularCourseInEachCategoryList(popularCourseInEachCategory);
                         topCourseResponse.setCategoryName(categoryName);
                         topCoursesList.add(topCourseResponse);
@@ -529,7 +530,7 @@ public class UserService {
             jdbcTemplate.queryForObject("SELECT * FROM enrollment WHERE userName= ? and courseId = ?", (rs, rowNum) -> new Enrollment(rs.getString("userName"), rs.getInt("courseId"), rs.getDate("joinDate"), rs.getInt("courseScore")), userName, enrollmentRequest.getCourseId());
             return "Already enrolled";
         } catch (EmptyResultDataAccessException e) {
-            jdbcTemplate.update("INSERT INTO enrollment(userName,courseId,joinDate) values(?,?,?)", userName, enrollmentRequest.getCourseId(), enrollmentRequest.getJoinDate());
+            jdbcTemplate.update("INSERT INTO enrollment(userName,courseId,joinDate) values(?,?,?)", userName, enrollmentRequest.getCourseId(), LocalDate.now());
             jdbcTemplate.update("INSERT INTO courseProgress(userName,courseId) values(?,?)", userName, enrollmentRequest.getCourseId());
             List<Chapter> chaptersOfCourse = jdbcTemplate.query("SELECT * FROM chapter WHERE courseId = ?", (rs, rowNum) -> new Chapter(rs.getInt("chapterId"), rs.getInt("courseId"), rs.getInt("chapterNumber"), rs.getString("chapterName"), rs.getString("chapterDuration")), enrollmentRequest.getCourseId());
 

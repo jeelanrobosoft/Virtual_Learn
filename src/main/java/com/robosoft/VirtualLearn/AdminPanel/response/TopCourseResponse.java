@@ -10,6 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TopCourseResponse {
+    private Integer categoryId;
     private String categoryName;
     List<PopularCourseInEachCategory> popularCourseInEachCategoryList;
 }
