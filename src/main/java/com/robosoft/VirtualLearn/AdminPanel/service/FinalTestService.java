@@ -53,6 +53,10 @@ public class FinalTestService {
         return testDataAccess.userAnswers(userAnswers);
     }
 
+    public String checkForCompletedStatus(Integer testId) {
+        return testDataAccess.checkForCompletedStatus(testId);
+    }
+
     private File convertMultiPartToFile(MultipartFile file) throws IOException {
         File convertedFile = new File(Objects.requireNonNull(file.getOriginalFilename()));
         FileOutputStream fos = new FileOutputStream(convertedFile);
@@ -107,7 +111,7 @@ public class FinalTestService {
             g.drawString(courseName, 90, 460);
         }
         g.setFont(new Font("TimesRoman", Font.PLAIN, 35));
-        g.drawString("Join Date: " + joinDate + " Completed Date: " + completedDate + " " + hour + "h " + minute + "m ", 90, 590);
+        g.drawString("Join Date: " + joinDate + " Completed Date: " + completedDate + " " + hour + "h " + minute + "m ", 90, 550);
         String certificateNumber = " Certificate Number: CER57RF9" + userName + "S978" + courseId;
         g.drawString(certificateNumber, 90, 700);
         g.dispose();
@@ -125,4 +129,6 @@ public class FinalTestService {
         Integer courseId = jdbcTemplate.queryForObject("SELECT courseId FROM course WHERE courseId=(SELECT courseId FROM chapter WHERE chapterId=(SELECT chapterId FROM test WHERE testId=?))", Integer.class, testId);
         return jdbcTemplate.queryForObject("SELECT certificateUrl FROm certificate WHERE userName=? and courseId=?", String.class, userName, courseId);
     }
+
+
 }

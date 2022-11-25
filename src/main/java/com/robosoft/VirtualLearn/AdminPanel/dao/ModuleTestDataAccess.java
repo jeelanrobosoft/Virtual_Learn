@@ -1,7 +1,6 @@
 package com.robosoft.VirtualLearn.AdminPanel.dao;
 
 
-import com.robosoft.VirtualLearn.AdminPanel.dto.ModuleTestRequest;
 import com.robosoft.VirtualLearn.AdminPanel.dto.ResultAnswerRequest;
 import com.robosoft.VirtualLearn.AdminPanel.dto.ResultHeaderRequest;
 import com.robosoft.VirtualLearn.AdminPanel.entity.Answers;
@@ -87,6 +86,13 @@ public class ModuleTestDataAccess {
     public List<ResultAnswerRequest> getResultAnswers(Integer testId) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         return jdbcTemplate.query("select question.questionId,questionName,option_1,option_2,option_3,option_4,correctAnswer,userAnswer,userAnswerStatus from question inner join userAnswer on question.questionId=userAnswer.questionId where userAnswer.testId=" + testId + " and userName='" + userName + "'", new BeanPropertyRowMapper<>(ResultAnswerRequest.class));
+    }
 
+    public String checkForCompletedStatus(Integer testId){
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        Integer status = jdbcTemplate.queryForObject("select count(chapterCompletedStatus) from chapterProgress where userName='" + userName + "' and testId=" + testId + " and chapterCompletedStatus=true", Integer.class);
+        if(status == 0)
+            return null;
+        return "You have already attended test";
     }
 }

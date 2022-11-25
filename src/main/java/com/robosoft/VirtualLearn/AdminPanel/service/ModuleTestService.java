@@ -1,7 +1,6 @@
 package com.robosoft.VirtualLearn.AdminPanel.service;
 
 import com.robosoft.VirtualLearn.AdminPanel.dao.ModuleTestDataAccess;
-import com.robosoft.VirtualLearn.AdminPanel.dto.ModuleTestRequest;
 import com.robosoft.VirtualLearn.AdminPanel.dto.ResultAnswerRequest;
 import com.robosoft.VirtualLearn.AdminPanel.dto.ResultHeaderRequest;
 import com.robosoft.VirtualLearn.AdminPanel.entity.ModuleTest;
@@ -31,5 +30,9 @@ public class ModuleTestService {
 
     public List<ResultAnswerRequest> getResultAnswers(Integer testId) {
         return dataAccess.getResultAnswers(testId);
+    }
+
+    public String checkForCompletedStatus(Integer testId) {
+        return dataAccess.checkForCompletedStatus(testId);
     }
 }

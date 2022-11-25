@@ -78,4 +78,12 @@ public class FinalTestDataAccess {
         float chapterTestPercentage = (correctAnswerCount / (float) questionCount) * 100;
         return chapterTestPercentage;
     }
+
+    public String checkForCompletedStatus(Integer testId){
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        Integer status = jdbcTemplate.queryForObject("select count(chapterCompletedStatus) from chapterProgress where userName='" + userName + "' and testId=" + testId + " and chapterCompletedStatus=true", Integer.class);
+        if(status == 0)
+            return null;
+        return "You have already attended test";
+    }
 }

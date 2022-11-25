@@ -24,27 +24,31 @@ public class FinalTestController {
 
     @GetMapping("/finalTest")
     public ResponseEntity<?> getFinalTest(@RequestParam Integer testId) {
+
+        String status = finalTestService.checkForCompletedStatus(testId);
+        if(status != null)
+            return new ResponseEntity<>(Collections.singletonMap("message",status),HttpStatus.NOT_ACCEPTABLE);
         FinalTest moduleTest = finalTestService.finalTestService(testId);
         if (moduleTest == null)
-            return new ResponseEntity<>("Invalid Test Id", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(Collections.singletonMap("message","Invalid Test Id"),HttpStatus.NOT_FOUND);
         return ResponseEntity.of(Optional.of(moduleTest));
     }
 
     @PostMapping("/finalSubmit")
-    public Map submitUserAnswers(@RequestBody UserAnswers userAnswers) throws IOException, ParseException {
+    public ResponseEntity<?> submitUserAnswers(@RequestBody UserAnswers userAnswers) throws IOException, ParseException {
         float testPercentage = finalTestService.userAnswers(userAnswers);
         finalTestService.certificate(userAnswers.getTestId());
-        return Collections.singletonMap("Test Percentage", testPercentage);
+        return new ResponseEntity<>(Collections.singletonMap("Test Percentage", testPercentage),HttpStatus.OK);
     }
 
     @GetMapping("/result")
-    public Map getFinalTestResult(@RequestBody FinalTestRequest request) throws IOException {
-        return Collections.singletonMap("Approval Rate", finalTestService.getFinalTestResult(request));
+    public ResponseEntity<?> getFinalTestResult(@RequestBody FinalTestRequest request) throws IOException {
+        return new ResponseEntity<>(Collections.singletonMap("Approval Rate", finalTestService.getFinalTestResult(request)),HttpStatus.OK);
     }
 
     @GetMapping("/viewCertificate")
-    public Map getCertificate(@RequestParam Integer testId) throws IOException, ParseException {
-        return Collections.singletonMap("message", finalTestService.viewCertificate(testId));
+    public ResponseEntity<?> getCertificate(@RequestParam Integer testId) throws IOException, ParseException {
+        return new ResponseEntity<>(Collections.singletonMap("message", finalTestService.viewCertificate(testId)),HttpStatus.OK);
     }
 
 }
