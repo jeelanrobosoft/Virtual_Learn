@@ -329,8 +329,7 @@ public class UserService {
             List<Integer> chapterIds = jdbcTemplate.queryForList("SELECT chapterId FROM chapter WHERE courseId = ?", Integer.class, courseId);
             Integer lessonId = 0;
             for (int chapterId : chapterIds) {
-                lessonId = jdbcTemplate.queryForObject("SELECT lesson.lessonId FROM lesson INNER JOIN lessonProgress ON lesson.lessonId = lessonProgress.lessonId WHERE lessonProgress.pauseTime < lesson.lessonDuration  AND lessonProgress.pauseTime > '00.00.00' AND lessonProgress.userName = ? AND lesson.chapterId = ?", Integer.class, userName, chapterId);
-                break;
+                lessonId = jdbcTemplate.queryForObject("SELECT lesson.lessonId FROM lesson INNER JOIN lessonProgress ON lesson.lessonId = lessonProgress.lessonId WHERE lessonProgress.updatedTime = (SELECT max(updatedTime) FROM lessonProgress) AND lessonProgress.userName = ? AND lesson.chapterId = ?", Integer.class, userName, chapterId);                break;
             }
             return jdbcTemplate.queryForObject("SELECT chapterNumber,lessonNumber,lesson.lessonId,pauseTime,videoLink FROM lesson INNER JOIN lessonProgress ON lesson.lessonId = lessonProgress.lessonId INNER JOIN chapter ON lesson.chapterId = chapter.chapterId AND lesson.lessonId = ? AND lessonProgress.userName = ?", new BeanPropertyRowMapper<>(Continue.class), lessonId, userName);
         } catch (Exception e) {

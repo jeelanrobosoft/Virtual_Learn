@@ -33,7 +33,7 @@ public class ProfileController {
         return ResponseEntity.of(Optional.of(menuService.getMyProfile(response, userName)));
     }
 
-    @PatchMapping("/save")
+    @PutMapping("/save")
     public Map saveMyProfile(@ModelAttribute SaveProfile saveProfile) throws IOException, ParseException {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         profileService.saveMyProfile(saveProfile, userName);
