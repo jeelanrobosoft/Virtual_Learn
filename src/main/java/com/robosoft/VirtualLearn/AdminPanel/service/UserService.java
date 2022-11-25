@@ -525,6 +525,7 @@ public class UserService {
 
     public String enrollment(EnrollmentRequest enrollmentRequest) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        Integer testIdOfChapter=0;
         try {
             jdbcTemplate.queryForObject("SELECT * FROM enrollment WHERE userName= ? and courseId = ?", (rs, rowNum) -> new Enrollment(rs.getString("userName"), rs.getInt("courseId"), rs.getDate("joinDate"), rs.getInt("courseScore")), userName, enrollmentRequest.getCourseId());
             return "Already enrolled";
@@ -534,9 +535,9 @@ public class UserService {
             List<Chapter> chaptersOfCourse = jdbcTemplate.query("SELECT * FROM chapter WHERE courseId = ?", (rs, rowNum) -> new Chapter(rs.getInt("chapterId"), rs.getInt("courseId"), rs.getInt("chapterNumber"), rs.getString("chapterName"), rs.getString("chapterDuration")), enrollmentRequest.getCourseId());
 
             for (Chapter chapter : chaptersOfCourse) {
-                List<Lesson> lessonsOfChapter;
+                List<Lesson> lessonsOfChapter = new ArrayList<>();
                 try {
-                    Integer testIdOfChapter = jdbcTemplate.queryForObject("SELECT testId FROM test WHERE chapterId = ?", Integer.class, chapter.getChapterId());
+                    testIdOfChapter = jdbcTemplate.queryForObject("SELECT testId FROM test WHERE chapterId = ?", Integer.class, chapter.getChapterId());
                     jdbcTemplate.update("INSERT INTO chapterProgress(userName,courseId,chapterId,testId) values(?,?,?,?)", userName, enrollmentRequest.getCourseId(), chapter.getChapterId(), testIdOfChapter);
                     lessonsOfChapter = jdbcTemplate.query("SELECT * FROM lesson WHERE chapterId = ?", (rs, rowNum) -> new Lesson(rs.getInt("lessonId"), rs.getInt("lessonNumber"), rs.getInt("chapterId"), rs.getString("lessonName"), rs.getString("lessonDuration"), rs.getString("videoLink")), chapter.getChapterId());
                 } catch (Exception exception) {
@@ -561,7 +562,13 @@ public class UserService {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         Time pauseTime = videoPauseRequest.getPauseTime();
         String videoPauseTime = pauseTime.toString();
-        jdbcTemplate.update("UPDATE lessonProgress SET pauseTime=? WHERE lessonId=? and userName=? and chapterId=?", videoPauseTime, videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
+        System.out.println(videoPauseTime);
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formatDateTime = now.format(format);
+        System.out.println(formatDateTime);
+        jdbcTemplate.update("UPDATE lessonProgress SET pauseTime=? WHERE lessonId=? and userName=? and chapterId=?", videoPauseTime,videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
+        jdbcTemplate.update("UPDATE lessonProgress SET updatedTime = ? WHERE lessonId=? and userName=? and chapterId=?", formatDateTime,videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
         String lessonDuration = jdbcTemplate.queryForObject("SELECT lessonDuration FROM lesson WHERE lessonId=?", String.class, videoPauseRequest.getLessonId());
         if(lessonDuration != null) {
             if (lessonDuration.equals(videoPauseTime)) {
