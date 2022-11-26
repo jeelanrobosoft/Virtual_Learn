@@ -15,5 +15,9 @@ public class ModuleTest {
     private String testName;
     private String testDuration;
     private Integer questionsCount;
+    private boolean state1 = false;
+    private boolean state2 = false;
+    private boolean state3 = false;
+    private boolean state4 = false;
     private List<Question> questions;
 }

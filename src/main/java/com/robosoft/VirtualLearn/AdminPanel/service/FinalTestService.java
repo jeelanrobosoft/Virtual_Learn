@@ -1,6 +1,9 @@
 package com.robosoft.VirtualLearn.AdminPanel.service;
 
 
+import com.aspose.pdf.Image;
+import com.aspose.pdf.Page;
+import com.aspose.pdf.PageSize;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.*;
 import com.robosoft.VirtualLearn.AdminPanel.dao.FinalTestDataAccess;
@@ -14,9 +17,11 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
+import com.aspose.pdf.*;
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,6 +30,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -120,7 +126,36 @@ public class FinalTestService {
         FileInputStream input = new FileInputStream(fileItem);
         MultipartFile multipartFile = new MockMultipartFile("fileItem", fileItem.getName(), "image/png", IOUtils.toByteArray(input));
         String url = getFileUrl(multipartFile);
+        String pdfUrl = pdf(userName,courseId);
+        System.out.println(pdfUrl);
         jdbcTemplate.update("INSERT INTO certificate(certificateNumber,courseId,UserName,certificateUrl) values(?,?,?,?)", certificateNumber, courseId, userName, url);
+    }
+
+    public String pdf(String userName, Integer courseId) throws IOException {
+        Path _dataDir = Paths.get("src/main/resources/CerificateData");
+        Document document = new Document();
+
+
+        PageSize A4 = new PageSize(595, 842);
+        Page page = document.getPages().add();
+        page.setPageSize(297,420);
+        Image image1 = new Image();
+
+        // Load sample JPEG image file
+        image1.setFile(Paths.get(_dataDir.toString(), userName+courseId+".png").toString());
+        page.getParagraphs().add(image1);
+
+        // Save output PDF document
+
+        document.save(Paths.get(_dataDir.toString(),userName+courseId+".pdf").toString());
+
+
+        File fileItem = new File("src/main/resources/CerificateData/"+userName+courseId+".pdf");
+        FileInputStream input = new FileInputStream(fileItem);
+        MultipartFile multipartFile = new MockMultipartFile("fileItem", fileItem.getName(), "image/pdf", IOUtils.toByteArray(input));
+        String url = getFileUrl(multipartFile);
+
+        return url;
     }
 
 

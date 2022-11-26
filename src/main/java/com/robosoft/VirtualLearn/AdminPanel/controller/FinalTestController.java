@@ -47,8 +47,13 @@ public class FinalTestController {
     }
 
     @GetMapping("/viewCertificate")
-    public ResponseEntity<?> getCertificate(@RequestParam Integer testId) throws IOException, ParseException {
-        return new ResponseEntity<>(Collections.singletonMap("message", finalTestService.viewCertificate(testId)),HttpStatus.OK);
+    public Map getCertificate(@RequestBody CertificateRequest certificateRequest) throws IOException, ParseException {
+        return Collections.singletonMap("message", finalTestService.viewCertificate(certificateRequest.getTestId()));
+    }
+
+    @GetMapping("/pdf/{userName}/{courseId}")
+    public String getPdf(@PathVariable String userName, @PathVariable Integer courseId) throws IOException {
+        return finalTestService.pdf(userName, courseId);
     }
 
 }

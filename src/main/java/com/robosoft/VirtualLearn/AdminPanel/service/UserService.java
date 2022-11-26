@@ -504,16 +504,21 @@ public class UserService {
         for (Category category : categoriesList) {
             TopCourseResponse topCourseResponse = new TopCourseResponse();
             Integer enrollmentCount = jdbcTemplate.queryForObject("SELECT count(c.courseId) FROM enrollment e, course c , category ct WHERE  ct.categoryId = ? and ct.categoryId = c.categoryId and c.courseId = e.courseId", Integer.class, category.getCategoryId());
+            System.out.println(enrollmentCount);
             if(enrollmentCount != null) {
                 if (enrollmentCount > 2) {
                     try {
                         List<PopularCourseInEachCategory> popularCourseInEachCategory = jdbcTemplate.query("SELECT c.courseName,c.coursePhoto,o.chapterCount, c.courseDuration,c.previewVideo from course c, overView o , category ct WHERE ct.categoryId = ? and  ct.categoryId = c.categoryId and c.courseId = o.courseId", (rs, rowNum) -> new PopularCourseInEachCategory(rs.getString("courseName"), rs.getString("coursePhoto"), rs.getInt("chapterCount"), rs.getString("courseDuration"), rs.getString("previewVideo")), category.getCategoryId());
+                        System.out.println(popularCourseInEachCategory);
                         String categoryName = jdbcTemplate.queryForObject("SELECT categoryName FROM category WHERE categoryId=?", String.class, category.getCategoryId());
-                        topCourseResponse.setCategoryId(category.getCategoryId());
-                        topCourseResponse.setPopularCourseInEachCategoryList(popularCourseInEachCategory);
-                        topCourseResponse.setCategoryName(categoryName);
-                        topCoursesList.add(topCourseResponse);
+                        if(popularCourseInEachCategory.size() !=0)
+                        {
+                            topCourseResponse.setCategoryId(category.getCategoryId());
+                            topCourseResponse.setPopularCourseInEachCategoryList(popularCourseInEachCategory);
+                            topCourseResponse.setCategoryName(categoryName);
+                            topCoursesList.add(topCourseResponse);
 
+                        }
                     } catch (EmptyResultDataAccessException exp) {
                         return null;
                     }
@@ -562,6 +567,7 @@ public class UserService {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         Time pauseTime = videoPauseRequest.getPauseTime();
         String videoPauseTime = pauseTime.toString();
+        System.out.println("++++++++++++++++++++++++++++++++++++++++++"+videoPauseTime);
         System.out.println(videoPauseTime);
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

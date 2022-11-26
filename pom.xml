@@ -153,8 +153,20 @@
 			<artifactId>spring-test</artifactId>
 		</dependency>
 
-
+		<dependency>
+			<groupId>com.aspose</groupId>
+			<artifactId>aspose-pdf</artifactId>
+			<version>11.8.0</version>
+		</dependency>
 	</dependencies>
+
+	<repositories>
+		<repository>
+			<id>aspose-maven-repository</id>
+			<url>https://repository.aspose.com/repo/</url>
+		</repository>
+	</repositories>
+
 	<build>
 		<plugins>
 			<plugin>
