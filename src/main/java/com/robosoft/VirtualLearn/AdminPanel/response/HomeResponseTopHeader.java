@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class HomeResponseTopHeader {
+    private Integer courseId;
     private String courseName;
     private String coursePhoto;
 }

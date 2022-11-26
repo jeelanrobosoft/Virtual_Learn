@@ -5,7 +5,6 @@ import com.robosoft.VirtualLearn.AdminPanel.entity.Answers;
 import com.robosoft.VirtualLearn.AdminPanel.entity.FinalTest;
 import com.robosoft.VirtualLearn.AdminPanel.entity.Question;
 import com.robosoft.VirtualLearn.AdminPanel.entity.UserAnswers;
-import com.robosoft.VirtualLearn.AdminPanel.request.FinalTestRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -36,9 +35,9 @@ public class FinalTestDataAccess {
         return finalTest;
     }
 
-    public Float getFinalTestResult(FinalTestRequest request) {
+    public Float getFinalTestResult(Integer testId) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        return jdbcTemplate.queryForObject("select coursePercentage from courseProgress where userName='" + userName + "' and courseId=(select distinct(courseId) from chapterProgress where testId=" + request.getTestId() + ")", Float.class);
+        return jdbcTemplate.queryForObject("select coursePercentage from courseProgress where userName='" + userName + "' and courseId=(select distinct(courseId) from chapterProgress where testId=" + testId + ")", Float.class);
     }
 
     public float userAnswers(UserAnswers userAnswers) {
@@ -81,6 +80,9 @@ public class FinalTestDataAccess {
 
     public String checkForCompletedStatus(Integer testId){
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        Integer userStatus = jdbcTemplate.queryForObject("select count(*) from user where userName='" + userName + "'",Integer.class);
+        if(userStatus == 0)
+            return "User does not exists";
         Integer status = jdbcTemplate.queryForObject("select count(chapterCompletedStatus) from chapterProgress where userName='" + userName + "' and testId=" + testId + " and chapterCompletedStatus=true", Integer.class);
         if(status == 0)
             return null;

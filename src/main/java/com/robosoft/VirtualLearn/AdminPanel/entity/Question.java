@@ -17,6 +17,10 @@ public class Question {
     private String option_2;
     private String option_3;
     private String option_4;
+    private boolean state1 = false;
+    private boolean state2 = false;
+    private boolean state3 = false;
+    private boolean state4 = false;
     private String correctAnswer;
 
     public Question(Integer questionId, String questionName, String option_1, String option_2, String option_3, String option_4, String correctAnswer) {

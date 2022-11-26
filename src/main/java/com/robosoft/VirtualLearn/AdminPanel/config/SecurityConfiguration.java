@@ -33,6 +33,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests()
                 .antMatchers("/newUser/***", "/login", "/refreshToken", "/admin/register", "/admin/login","/refreshToken","/send","/resetPassword").permitAll()
                 .antMatchers("/admin/***").hasRole("ADMIN")
+                .antMatchers("/user/***").hasRole("USER")
                 .anyRequest().authenticated()
                 .and().exceptionHandling().authenticationEntryPoint(authenticationEntryPoint)
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)

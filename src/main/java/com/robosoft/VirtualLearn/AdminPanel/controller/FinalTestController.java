@@ -3,7 +3,6 @@ package com.robosoft.VirtualLearn.AdminPanel.controller;
 import com.robosoft.VirtualLearn.AdminPanel.entity.FinalTest;
 import com.robosoft.VirtualLearn.AdminPanel.entity.UserAnswers;
 import com.robosoft.VirtualLearn.AdminPanel.request.CertificateRequest;
-import com.robosoft.VirtualLearn.AdminPanel.request.FinalTestRequest;
 import com.robosoft.VirtualLearn.AdminPanel.service.FinalTestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
+@RequestMapping("/user")
 public class FinalTestController {
     @Autowired
 
@@ -42,8 +42,8 @@ public class FinalTestController {
     }
 
     @GetMapping("/result")
-    public ResponseEntity<?> getFinalTestResult(@RequestBody FinalTestRequest request) throws IOException {
-        return new ResponseEntity<>(Collections.singletonMap("Approval Rate", finalTestService.getFinalTestResult(request)),HttpStatus.OK);
+    public ResponseEntity<?> getFinalTestResult(@RequestParam Integer testId) throws IOException {
+        return new ResponseEntity<>(Collections.singletonMap("Approval Rate", finalTestService.getFinalTestResult(testId)),HttpStatus.OK);
     }
 
     @GetMapping("/viewCertificate")
@@ -51,9 +51,8 @@ public class FinalTestController {
         return Collections.singletonMap("message", finalTestService.viewCertificate(certificateRequest.getTestId()));
     }
 
-    @GetMapping("/pdf/{userName}/{courseId}")
-    public String getPdf(@PathVariable String userName, @PathVariable Integer courseId) throws IOException {
-        return finalTestService.pdf(userName, courseId);
+    @GetMapping("/pdf")
+    public Map getPdf(@RequestParam Integer courseId) throws IOException {
+        return Collections.singletonMap("certificate", finalTestService.getPdfUrl(courseId));
     }
-
 }

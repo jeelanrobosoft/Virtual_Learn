@@ -64,6 +64,10 @@ public class MenuDataAccess {
     }
 
     public String readNotification(String userName, Integer notificationId) {
+
+        Integer status = jdbcTemplate.queryForObject("select count(*) from notification where notificationId=" + notificationId,Integer.class);
+        if(status == 0)
+            return "Notification Not Exists";
         jdbcTemplate.update("update notification set readStatus=true where notificationId=" + notificationId + " and userName='" + userName + "'");
         return "Successfully";
     }

@@ -317,8 +317,8 @@ public class UserController {
     }
 
     //pagination
-    @GetMapping("/home/course/{pageLimit}")
-    public ResponseEntity<?> homeTopBarDataPagination(@PathVariable Integer pageLimit) {
+    @GetMapping("/home/course/pagination")
+    public ResponseEntity<?> homeTopBarDataPagination(@RequestParam Integer pageLimit) {
         List<HomeResponseTopHeader> coursesList =  userService.HomePageTopBarPagination(pageLimit);
         if (coursesList == null) {
             return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "courses are not available")));

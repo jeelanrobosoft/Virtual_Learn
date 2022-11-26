@@ -158,8 +158,6 @@ public class AdminService {
         List<Chapter> chapterList = jdbcTemplate.query("SELECT chapterDuration FROM chapter WHERE courseId= ?", (rs, rowNum) -> {
             return new Chapter(rs.getString("chapterDuration"));
         }, lessonRequest.getCourseId());
-        System.out.println(chapterList);
-
         for (int i = 0; i < chapterList.size(); i++) {
             String chapterDurationInfo = chapterList.get(i).getChapterDuration();
             SimpleDateFormat timeFormatInfo = new SimpleDateFormat("HH:mm:ss");
@@ -170,7 +168,8 @@ public class AdminService {
             finalDuration = timeFormat.format(new Date(durationsSum));
             courseDurationInfo = finalDuration;
         }
-        jdbcTemplate.update("UPDATE chapter SET chapterDuration = ? WHERE chapterId = ?", new Object[]{finalDuration, lessonRequest.getCourseId()});
+        System.out.println(finalDuration);
+        jdbcTemplate.update("UPDATE course SET courseDuration = ? WHERE courseId = ?", new Object[]{finalDuration, lessonRequest.getCourseId()});
         return "Lesson Added SuccessFully";
     }
 

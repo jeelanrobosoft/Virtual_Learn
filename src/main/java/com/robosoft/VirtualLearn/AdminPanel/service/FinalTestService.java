@@ -12,7 +12,6 @@ import com.google.cloud.storage.StorageOptions;
 import com.robosoft.VirtualLearn.AdminPanel.dao.FinalTestDataAccess;
 import com.robosoft.VirtualLearn.AdminPanel.entity.FinalTest;
 import com.robosoft.VirtualLearn.AdminPanel.entity.UserAnswers;
-import com.robosoft.VirtualLearn.AdminPanel.request.FinalTestRequest;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -52,8 +51,8 @@ public class FinalTestService {
         return testDataAccess.getFinalTestS(testId);
     }
 
-    public Float getFinalTestResult(FinalTestRequest request) {
-        return testDataAccess.getFinalTestResult(request);
+    public Float getFinalTestResult(Integer testId) {
+        return testDataAccess.getFinalTestResult(testId);
     }
 
     public float userAnswers(UserAnswers userAnswers) {
@@ -128,8 +127,7 @@ public class FinalTestService {
         MultipartFile multipartFile = new MockMultipartFile("fileItem", fileItem.getName(), "image/png", IOUtils.toByteArray(input));
         String url = getFileUrl(multipartFile);
         String pdfUrl = pdf(userName,courseId);
-        System.out.println(pdfUrl);
-        jdbcTemplate.update("INSERT INTO certificate(certificateNumber,courseId,UserName,certificateUrl) values(?,?,?,?)", certificateNumber, courseId, userName, url);
+        jdbcTemplate.update("INSERT INTO certificate(certificateNumber,courseId,UserName,certificateUrl,pdfUrl) values(?,?,?,?,?)", certificateNumber, courseId, userName, url,pdfUrl);
     }
 
     public String pdf(String userName, Integer courseId) throws IOException {
@@ -151,10 +149,15 @@ public class FinalTestService {
         return url;
     }
 
-
     public String viewCertificate(Integer testId) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         Integer courseId = jdbcTemplate.queryForObject("SELECT courseId FROM course WHERE courseId=(SELECT courseId FROM chapter WHERE chapterId=(SELECT chapterId FROM test WHERE testId=?))", Integer.class, testId);
         return jdbcTemplate.queryForObject("SELECT certificateUrl FROm certificate WHERE userName=? and courseId=?", String.class, userName, courseId);
+    }
+
+    public String getPdfUrl(Integer courseId)
+    {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        return jdbcTemplate.queryForObject("SELECT pdfUrl FROM certificate WHERE userName=? and courseId=?",String.class,userName,courseId);
     }
 }
