@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class Continue {
     private Integer chapterNumber;
     private Integer lessonNumber;
-    private Integer lessonName;
+    private String lessonName;
     private Integer lessonId;
     private Integer chapterId;
     private String pauseTime;
