@@ -1,11 +1,14 @@
 package com.robosoft.VirtualLearn.AdminPanel.service;
 
 
+import com.aspose.pdf.Document;
 import com.aspose.pdf.Image;
 import com.aspose.pdf.Page;
-import com.aspose.pdf.PageSize;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.storage.*;
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import com.robosoft.VirtualLearn.AdminPanel.dao.FinalTestDataAccess;
 import com.robosoft.VirtualLearn.AdminPanel.entity.FinalTest;
 import com.robosoft.VirtualLearn.AdminPanel.entity.UserAnswers;
@@ -17,11 +20,9 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import com.aspose.pdf.*;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.Color;
-import java.awt.Font;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -84,7 +85,7 @@ public class FinalTestService {
         BlobId blobId = BlobId.of(FIREBASE_BUCKET, objectName);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(multipartFile.getContentType()).build();
         storage.create(blobInfo, Files.readAllBytes(filePath));
-        file.delete();
+        //file.delete();
 //        Blob blob = storage.create(blobInfo, Files.readAllBytes(filePath));
         return String.format(DOWNLOAD_URL, URLEncoder.encode(objectName));
     }
@@ -132,29 +133,21 @@ public class FinalTestService {
     }
 
     public String pdf(String userName, Integer courseId) throws IOException {
-        Path _dataDir = Paths.get("src/main/resources/CerificateData");
+        Path _dataDir = Paths.get("src/main/resources/CertificateData");
         Document document = new Document();
-
-
-        PageSize A4 = new PageSize(595, 842);
+       // PageSize A4 = new PageSize(297, 420);
         Page page = document.getPages().add();
-        page.setPageSize(297,420);
+        page.setPageSize(597,520);
         Image image1 = new Image();
-
         // Load sample JPEG image file
         image1.setFile(Paths.get(_dataDir.toString(), userName+courseId+".png").toString());
         page.getParagraphs().add(image1);
-
         // Save output PDF document
-
         document.save(Paths.get(_dataDir.toString(),userName+courseId+".pdf").toString());
-
-
-        File fileItem = new File("src/main/resources/CerificateData/"+userName+courseId+".pdf");
+        File fileItem = new File("src/main/resources/CertificateData/"+userName+courseId+".pdf");
         FileInputStream input = new FileInputStream(fileItem);
         MultipartFile multipartFile = new MockMultipartFile("fileItem", fileItem.getName(), "image/pdf", IOUtils.toByteArray(input));
         String url = getFileUrl(multipartFile);
-
         return url;
     }
 
@@ -164,6 +157,4 @@ public class FinalTestService {
         Integer courseId = jdbcTemplate.queryForObject("SELECT courseId FROM course WHERE courseId=(SELECT courseId FROM chapter WHERE chapterId=(SELECT chapterId FROM test WHERE testId=?))", Integer.class, testId);
         return jdbcTemplate.queryForObject("SELECT certificateUrl FROm certificate WHERE userName=? and courseId=?", String.class, userName, courseId);
     }
-
-
 }

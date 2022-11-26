@@ -316,6 +316,16 @@ public class UserController {
         return ResponseEntity.of(Optional.of(coursesOfCategory));
     }
 
+    //pagination
+    @GetMapping("/home/course/{pageLimit}")
+    public ResponseEntity<?> homeTopBarDataPagination(@PathVariable Integer pageLimit) {
+        List<HomeResponseTopHeader> coursesList =  userService.HomePageTopBarPagination(pageLimit);
+        if (coursesList == null) {
+            return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "courses are not available")));
+        }
+        return ResponseEntity.of(Optional.of(coursesList));
+    }
+
     @PostMapping("/enroll")
     public ResponseEntity<?> userEnrollment(@RequestBody EnrollmentRequest enrollmentRequest) {
         String enrolResponse = userService.enrollment(enrollmentRequest);

@@ -25,9 +25,12 @@ import java.util.*;
 public class UserService {
     @Autowired
     JdbcTemplate jdbcTemplate;
-    int pages = 4;
+    int pages = 2;
     int lowerLimit = 0;
     int upperLimit = pages;
+    int topHeaderLowerLimit = 0;
+
+    int topHeaderUpperLimit;
 
     public List<Category> getCategories() {
         List<Category> categories = jdbcTemplate.query("SELECT * FROM category limit ?,?", (rs, rowNum) ->
@@ -331,7 +334,7 @@ public class UserService {
             for (int chapterId : chapterIds) {
                 lessonId = jdbcTemplate.queryForObject("SELECT lesson.lessonId FROM lesson INNER JOIN lessonProgress ON lesson.lessonId = lessonProgress.lessonId WHERE lessonProgress.updatedTime = (SELECT max(updatedTime) FROM lessonProgress) AND lessonProgress.userName = ? AND lesson.chapterId = ?", Integer.class, userName, chapterId);                break;
             }
-            return jdbcTemplate.queryForObject("SELECT chapterNumber,lessonNumber,lesson.lessonId,pauseTime,videoLink FROM lesson INNER JOIN lessonProgress ON lesson.lessonId = lessonProgress.lessonId INNER JOIN chapter ON lesson.chapterId = chapter.chapterId AND lesson.lessonId = ? AND lessonProgress.userName = ?", new BeanPropertyRowMapper<>(Continue.class), lessonId, userName);
+            return jdbcTemplate.queryForObject("SELECT chapter.chapterId,lessonName,chapterNumber,lessonNumber,lesson.lessonId,pauseTime,videoLink FROM lesson INNER JOIN lessonProgress ON lesson.lessonId = lessonProgress.lessonId INNER JOIN chapter ON lesson.chapterId = chapter.chapterId AND lesson.lessonId = ? AND lessonProgress.userName = ?", new BeanPropertyRowMapper<>(Continue.class), lessonId, userName);
         } catch (Exception e) {
             return null;
         }
@@ -463,6 +466,44 @@ public class UserService {
         return null;
     }
 
+
+
+    public List<HomeResponseTopHeader> HomePageTopBarPagination(int topHeaderPages)   // front end should send username when ever they call home api as a response
+    {
+        topHeaderUpperLimit=topHeaderPages;
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = jdbcTemplate.queryForObject("SELECT occupation FROM user WHERE userName = ?", (rs, rowNum) -> new User(rs.getInt("occupation")), userName);
+        if(user != null) {
+            if (user.getOccupation() == 0) {
+                List<HomeResponseTopHeader> list = jdbcTemplate.query("SELECT coursePhoto, courseName FROM course limit ?,?", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class),topHeaderLowerLimit,topHeaderUpperLimit);
+                topHeaderLowerLimit = topHeaderLowerLimit+topHeaderPages;
+
+
+                if(list.size() == 0)
+                {
+                    topHeaderLowerLimit =0;
+                    return jdbcTemplate.query("SELECT coursePhoto, courseName FROM course limit ?,?", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class),topHeaderLowerLimit,topHeaderUpperLimit);
+
+                }
+                return list;
+                // return jdbcTemplate.query("SELECT coursePhoto, courseName FROM course limit ?,?", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class),,topHeaderLowerLimit,topHeaderUpperLimit);
+            } else {
+                try {
+                    List<HomeResponseTopHeader> course = jdbcTemplate.query("SELECT coursePhoto, courseName FROM course WHERE subCategoryId= ?", (rs, rowNum) -> new HomeResponseTopHeader(rs.getString("courseName"), rs.getString("coursePhoto")), user.getOccupation());
+                    if (course.size() != 0) {
+                        return course;
+                    }
+                } catch (NullPointerException e) {
+                    Integer categoryId = jdbcTemplate.queryForObject("SELECT categoryId from subCategory WHERE subcategoryId = ?", Integer.class, user.getOccupation());
+                    return jdbcTemplate.query("SELECT * FROM course WHERE categoryId = ?", (rs, rowNum) -> new HomeResponseTopHeader(rs.getString("courseName"), rs.getString("coursePhoto")), categoryId);
+
+                }
+            }
+        }
+        return null;
+    }
+
+
     public List<HomeAllCourse> getAllCourses() {
         return jdbcTemplate.query("SELECT overView.courseId, coursePhoto, courseName,categoryId, chapterCount FROM course,overView WHERE course.courseId = overView.courseId", (rs, rowNum) -> new HomeAllCourse(rs.getInt("courseId"), rs.getString("coursePhoto"),rs.getString("courseName"),  rs.getInt("categoryId"), rs.getInt("chapterCount")));
     }
@@ -530,7 +571,7 @@ public class UserService {
 
     public String enrollment(EnrollmentRequest enrollmentRequest) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        Integer testIdOfChapter=0;
+        Integer testIdOfChapter;
         try {
             jdbcTemplate.queryForObject("SELECT * FROM enrollment WHERE userName= ? and courseId = ?", (rs, rowNum) -> new Enrollment(rs.getString("userName"), rs.getInt("courseId"), rs.getDate("joinDate"), rs.getInt("courseScore")), userName, enrollmentRequest.getCourseId());
             return "Already enrolled";
@@ -540,7 +581,7 @@ public class UserService {
             List<Chapter> chaptersOfCourse = jdbcTemplate.query("SELECT * FROM chapter WHERE courseId = ?", (rs, rowNum) -> new Chapter(rs.getInt("chapterId"), rs.getInt("courseId"), rs.getInt("chapterNumber"), rs.getString("chapterName"), rs.getString("chapterDuration")), enrollmentRequest.getCourseId());
 
             for (Chapter chapter : chaptersOfCourse) {
-                List<Lesson> lessonsOfChapter = new ArrayList<>();
+                List<Lesson> lessonsOfChapter;
                 try {
                     testIdOfChapter = jdbcTemplate.queryForObject("SELECT testId FROM test WHERE chapterId = ?", Integer.class, chapter.getChapterId());
                     jdbcTemplate.update("INSERT INTO chapterProgress(userName,courseId,chapterId,testId) values(?,?,?,?)", userName, enrollmentRequest.getCourseId(), chapter.getChapterId(), testIdOfChapter);
@@ -567,12 +608,9 @@ public class UserService {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         Time pauseTime = videoPauseRequest.getPauseTime();
         String videoPauseTime = pauseTime.toString();
-        System.out.println("++++++++++++++++++++++++++++++++++++++++++"+videoPauseTime);
-        System.out.println(videoPauseTime);
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String formatDateTime = now.format(format);
-        System.out.println(formatDateTime);
         jdbcTemplate.update("UPDATE lessonProgress SET pauseTime=? WHERE lessonId=? and userName=? and chapterId=?", videoPauseTime,videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
         jdbcTemplate.update("UPDATE lessonProgress SET updatedTime = ? WHERE lessonId=? and userName=? and chapterId=?", formatDateTime,videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
         String lessonDuration = jdbcTemplate.queryForObject("SELECT lessonDuration FROM lesson WHERE lessonId=?", String.class, videoPauseRequest.getLessonId());
