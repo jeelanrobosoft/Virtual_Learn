@@ -7,8 +7,12 @@ import com.robosoft.VirtualLearn.AdminPanel.service.MyUserDetailsService;
 import com.robosoft.VirtualLearn.AdminPanel.service.RegistrationServiceImpl;
 import com.robosoft.VirtualLearn.AdminPanel.utility.JwtUtility;
 import io.jsonwebtoken.impl.DefaultClaims;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -29,7 +33,11 @@ public class LoginController {
     @Autowired
     private MyUserDetailsService myUserDetailsService;
     @Autowired
-    RegistrationServiceImpl service;
+    private RegistrationServiceImpl service;
+
+    private String mobileNumber = null;
+
+    Logger logger = LoggerFactory.getLogger(LoginController.class);
 
     @PutMapping("/login")
     public JwtResponse login(@RequestBody JwtRequest jwtRequest) throws Exception {
@@ -47,19 +55,13 @@ public class LoginController {
     }
 
     @GetMapping("/refreshToken")
-    public JwtResponse refreshToken(HttpServletRequest request) throws Exception {
+    public ResponseEntity<?> refreshToken(HttpServletRequest request) throws Exception {
         DefaultClaims claims = (io.jsonwebtoken.impl.DefaultClaims) request.getAttribute("claims");
         Map<String, Object> expectedMap = getMapFromIoJsonwebtokenClaims(claims);
+        if(expectedMap == null)
+            return new ResponseEntity<>(Collections.singletonMap("Error" , "Token Not Expired"), HttpStatus.NOT_ACCEPTABLE);
         String token = jwtUtility.doGenerateRefreshToken(expectedMap, expectedMap.get("sub").toString());
-        return new JwtResponse(token);
-    }
-
-    public Map<String, Object> getMapFromIoJsonwebtokenClaims(DefaultClaims claims) {
-        Map<String, Object> expectedMap = new HashMap<String, Object>();
-        for (Map.Entry<String, Object> entry : claims.entrySet()) {
-            expectedMap.put(entry.getKey(), entry.getValue());
-        }
-        return expectedMap;
+        return new ResponseEntity<>(new JwtResponse(token),HttpStatus.OK);
     }
 
     @PostMapping("/send")
@@ -67,6 +69,7 @@ public class LoginController {
         int status = service.checkMobileNumber(auth);
         if (status == 0)
             return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Mobile Number not registered")));
+        service.deletePreviousOtp(auth.getMobileNumber());
         String twoFaCode = String.valueOf(new Random().nextInt(8999) + 1000);
         return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "OTP Valid For " + service.sendOtp(auth, twoFaCode) + " Minutes")));
     }
@@ -79,4 +82,26 @@ public class LoginController {
         service.resetPassword(auth);
         return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Password Changed Successfully")));
     }
+
+
+    public Map<String, Object> getMapFromIoJsonwebtokenClaims(DefaultClaims claims) {
+        Map<String, Object> expectedMap = new HashMap<String, Object>();
+        try{
+        for (Map.Entry<String, Object> entry : claims.entrySet()) {
+            expectedMap.put(entry.getKey(), entry.getValue());
+        }
+        return expectedMap;
+        } catch (NullPointerException e){
+            return null;
+        }
+    }
+
+    @Scheduled(fixedRate = 5000)
+    public void eventScheduler(){
+        logger.info(mobileNumber);
+    }
+
+
+
+
 }

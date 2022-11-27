@@ -16,13 +16,11 @@ import org.springframework.stereotype.Service;
 public class RegistrationServiceImpl implements RegistrationService{
     @Autowired
     DataAccessService dataAccessService;
-
-
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    private final static String ACCOUNT_SID = "AC57ae868cbc8ac20dbbd489ad7e70da6a";
-    private final static String AUTH_ID = "455614aac99548ebb4a98f28939c907f";
+    private final static String ACCOUNT_SID = "ACd7b80d5a6e82ec89f4be4cc8779fd230";
+    private final static String AUTH_ID = "39e3d1b7d8afb09ba645714abbd184c6";
 
     static {
         Twilio.init(ACCOUNT_SID, AUTH_ID);
@@ -30,7 +28,7 @@ public class RegistrationServiceImpl implements RegistrationService{
 
     @Override
     public long sendOtp(MobileAuth mobileAuth, String twoFaCode) {
-        Message.creator(new PhoneNumber(mobileAuth.getMobileNumber()), new PhoneNumber("+19498284299"),
+        Message.creator(new PhoneNumber(mobileAuth.getMobileNumber()), new PhoneNumber("+19896822968"),
                 "Your Two Factor Authentication code is: " + twoFaCode).create();
         return dataAccessService.saveOtp(mobileAuth.getMobileNumber(), twoFaCode);
     }
@@ -57,6 +55,9 @@ public class RegistrationServiceImpl implements RegistrationService{
 
     @Override
     public String addDetails(UserRegistration registration) {
+        Integer status = jdbcTemplate.queryForObject("select count(*) from otpVerification where status=false and mobileNumber='" + registration.getMobileNumber() + "'", Integer.class);
+        if(status == 0)
+            return "Invalid Mobile Number";
         String query = "select count(*) from user where userName='" + registration.getUserName() + "'";
         if (jdbcTemplate.queryForObject(query, Integer.class) != 1) {
             if (jdbcTemplate.queryForObject("select count(*) from user where email='" + registration.getEmail() + "'", Integer.class) != 1) {
@@ -68,4 +69,6 @@ public class RegistrationServiceImpl implements RegistrationService{
             return "User Name already exists";
         return null;
     }
+
+
 }
