@@ -70,6 +70,7 @@ public class LoginController {
         if (status == 0)
             return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Mobile Number not registered")));
         service.deletePreviousOtp(auth.getMobileNumber());
+        mobileNumber = auth.getMobileNumber();
         String twoFaCode = String.valueOf(new Random().nextInt(8999) + 1000);
         return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "OTP Valid For " + service.sendOtp(auth, twoFaCode) + " Minutes")));
     }
@@ -78,7 +79,12 @@ public class LoginController {
     public ResponseEntity<?> resetPassword(@RequestBody MobileAuth auth) {
         int status = service.checkMobileNumber(auth);
         if (status == 0)
-            return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Input Field is incorrect")));
+            return new ResponseEntity<>(Collections.singletonMap("message", "Input Field is incorrect"),HttpStatus.NOT_ACCEPTABLE);
+        if((auth.getMobileNumber().equals(mobileNumber)) != true)
+            return new ResponseEntity<>(Collections.singletonMap("message", "Incorrect Mobile Number"),HttpStatus.NOT_ACCEPTABLE);
+        status = service.checkForVerificationStatus(auth.getMobileNumber());
+        if(status > 0)
+            return new ResponseEntity<>(Collections.singletonMap("message", "Mobile Number not verified"),HttpStatus.NOT_ACCEPTABLE);
         service.resetPassword(auth);
         return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Password Changed Successfully")));
     }
@@ -96,9 +102,11 @@ public class LoginController {
         }
     }
 
-    @Scheduled(fixedRate = 5000)
+
+    // Event Scheduler which makes mobileNumber reference null
+    @Scheduled(fixedRate = 60000)
     public void eventScheduler(){
-        logger.info(mobileNumber);
+        mobileNumber = null;
     }
 
 

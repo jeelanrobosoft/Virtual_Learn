@@ -61,13 +61,18 @@ public class RegistrationServiceImpl implements RegistrationService{
         String query = "select count(*) from user where userName='" + registration.getUserName() + "'";
         if (jdbcTemplate.queryForObject(query, Integer.class) != 1) {
             if (jdbcTemplate.queryForObject("select count(*) from user where email='" + registration.getEmail() + "'", Integer.class) != 1) {
-                jdbcTemplate.update("insert into user(mobileNumber,fullName,userName,email) values(?,?,?,?)", registration.getMobileNumber(), registration.getFullName(), registration.getUserName(), registration.getEmail());
-                jdbcTemplate.update("insert into authenticate values(?,?,'ROLE_USER')", registration.getUserName(), new BCryptPasswordEncoder().encode(registration.getPassword()));
+                jdbcTemplate.update("insert into user(mobileNumber,fullName,userName,email) values(?,?,?,?)", registration.getMobileNumber().trim(), registration.getFullName().trim(), registration.getUserName().trim(), registration.getEmail().trim());
+                jdbcTemplate.update("insert into authenticate values(?,?,'ROLE_USER')", registration.getUserName(), new BCryptPasswordEncoder().encode(registration.getPassword().trim()));
             } else
                 return "Email Id already exists";
         } else
             return "User Name already exists";
         return null;
+    }
+
+    public int checkForVerificationStatus(String mobileNumber){
+        return dataAccessService.checkForVerificationStatus(mobileNumber);
+
     }
 
 

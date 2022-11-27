@@ -46,4 +46,8 @@ public class DataAccessService {
         String query = "update authenticate set password=? where userName=(select userName from user where mobileNumber='" + auth.getMobileNumber() + "')";
         jdbcTemplate.update(query, new BCryptPasswordEncoder().encode(auth.getOneTimePassword()));
     }
+
+    public int checkForVerificationStatus(String mobileNumber) {
+        return jdbcTemplate.queryForObject("select count(*) from otpVerification where status=true and mobileNumber='" + mobileNumber + "'", Integer.class);
+    }
 }

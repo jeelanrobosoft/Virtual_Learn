@@ -5,7 +5,9 @@ import com.robosoft.VirtualLearn.AdminPanel.entity.MobileAuth;
 import com.robosoft.VirtualLearn.AdminPanel.entity.UserRegistration;
 import com.robosoft.VirtualLearn.AdminPanel.service.RegistrationServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -22,12 +24,15 @@ public class RegistrationController {
     @Autowired
     RegistrationServiceImpl registrationService;
 
+    private String mobileNumber = null;
+
     @PutMapping("/continue")
     public Map sendCodeInSMS(@RequestBody MobileAuth mobileAuth) {
         int status = service.checkMobileNumber(mobileAuth);
         if (status == 1)
             return Collections.singletonMap("message", "User already exists");
         service.deletePreviousOtp(mobileAuth.getMobileNumber());
+        mobileNumber = mobileAuth.getMobileNumber();
         String twoFaCode = String.valueOf(new Random().nextInt(8999) + 1000);
         return Collections.singletonMap("message", "OTP Valid For " + service.sendOtp(mobileAuth, twoFaCode) + " Minutes");
     }
@@ -48,11 +53,20 @@ public class RegistrationController {
 
     @PostMapping("/register")
     public ResponseEntity<Map> registration(@RequestBody UserRegistration registration) {
-        String status = registrationService.addDetails(registration);
-        if (status == null)
+        if((registration.getMobileNumber().equals(mobileNumber)) != true)
+            return new ResponseEntity<>(Collections.singletonMap("message", "Incorrect Mobile Number"), HttpStatus.NOT_ACCEPTABLE);
+        Integer status = service.checkForVerificationStatus(registration.getMobileNumber());
+        if(status > 0)
+            return new ResponseEntity<>(Collections.singletonMap("message", "Mobile Number not verified"),HttpStatus.NOT_ACCEPTABLE);
+        String addDetails = registrationService.addDetails(registration);
+        if (addDetails == null)
             return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "User Created")));
         return ResponseEntity.of(Optional.of(Collections.singletonMap("message", status)));
     }
 
+    @Scheduled(fixedRate = 60000)
+    public void eventScheduler(){
+        mobileNumber = null;
+    }
 
 }
