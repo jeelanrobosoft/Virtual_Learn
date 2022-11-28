@@ -151,25 +151,7 @@ public class UserController {
     }
 
 
-    @GetMapping("/privacyPolicy")
-    public ResponseEntity<?> getPrivacyPolicy() {
-        try {
-            String privacyPolicy = userService.getPolicy();
-            return ResponseEntity.of(Optional.of(Collections.singletonMap("message", privacyPolicy)));
-        } catch (Exception e) {
-            return new ResponseEntity<>(Collections.singletonMap("message", "Privacy Policy Not Found"), HttpStatus.NOT_FOUND);
-        }
-    }
 
-    @GetMapping("/termsAndConditions")
-    public ResponseEntity<?> getTermsAndConditions() {
-        try {
-            String termsAndConditions = userService.getTermsAndConditions();
-            return ResponseEntity.of(Optional.of(Collections.singletonMap("message", termsAndConditions)));
-        } catch (Exception e) {
-            return new ResponseEntity<>(Collections.singletonMap("message", "Terms and Conditions Not Found"), HttpStatus.NOT_FOUND);
-        }
-    }
 
     @GetMapping("/checkMyCourses")
     public ResponseEntity<?> checkMyCourses()
@@ -326,14 +308,14 @@ public class UserController {
         return ResponseEntity.of(Optional.of(coursesList));
     }
 
-    @GetMapping("/home/course/all/pagination")
-    public ResponseEntity<?> homeAllCoursesPagination(@RequestParam Integer pageLimit) {
-        List<HomeAllCourse> allCourses = userService.getAllCoursesPagination(pageLimit);
-        if (allCourses.size() == 0) {
-            return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "courses are not available")));
-        }
-        return ResponseEntity.of(Optional.of(allCourses));
-    }
+//    @GetMapping("/home/course/all/pagination")
+//    public ResponseEntity<?> homeAllCoursesPagination(@RequestParam Integer pageLimit) {
+//        List<HomeAllCourse> allCourses = userService.getAllCoursesPagination(pageLimit);
+//        if (allCourses.size() == 0) {
+//            return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "courses are not available")));
+//        }
+//        return ResponseEntity.of(Optional.of(allCourses));
+//    }
 
     @PostMapping("/enroll")
     public ResponseEntity<?> userEnrollment(@RequestBody EnrollmentRequest enrollmentRequest) {

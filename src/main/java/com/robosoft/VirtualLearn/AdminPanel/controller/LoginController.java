@@ -5,6 +5,7 @@ import com.robosoft.VirtualLearn.AdminPanel.request.JwtRequest;
 import com.robosoft.VirtualLearn.AdminPanel.response.JwtResponse;
 import com.robosoft.VirtualLearn.AdminPanel.service.MyUserDetailsService;
 import com.robosoft.VirtualLearn.AdminPanel.service.RegistrationServiceImpl;
+import com.robosoft.VirtualLearn.AdminPanel.service.UserService;
 import com.robosoft.VirtualLearn.AdminPanel.utility.JwtUtility;
 import io.jsonwebtoken.impl.DefaultClaims;
 import org.slf4j.Logger;
@@ -35,6 +36,8 @@ public class LoginController {
     @Autowired
     private RegistrationServiceImpl service;
 
+    @Autowired
+    private UserService userService;
     private String mobileNumber = null;
 
     Logger logger = LoggerFactory.getLogger(LoginController.class);
@@ -102,6 +105,25 @@ public class LoginController {
         }
     }
 
+    @GetMapping("/privacyPolicy")
+    public ResponseEntity<?> getPrivacyPolicy() {
+        try {
+            String privacyPolicy = userService.getPolicy();
+            return ResponseEntity.of(Optional.of(Collections.singletonMap("message", privacyPolicy)));
+        } catch (Exception e) {
+            return new ResponseEntity<>(Collections.singletonMap("message", "Privacy Policy Not Found"), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/termsAndConditions")
+    public ResponseEntity<?> getTermsAndConditions() {
+        try {
+            String termsAndConditions = userService.getTermsAndConditions();
+            return ResponseEntity.of(Optional.of(Collections.singletonMap("message", termsAndConditions)));
+        } catch (Exception e) {
+            return new ResponseEntity<>(Collections.singletonMap("message", "Terms and Conditions Not Found"), HttpStatus.NOT_FOUND);
+        }
+    }
 
     // Event Scheduler which makes mobileNumber reference null
     @Scheduled(fixedRate = 60000)
