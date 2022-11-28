@@ -650,19 +650,27 @@ public class UserService {
                         }
                         catch(Exception e)
                         {
-                            boolean chapterCompleted = jdbcTemplate.queryForObject("SELECT chapterCompletedStatus FROm chapterProgress WHERe chapterId=?", new BeanPropertyRowMapper<>(Boolean.class),videoPauseRequest.getChapterId());
+                            boolean chapterCompleted = jdbcTemplate.queryForObject("SELECT chapterCompletedStatus FROM chapterProgress WHERE chapterId=? and userName=?", Boolean.class,videoPauseRequest.getChapterId(),userName);
                             if(chapterCompleted == true)
                             {
                                 List<Chapter> chaptersList = jdbcTemplate.query("SELECT * FROM chapter WHERE courseId=?",new BeanPropertyRowMapper<>(Chapter.class), videoPauseRequest.getCourseId());
                                 //List<Chapter> sortedChapterList = chaptersList.stream().sorted().collect(Collectors.toList());
                                 Collections.sort(chaptersList);
+                                System.out.println(chaptersList+"++++++++++++++++++++");
                                 for(int j=0;j<chaptersList.size();j++)
                                 {
                                     if(chaptersList.get(j).getChapterId() == videoPauseRequest.getChapterId())
                                     {
-                                           List<Lesson> lessonsList = jdbcTemplate.query("SELECT *  FROM lesson WHERE chapterId=?", new BeanPropertyRowMapper<>(Lesson.class), chaptersList.get(i+1).getChapterId());
-                                           List<Lesson> sortedLessonsList = lessonsList.stream().sorted().collect(Collectors.toList());
-                                           jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonId=?", true,sortedLessonsList.get(0).getLessonId());
+                                           try
+                                           {
+                                               List<Lesson> lessonsList = jdbcTemplate.query("SELECT *  FROM lesson WHERE chapterId=?", new BeanPropertyRowMapper<>(Lesson.class), chaptersList.get(j+1).getChapterId());
+                                               List<Lesson> sortedLessonsList = lessonsList.stream().sorted().collect(Collectors.toList());
+                                               jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonId=?", true,sortedLessonsList.get(0).getLessonId());
+                                           }
+                                           catch(Exception ex)
+                                           {
+                                               break;
+                                           }
                                     }
                                 }
                             }
