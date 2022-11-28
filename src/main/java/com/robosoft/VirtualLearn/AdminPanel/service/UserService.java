@@ -530,6 +530,18 @@ public class UserService {
         return jdbcTemplate.query("SELECT overView.courseId, coursePhoto, courseName,categoryId, chapterCount FROM course,overView WHERE course.courseId = overView.courseId", (rs, rowNum) -> new HomeAllCourse(rs.getInt("courseId"), rs.getString("coursePhoto"),rs.getString("courseName"),  rs.getInt("categoryId"), rs.getInt("chapterCount")));
     }
 
+    public List<HomeAllCourse> getAllCoursesPagination(Integer allCoursePageLimit) {
+        topHeaderLowerLimit=0;
+        List<HomeAllCourse> homeAllCourses= jdbcTemplate.query("SELECT overView.courseId, coursePhoto, courseName,categoryId, chapterCount FROM course,overView WHERE course.courseId = overView.courseId limit ?,?", (rs, rowNum) -> new HomeAllCourse(rs.getInt("courseId"), rs.getString("coursePhoto"),rs.getString("courseName"),  rs.getInt("categoryId"), rs.getInt("chapterCount")), topHeaderLowerLimit, topHeaderUpperLimit);
+        topHeaderLowerLimit = topHeaderLowerLimit+allCoursePageLimit;
+        if(homeAllCourses.size() == 0)
+        {
+            topHeaderLowerLimit =0;
+            return  jdbcTemplate.query("SELECT overView.courseId, coursePhoto, courseName,categoryId, chapterCount FROM course,overView WHERE course.courseId = overView.courseId limit ?,?", (rs, rowNum) -> new HomeAllCourse(rs.getInt("courseId"), rs.getString("coursePhoto"),rs.getString("courseName"),  rs.getInt("categoryId"), rs.getInt("chapterCount")), topHeaderLowerLimit, topHeaderUpperLimit);
+        }
+      return  homeAllCourses;
+    }
+
     public List<HomeAllCourse> getPopularCourses() {
         List<HomeAllCourse> popularCourseList = new ArrayList<>();
         List<Enrollment> allEnrolledCourses = jdbcTemplate.query("SELECT distinct courseId FROM enrollment", (rs, rowNum) -> new Enrollment(rs.getInt("courseId")));

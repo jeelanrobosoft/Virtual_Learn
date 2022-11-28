@@ -127,6 +127,7 @@ public class FinalTestService {
         MultipartFile multipartFile = new MockMultipartFile("fileItem", fileItem.getName(), "image/png", IOUtils.toByteArray(input));
         String url = getFileUrl(multipartFile);
         String pdfUrl = pdf(userName,courseId);
+        jdbcTemplate.update("delete from certificate where userName='" + userName + "' and courseId=" + courseId);
         jdbcTemplate.update("INSERT INTO certificate(certificateNumber,courseId,UserName,certificateUrl,pdfUrl) values(?,?,?,?,?)", certificateNumber, courseId, userName, url,pdfUrl);
     }
 
