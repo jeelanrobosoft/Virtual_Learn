@@ -5,6 +5,7 @@ import com.robosoft.VirtualLearn.AdminPanel.dto.ResultAnswerRequest;
 import com.robosoft.VirtualLearn.AdminPanel.dto.ResultHeaderRequest;
 import com.robosoft.VirtualLearn.AdminPanel.entity.ModuleTest;
 import com.robosoft.VirtualLearn.AdminPanel.entity.UserAnswers;
+import com.robosoft.VirtualLearn.AdminPanel.response.SubmitResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +21,7 @@ public class ModuleTestService {
         return dataAccess.moduleTestQuestions(testId);
     }
 
-    public float userAnswers(UserAnswers userAnswers) {
+    public SubmitResponse userAnswers(UserAnswers userAnswers) {
         return dataAccess.userAnswers(userAnswers);
     }
 

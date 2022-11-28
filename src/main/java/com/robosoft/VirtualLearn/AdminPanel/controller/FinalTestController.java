@@ -38,12 +38,12 @@ public class FinalTestController {
     public ResponseEntity<?> submitUserAnswers(@RequestBody UserAnswers userAnswers) throws IOException, ParseException {
         float testPercentage = finalTestService.userAnswers(userAnswers);
         finalTestService.certificate(userAnswers.getTestId());
-        return new ResponseEntity<>(Collections.singletonMap("Test Percentage", testPercentage),HttpStatus.OK);
+        return new ResponseEntity<>(Collections.singletonMap("TestPercentage", testPercentage),HttpStatus.OK);
     }
 
     @GetMapping("/result")
     public ResponseEntity<?> getFinalTestResult(@RequestParam Integer testId) throws IOException {
-        return new ResponseEntity<>(Collections.singletonMap("Approval Rate", finalTestService.getFinalTestResult(testId)),HttpStatus.OK);
+        return new ResponseEntity<>(Collections.singletonMap("ApprovalRate", finalTestService.getFinalTestResult(testId)),HttpStatus.OK);
     }
 
     @GetMapping("/viewCertificate")

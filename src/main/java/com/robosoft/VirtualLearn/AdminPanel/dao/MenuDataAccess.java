@@ -45,7 +45,7 @@ public class MenuDataAccess {
             profileResponse.setMobileNumber(rs.getString("mobileNumber"));
             profileResponse.setEmail(rs.getString("email"));
             profileResponse.setDateOfBirth(rs.getDate("dateOfBirth"));
-            profileResponse.setOccupation(String.valueOf(rs.getInt("occupation")));
+            profileResponse.setOccupation(rs.getString("occupation"));
             return profileResponse;
         });
         myProfileResponse.setCourseCompleted(courseCompleted);

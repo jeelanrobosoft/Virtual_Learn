@@ -67,7 +67,7 @@ public class UserService {
     }
 
     public List<SubCategory> getAllSubCategoriesWithoutPagination() {
-        return jdbcTemplate.query("SELECT * FROM subCategory", new BeanPropertyRowMapper<>(SubCategory.class));
+        return jdbcTemplate.query("SELECT subCategoryId,subCategoryName FROM subCategory", new BeanPropertyRowMapper<>(SubCategory.class));
     }
 
 

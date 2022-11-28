@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 public class SaveProfile {
     private MultipartFile profilePhoto;
-    private Integer occupation;
+    private String occupation;
     private String gender;
     private String dateOfBirth;
     private String twitterLink;
