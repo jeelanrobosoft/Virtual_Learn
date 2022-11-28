@@ -50,13 +50,13 @@ public class ModuleTestDataAccess {
         String formatDateTime = dateTime.format(format);
         jdbcTemplate.update("insert into notification(userName,description,timeStamp,notificationUrl) values(?,?,?,?)", userName, description, formatDateTime, coursePhoto);
         jdbcTemplate.update("insert into notification(userName,description,timeStamp,notificationUrl) values(?,?,?,?)", userName, description1, formatDateTime, coursePhoto);
-        String congratulationsMessage = "You have Completed Chapter" + jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class) + " - Setting up a new project from course: " + jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
+        String congratulationsMessage = "You have Completed Chapter " + jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class) + " - Setting up a new project from course: " + jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
         return new SubmitResponse(chapterTestPercentage,congratulationsMessage);
     }
 
     public float updateUserAnswerTable(UserAnswers userAnswers) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        jdbcTemplate.update("delete from userAnswers where userName='" + userName + "' and testId=" + userAnswers.getTestId());
+        jdbcTemplate.update("delete from userAnswer where userName='" + userName + "' and testId=" + userAnswers.getTestId());
         String query = "select chapterId from test where testId=" + userAnswers.getTestId();
         int chapterId = jdbcTemplate.queryForObject(query, Integer.class);
         query = "select courseId from chapter where chapterId=" + chapterId;
@@ -65,10 +65,8 @@ public class ModuleTestDataAccess {
             query = "insert into userAnswer values('" + userName + "'" + "," + courseId + "," + chapterId + "," + userAnswers.getTestId() + "," + uAnswers.getQuestionId() + "," + "'" + uAnswers.getCorrectAnswer() + "'" + "," + "(select if((select correctAnswer from question where questionId=" + uAnswers.getQuestionId() + ") ='" + uAnswers.getCorrectAnswer() + "'" + ",true,false)))";
             jdbcTemplate.update(query);
         }
-        int correctAnswerCount = jdbcTemplate.queryForObject("select count(*) from userAnswer where userAnswerStatus=true and testId=" + userAnswers.getTestId(), Integer.class);
-        System.out.println(correctAnswerCount);
-        int questionCount = jdbcTemplate.queryForObject("select questionsCount from test where testId=" + userAnswers.getTestId(), Integer.class);
-        System.out.println(questionCount);
+        Integer correctAnswerCount = jdbcTemplate.queryForObject("select count(*) from userAnswer where userAnswerStatus=true and testId=" + userAnswers.getTestId(), Integer.class);
+        Integer questionCount = jdbcTemplate.queryForObject("select questionsCount from test where testId=" + userAnswers.getTestId(), Integer.class);
         float chapterTestPercentage = (correctAnswerCount / (float) questionCount) * 100;
         return chapterTestPercentage;
     }

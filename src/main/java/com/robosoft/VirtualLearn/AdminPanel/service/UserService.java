@@ -653,7 +653,9 @@ public class UserService {
                                 {
                                     if(sortedChapterList.get(j).getChapterId() == videoPauseRequest.getChapterId())
                                     {
-
+                                           List<Lesson> lessonsList = jdbcTemplate.query("SELECT *  FROM lesson WHERE chapterId=?", new BeanPropertyRowMapper<>(Lesson.class), sortedChapterList.get(i+1).getChapterId());
+                                           List<Lesson> sortedLessonsList = lessonsList.stream().sorted().collect(Collectors.toList());
+                                           jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonId=?", true,sortedLessonsList.get(0).getLessonId());
                                     }
                                 }
                             }
