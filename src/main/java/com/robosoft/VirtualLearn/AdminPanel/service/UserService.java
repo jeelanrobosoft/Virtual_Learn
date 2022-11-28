@@ -532,6 +532,7 @@ public class UserService {
 
     public List<HomeAllCourse> getAllCoursesPagination(Integer allCoursePageLimit) {
         topHeaderLowerLimit=0;
+        topHeaderUpperLimit=allCoursePageLimit;
         List<HomeAllCourse> homeAllCourses= jdbcTemplate.query("SELECT overView.courseId, coursePhoto, courseName,categoryId, chapterCount FROM course,overView WHERE course.courseId = overView.courseId limit ?,?",new BeanPropertyRowMapper<>(HomeAllCourse.class),topHeaderLowerLimit, topHeaderUpperLimit);
         System.out.println(homeAllCourses);
         topHeaderLowerLimit = topHeaderLowerLimit+allCoursePageLimit;
