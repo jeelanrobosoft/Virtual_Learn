@@ -29,7 +29,7 @@ public class ModuleTestController {
 
     @PostMapping("/submit")
     public ResponseEntity<?> submitUserAnswers(@RequestBody UserAnswers userAnswers) {
-        return new ResponseEntity<>(Collections.singletonMap("Test Percentage", testService.userAnswers(userAnswers)),HttpStatus.OK);
+        return new ResponseEntity<>( testService.userAnswers(userAnswers),HttpStatus.OK);
     }
 
     @GetMapping("/resultHeader")
