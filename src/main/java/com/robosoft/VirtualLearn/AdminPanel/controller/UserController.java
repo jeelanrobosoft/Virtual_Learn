@@ -2,6 +2,7 @@ package com.robosoft.VirtualLearn.AdminPanel.controller;
 
 import com.robosoft.VirtualLearn.AdminPanel.entity.Category;
 import com.robosoft.VirtualLearn.AdminPanel.entity.SubCategory;
+import com.robosoft.VirtualLearn.AdminPanel.request.CourseChapterRequest;
 import com.robosoft.VirtualLearn.AdminPanel.request.EnrollmentRequest;
 import com.robosoft.VirtualLearn.AdminPanel.request.FilterRequest;
 import com.robosoft.VirtualLearn.AdminPanel.request.VideoPauseRequest;
@@ -236,9 +237,9 @@ public class UserController {
         return new ResponseEntity<>(allCoursesResponses, HttpStatus.OK);
     }
 
-    @PostMapping("/keywords")
-    public ResponseEntity<?> updateSearchCount(@RequestParam Integer courseId){
-        userService.topSearches(courseId);
+    @PutMapping("/keywords")
+    public ResponseEntity<?> updateSearchCount(@RequestBody CourseChapterRequest courseChapterRequest){
+        userService.topSearches(courseChapterRequest);
         return new ResponseEntity<>(Collections.singletonMap("message", "Updated"), HttpStatus.OK);
     }
 

@@ -1,10 +1,12 @@
 package com.robosoft.VirtualLearn.AdminPanel.service;
 
 import com.robosoft.VirtualLearn.AdminPanel.entity.*;
+import com.robosoft.VirtualLearn.AdminPanel.request.CourseChapterRequest;
 import com.robosoft.VirtualLearn.AdminPanel.request.EnrollmentRequest;
 import com.robosoft.VirtualLearn.AdminPanel.request.FilterRequest;
 import com.robosoft.VirtualLearn.AdminPanel.request.VideoPauseRequest;
 import com.robosoft.VirtualLearn.AdminPanel.response.*;
+import org.apache.tomcat.util.buf.CharChunk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -424,11 +426,11 @@ public class UserService {
         return allCoursesResponses;
     }
 
-    public void topSearches(Integer courseId)
+    public void topSearches(CourseChapterRequest courseChapterRequest)
     {
-            Integer searchCount = jdbcTemplate.queryForObject("SELECT searchCount FROM courseKeywords WHERE courseId=?", Integer.class, courseId);
+            Integer searchCount = jdbcTemplate.queryForObject("SELECT searchCount FROM courseKeywords WHERE courseId=?", Integer.class, courseChapterRequest.getCourseId());
             if(searchCount != null)
-                jdbcTemplate.update("UPDATE courseKeywords set searchCount=? WHERE courseId=?", searchCount + 1, courseId);
+                jdbcTemplate.update("UPDATE courseKeywords set searchCount=? WHERE courseId=?", searchCount + 1, courseChapterRequest.getCourseId());
     }
 
     public List<KeywordSearchResponse> searchKeywords()
