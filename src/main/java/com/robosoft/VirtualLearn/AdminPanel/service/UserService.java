@@ -287,6 +287,7 @@ public class UserService {
                     chapterResponse.setTestName(chapterResponse1.getTestName());
                     chapterResponse.setTestDuration(chapterResponse1.getTestDuration());
                     chapterResponse.setQuestionCount(questionCount);
+                    chapterResponse.setChapterStatus(false);
                 }
             } catch (Exception exception) {
                 Logger logger = LoggerFactory.getLogger(UserService.class);
