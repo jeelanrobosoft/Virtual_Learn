@@ -18,9 +18,9 @@ public class ModuleTestController {
 
     @GetMapping("/moduleTest")
     public ResponseEntity<?> moduleTest(@RequestParam Integer testId) {
-        String status = testService.checkForCompletedStatus(testId);
-        if(status != null)
-            return new ResponseEntity<>(Collections.singletonMap("message",status),HttpStatus.NOT_ACCEPTABLE);
+//        String status = testService.checkForCompletedStatus(testId);
+//        if(status != null)
+//            return new ResponseEntity<>(Collections.singletonMap("message",status),HttpStatus.NOT_ACCEPTABLE);
         ModuleTest moduleTest = testService.moduleTestQuestions(testId);
         if (moduleTest == null)
             return new ResponseEntity<>(Collections.singletonMap("message","Invalid Test Id"),HttpStatus.NOT_FOUND);
