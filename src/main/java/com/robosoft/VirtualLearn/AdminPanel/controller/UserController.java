@@ -236,7 +236,7 @@ public class UserController {
         return new ResponseEntity<>(allCoursesResponses, HttpStatus.OK);
     }
 
-    @GetMapping("/keywords")
+    @PostMapping("/keywords")
     public ResponseEntity<?> updateSearchCount(@RequestParam Integer courseId){
         userService.topSearches(courseId);
         return new ResponseEntity<>(Collections.singletonMap("message", "Updated"), HttpStatus.OK);
