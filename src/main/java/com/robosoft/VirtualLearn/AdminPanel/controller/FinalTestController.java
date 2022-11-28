@@ -25,9 +25,9 @@ public class FinalTestController {
     @GetMapping("/finalTest")
     public ResponseEntity<?> getFinalTest(@RequestParam Integer testId) {
 
-        String status = finalTestService.checkForCompletedStatus(testId);
-        if(status != null)
-            return new ResponseEntity<>(Collections.singletonMap("message",status),HttpStatus.NOT_ACCEPTABLE);
+//        String status = finalTestService.checkForCompletedStatus(testId);
+//        if(status != null)
+//            return new ResponseEntity<>(Collections.singletonMap("message",status),HttpStatus.NOT_ACCEPTABLE);
         FinalTest moduleTest = finalTestService.finalTestService(testId);
         if (moduleTest == null)
             return new ResponseEntity<>(Collections.singletonMap("message","Invalid Test Id"),HttpStatus.NOT_FOUND);
