@@ -5,6 +5,8 @@ import com.robosoft.VirtualLearn.AdminPanel.entity.Answers;
 import com.robosoft.VirtualLearn.AdminPanel.entity.FinalTest;
 import com.robosoft.VirtualLearn.AdminPanel.entity.Question;
 import com.robosoft.VirtualLearn.AdminPanel.entity.UserAnswers;
+import com.robosoft.VirtualLearn.AdminPanel.response.FinalTestResultResponse;
+import com.robosoft.VirtualLearn.AdminPanel.response.SubmitResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -37,12 +39,15 @@ public class FinalTestDataAccess {
         return finalTest;
     }
 
-    public Float getFinalTestResult(Integer testId) {
+    public FinalTestResultResponse getFinalTestResult(Integer testId) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        return jdbcTemplate.queryForObject("select coursePercentage from courseProgress where userName='" + userName + "' and courseId=(select distinct(courseId) from chapterProgress where testId=" + testId + ")", Float.class);
+        float chapterTestPercentage = jdbcTemplate.queryForObject("select coursePercentage from courseProgress where userName='" + userName + "' and courseId=(select distinct(courseId) from chapterProgress where testId=" + testId + ")", Float.class);
+        String courseName ="You have Completed the course: " +  jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + testId + "))", String.class) + " with";
+
+        return new FinalTestResultResponse(courseName,chapterTestPercentage);
     }
 
-    public float userAnswers(UserAnswers userAnswers) {
+    public SubmitResponse userAnswers(UserAnswers userAnswers) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         float chapterTestPercentage = updateUserAnswerTable(userAnswers);
         jdbcTemplate.update("update chapterProgress set chapterTestPercentage=" + chapterTestPercentage + ",chapterCompletedStatus=true,chapterStatus=false where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'");
@@ -62,7 +67,7 @@ public class FinalTestDataAccess {
         LocalDate courseCompletedDate = LocalDate.now();
         jdbcTemplate.update("update enrollment set completedDate='" + courseCompletedDate + "',courseScore=" + coursePercentage + " where userName='" + userName + "' and courseId=(select courseId from chapter where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'))");
         String congratulationsMessage = "You have Completed Chapter " + jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class) + ", Final Test from course: " +  jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
-        return chapterTestPercentage;
+        return new SubmitResponse(chapterTestPercentage,congratulationsMessage);
     }
 
     public float updateUserAnswerTable(UserAnswers userAnswers) {

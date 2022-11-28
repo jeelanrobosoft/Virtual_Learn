@@ -12,6 +12,8 @@ import com.google.cloud.storage.StorageOptions;
 import com.robosoft.VirtualLearn.AdminPanel.dao.FinalTestDataAccess;
 import com.robosoft.VirtualLearn.AdminPanel.entity.FinalTest;
 import com.robosoft.VirtualLearn.AdminPanel.entity.UserAnswers;
+import com.robosoft.VirtualLearn.AdminPanel.response.FinalTestResultResponse;
+import com.robosoft.VirtualLearn.AdminPanel.response.SubmitResponse;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -51,11 +53,11 @@ public class FinalTestService {
         return testDataAccess.getFinalTestS(testId);
     }
 
-    public Float getFinalTestResult(Integer testId) {
+    public FinalTestResultResponse getFinalTestResult(Integer testId) {
         return testDataAccess.getFinalTestResult(testId);
     }
 
-    public float userAnswers(UserAnswers userAnswers) {
+    public SubmitResponse userAnswers(UserAnswers userAnswers) {
         return testDataAccess.userAnswers(userAnswers);
     }
 

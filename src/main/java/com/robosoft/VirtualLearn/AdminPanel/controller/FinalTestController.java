@@ -3,6 +3,7 @@ package com.robosoft.VirtualLearn.AdminPanel.controller;
 import com.robosoft.VirtualLearn.AdminPanel.entity.FinalTest;
 import com.robosoft.VirtualLearn.AdminPanel.entity.UserAnswers;
 import com.robosoft.VirtualLearn.AdminPanel.request.CertificateRequest;
+import com.robosoft.VirtualLearn.AdminPanel.response.SubmitResponse;
 import com.robosoft.VirtualLearn.AdminPanel.service.FinalTestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,14 +37,14 @@ public class FinalTestController {
 
     @PostMapping("/finalSubmit")
     public ResponseEntity<?> submitUserAnswers(@RequestBody UserAnswers userAnswers) throws IOException, ParseException {
-        float testPercentage = finalTestService.userAnswers(userAnswers);
+        SubmitResponse testPercentage = finalTestService.userAnswers(userAnswers);
         finalTestService.certificate(userAnswers.getTestId());
-        return new ResponseEntity<>(Collections.singletonMap("TestPercentage", testPercentage),HttpStatus.OK);
+        return new ResponseEntity<>(testPercentage,HttpStatus.OK);
     }
 
     @GetMapping("/result")
     public ResponseEntity<?> getFinalTestResult(@RequestParam Integer testId) throws IOException {
-        return new ResponseEntity<>(Collections.singletonMap("ApprovalRate", finalTestService.getFinalTestResult(testId)),HttpStatus.OK);
+        return new ResponseEntity<>(finalTestService.getFinalTestResult(testId),HttpStatus.OK);
     }
 
     @GetMapping("/viewCertificate")

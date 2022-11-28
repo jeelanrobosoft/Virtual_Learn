@@ -31,7 +31,7 @@ public class SecurityConfiguration {
         http
                 .csrf().disable()
                 .authorizeHttpRequests()
-                .antMatchers("/newUser/***", "/login", "/refreshToken", "/admin/register", "/admin/login","/refreshToken","/send","/resetPassword").permitAll()
+                .antMatchers("/newUser/***", "/login", "/refreshToken", "/admin/register", "/admin/login","/refreshToken","/send","/resetPassword","/privacyPolicy","/termsAndConditions").permitAll()
                 .antMatchers("/admin/***").hasRole("ADMIN")
                 .antMatchers("/user/***").hasRole("USER")
                 .anyRequest().authenticated()
