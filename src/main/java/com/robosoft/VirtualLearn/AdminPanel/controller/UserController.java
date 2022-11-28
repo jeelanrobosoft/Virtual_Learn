@@ -308,14 +308,14 @@ public class UserController {
         return ResponseEntity.of(Optional.of(coursesList));
     }
 
-//    @GetMapping("/home/course/all/pagination")
-//    public ResponseEntity<?> homeAllCoursesPagination(@RequestParam Integer pageLimit) {
-//        List<HomeAllCourse> allCourses = userService.getAllCoursesPagination(pageLimit);
-//        if (allCourses.size() == 0) {
-//            return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "courses are not available")));
-//        }
-//        return ResponseEntity.of(Optional.of(allCourses));
-//    }
+    @GetMapping("/home/course/all/pagination")
+    public ResponseEntity<?> homeAllCoursesPagination(@RequestParam Integer pageLimit) {
+        List<HomeAllCourse> allCourses = userService.getAllCoursesPagination(pageLimit);
+        if (allCourses.size() == 0) {
+            return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "courses are not available")));
+        }
+        return ResponseEntity.of(Optional.of(allCourses));
+    }
 
     @PostMapping("/enroll")
     public ResponseEntity<?> userEnrollment(@RequestBody EnrollmentRequest enrollmentRequest) {
