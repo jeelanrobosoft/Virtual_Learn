@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Chapter {
+public class Chapter implements Comparable<Chapter>{
     private Integer chapterId;
     private Integer courseId;
     private Integer chapterNumber;
@@ -20,4 +20,8 @@ public class Chapter {
     }
 
 
+    @Override
+    public int compareTo(Chapter o) {
+        return this.getChapterId().compareTo(o.chapterId);
+    }
 }

@@ -11,6 +11,8 @@ import java.util.List;
 @NoArgsConstructor
 public class FinalTest {
     private Integer testId;
+    private Integer chapterNumber;
+    private String chapterName;
     private String testName;
     private String testDuration;
     private Integer questionsCount;
