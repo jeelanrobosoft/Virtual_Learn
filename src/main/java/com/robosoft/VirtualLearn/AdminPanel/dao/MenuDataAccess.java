@@ -23,15 +23,8 @@ public class MenuDataAccess {
         int status = jdbcTemplate.queryForObject("select count(*) from user where userName='" + userName + "'", Integer.class);
         if (status == 0)
             return null;
-        try {
-            occupation = jdbcTemplate.queryForObject("select subCategoryName from subCategory where subCategoryId=(select occupation from user where userName='" + userName + "')", String.class);
-        } catch (Exception e) {
-            query = "select profilePhoto,fullName from user where userName='" + userName + "'";
-            return jdbcTemplate.queryForObject(query, new BeanPropertyRowMapper<>(SideBarResponse.class));
-        }
-        query = "select profilePhoto,fullName from user where userName='" + userName + "'";
+        query = "select profilePhoto,fullName,occupation from user where userName='" + userName + "'";
         SideBarResponse response = jdbcTemplate.queryForObject(query, new BeanPropertyRowMapper<>(SideBarResponse.class));
-        response.setOccupation(occupation);
         return response;
     }
 
@@ -48,6 +41,7 @@ public class MenuDataAccess {
             profileResponse.setOccupation(rs.getString("occupation"));
             return profileResponse;
         });
+        System.out.println(response.getOccupation());
         myProfileResponse.setCourseCompleted(courseCompleted);
         myProfileResponse.setChaptersCompleted(chapterCompletedStatus);
         myProfileResponse.setTestsCompleted(testCompletedStatus);

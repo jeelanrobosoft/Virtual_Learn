@@ -34,6 +34,9 @@ public class UserService {
     int topHeaderLowerLimit = 0;
 
     int topHeaderUpperLimit;
+    int allCourseLowerLimit=0;
+    int allCourseUpperLimit;
+
 
     public List<Category> getCategories() {
         List<Category> categories = jdbcTemplate.query("SELECT * FROM category limit ?,?", (rs, rowNum) ->
@@ -533,15 +536,13 @@ public class UserService {
     }
 
     public List<HomeAllCourse> getAllCoursesPagination(Integer allCoursePageLimit) {
-        topHeaderLowerLimit=0;
-        topHeaderUpperLimit=allCoursePageLimit;
-        List<HomeAllCourse> homeAllCourses= jdbcTemplate.query("SELECT overView.courseId, coursePhoto, courseName,categoryId, chapterCount FROM course,overView WHERE course.courseId = overView.courseId limit ?,?",new BeanPropertyRowMapper<>(HomeAllCourse.class),topHeaderLowerLimit, topHeaderUpperLimit);
-        System.out.println(homeAllCourses);
-        topHeaderLowerLimit = topHeaderLowerLimit+allCoursePageLimit;
+        allCourseUpperLimit=allCoursePageLimit;
+        List<HomeAllCourse> homeAllCourses= jdbcTemplate.query("SELECT overView.courseId, coursePhoto, courseName,categoryId, chapterCount FROM course,overView WHERE course.courseId = overView.courseId limit ?,?",new BeanPropertyRowMapper<>(HomeAllCourse.class),allCourseLowerLimit, allCourseUpperLimit);
+        allCourseLowerLimit = allCourseLowerLimit+allCoursePageLimit;
         if(homeAllCourses.size() == 0)
         {
-            topHeaderLowerLimit =0;
-            return  jdbcTemplate.query("SELECT overView.courseId, coursePhoto, courseName,categoryId, chapterCount FROM course,overView WHERE course.courseId = overView.courseId limit ?,?", (rs, rowNum) -> new HomeAllCourse(rs.getInt("courseId"), rs.getString("coursePhoto"),rs.getString("courseName"),  rs.getInt("categoryId"), rs.getInt("chapterCount")), topHeaderLowerLimit, topHeaderUpperLimit);
+            allCourseLowerLimit =0;
+            return  jdbcTemplate.query("SELECT overView.courseId, coursePhoto, courseName,categoryId, chapterCount FROM course,overView WHERE course.courseId = overView.courseId limit ?,?", (rs, rowNum) -> new HomeAllCourse(rs.getInt("courseId"), rs.getString("coursePhoto"),rs.getString("courseName"),  rs.getInt("categoryId"), rs.getInt("chapterCount")), allCourseLowerLimit, allCourseUpperLimit);
         }
       return  homeAllCourses;
     }
@@ -561,7 +562,8 @@ public class UserService {
         return popularCourseList;
     }
 
-    public List<HomeAllCourse> getPopularCoursesPagination() {
+    public List<HomeAllCourse> getPopularCoursesPagination(Integer pageLimit) {
+        topHeaderUpperLimit=pageLimit;
         List<HomeAllCourse> popularCourseList = new ArrayList<>();
         List<Enrollment> allEnrolledCourses = jdbcTemplate.query("SELECT distinct courseId FROM enrollment", (rs, rowNum) -> new Enrollment(rs.getInt("courseId")));
         for (Enrollment allEnrolledCourse : allEnrolledCourses) {
@@ -569,7 +571,7 @@ public class UserService {
             if (enrolmentCount != null) {
                 if (enrolmentCount > 2) {
                     topHeaderLowerLimit=0;
-                    HomeAllCourse homeAllCourse = jdbcTemplate.queryForObject("SELECT c.courseId,c.coursePhoto, c.courseName,c.categoryId, o.chapterCount FROM course c,overView o WHERE c.courseId=? and c.courseId = o.courseId limit ?,?", (rs, rowNum) -> new HomeAllCourse(rs.getInt("courseId"),rs.getString("coursePhoto"), rs.getString("courseName"), rs.getInt("categoryId"), rs.getInt("chapterCount")), allEnrolledCourse.getCourseId(),topHeaderLowerLimit,topHeaderUpperLimit);
+                    HomeAllCourse homeAllCourse = jdbcTemplate.queryForObject("SELECT c.courseId,c.coursePhoto, c.courseName,c.categoryId, o.chapterCount FROM course c,overView o WHERE c.courseId=? and c.courseId = o.courseId", (rs, rowNum) -> new HomeAllCourse(rs.getInt("courseId"),rs.getString("coursePhoto"), rs.getString("courseName"), rs.getInt("categoryId"), rs.getInt("chapterCount")), allEnrolledCourse.getCourseId());
                     popularCourseList.add(homeAllCourse);
                 }
             }
