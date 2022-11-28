@@ -432,17 +432,15 @@ public class UserService {
 
     public List<KeywordSearchResponse> searchKeywords()
     {
-
-        KeywordSearchResponse keywordSearchResponse = new KeywordSearchResponse();
         List<KeywordSearchResponse> keyWords = new ArrayList<>();
         List<CourseKeywords> courseList = jdbcTemplate.query("select * from courseKeywords order by searchCount", new BeanPropertyRowMapper<>(CourseKeywords.class));
-        System.out.println(courseList);
         if(courseList.size()<=10)
         {
             for(CourseKeywords c:courseList)
             {
                 if(c.getSearchCount()>3)
                 {
+                    KeywordSearchResponse keywordSearchResponse = new KeywordSearchResponse();
                     System.out.println(c.getKeyword());
                     keywordSearchResponse.setKeyWord(c.getKeyword());
                     keyWords.add(keywordSearchResponse);
@@ -454,10 +452,10 @@ public class UserService {
             int size = courseList.size()/2;
             for(int i=size;i<courseList.size();i++)
             {
-                keywordSearchResponse.setKeyWord(courseList.get(i).getKeyword());
-                keyWords.add(keywordSearchResponse);
+                KeywordSearchResponse response = new KeywordSearchResponse();
+                response.setKeyWord(courseList.get(i).getKeyword());
+                keyWords.add(response);
             }
-            System.out.println(keyWords);
         }
         return keyWords;
 
