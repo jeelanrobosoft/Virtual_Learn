@@ -263,7 +263,7 @@ public class UserController {
     @GetMapping("/topSearches")
     public ResponseEntity<?> getTopSearches()
     {
-        List<String> keywordsList = userService.searchKeywords();
+        List<KeywordSearchResponse> keywordsList = userService.searchKeywords();
         if(keywordsList.size() == 0)
         {
             return new ResponseEntity<>(Collections.singletonMap("message", "No Top Searches"), HttpStatus.NOT_FOUND);

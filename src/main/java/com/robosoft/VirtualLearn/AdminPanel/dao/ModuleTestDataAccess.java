@@ -33,6 +33,8 @@ public class ModuleTestDataAccess {
         } catch (Exception e) {
             return null;
         }
+        moduleTest.setChapterNumber(jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + testId + ")", Integer.class));
+        moduleTest.setChapterName(jdbcTemplate.queryForObject("select chapterName from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + testId +")", String.class));
         moduleTest.setQuestions(questions);
         return moduleTest;
     }
@@ -50,7 +52,7 @@ public class ModuleTestDataAccess {
         String formatDateTime = dateTime.format(format);
         jdbcTemplate.update("insert into notification(userName,description,timeStamp,notificationUrl) values(?,?,?,?)", userName, description, formatDateTime, coursePhoto);
         jdbcTemplate.update("insert into notification(userName,description,timeStamp,notificationUrl) values(?,?,?,?)", userName, description1, formatDateTime, coursePhoto);
-        String congratulationsMessage = "You have Completed Chapter " + jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class) + " - Setting up a new project from course: " + jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
+        String congratulationsMessage = "You have Completed Chapter " + jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class) + " - " + jdbcTemplate.queryForObject("select chapterName from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class) + " from course: " +  jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
         return new SubmitResponse(chapterTestPercentage,congratulationsMessage);
     }
 
