@@ -67,6 +67,7 @@ public class FinalTestDataAccess {
 
     public float updateUserAnswerTable(UserAnswers userAnswers) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        jdbcTemplate.update("delete from userAnswer where userName='" + userName + "' and testId=" + userAnswers.getTestId());
         String query = "select chapterId from test where testId=" + userAnswers.getTestId();
         int chapterId = jdbcTemplate.queryForObject(query, Integer.class);
         query = "select courseId from chapter where chapterId=" + chapterId;
