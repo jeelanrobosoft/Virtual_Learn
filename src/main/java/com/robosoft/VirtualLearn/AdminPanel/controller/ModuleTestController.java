@@ -53,7 +53,7 @@ public class ModuleTestController {
     }
 
 
-    @Scheduled(fixedRate = 3600000)
+    @Scheduled(fixedRate = 5000)
     public void clearTestId(){
         this.testId = null;
     }
