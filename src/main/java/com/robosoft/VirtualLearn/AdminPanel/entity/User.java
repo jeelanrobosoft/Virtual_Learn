@@ -16,12 +16,12 @@ public class User {
     private String email;
     private Date dateOfBirth;
     private String profilePhoto;
-    private int occupation;
+    private String occupation;
     private String gender;
     private String twitterLink;
     private String faceBookLink;
 
-    public User(int occupation) {
+    public User(String occupation) {
         this.occupation = occupation;
     }
 }

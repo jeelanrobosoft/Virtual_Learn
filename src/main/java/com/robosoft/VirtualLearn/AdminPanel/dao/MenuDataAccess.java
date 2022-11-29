@@ -19,6 +19,7 @@ public class MenuDataAccess {
 
     public SideBarResponse getDetails(String userName) {
         String query;
+
         String occupation;
         int status = jdbcTemplate.queryForObject("select count(*) from user where userName='" + userName + "'", Integer.class);
         if (status == 0)

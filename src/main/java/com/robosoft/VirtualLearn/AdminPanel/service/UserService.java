@@ -470,19 +470,19 @@ public class UserService {
     public List<HomeResponseTopHeader> HomePageTopBar()   // front end should send username when ever they call home api as a response
     {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = jdbcTemplate.queryForObject("SELECT occupation FROM user WHERE userName = ?", (rs, rowNum) -> new User(rs.getInt("occupation")), userName);
+        User user = jdbcTemplate.queryForObject("SELECT occupation FROM user WHERE userName = ?", (rs, rowNum) -> new User(rs.getString("occupation")), userName);
         if(user != null) {
-            if (user.getOccupation() == 0) {
+            if (user.getOccupation().equals("other")) {
 //                List<HomeResponseTopHeader> list = jdbcTemplate.query("SELECT coursePhoto, courseName FROM course", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class));
                 return jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class));
             } else {
                 try {
-                    List<HomeResponseTopHeader> course = jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course WHERE subCategoryId= ?", (rs, rowNum) -> new HomeResponseTopHeader(rs.getInt("courseId"),rs.getString("courseName"), rs.getString("coursePhoto")), user.getOccupation());
+                    List<HomeResponseTopHeader> course = jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course WHERE subCategoryName= ?", (rs, rowNum) -> new HomeResponseTopHeader(rs.getInt("courseId"),rs.getString("courseName"), rs.getString("coursePhoto")), user.getOccupation());
                     if (course.size() != 0) {
                         return course;
                     }
                 } catch (NullPointerException e) {
-                    Integer categoryId = jdbcTemplate.queryForObject("SELECT categoryId from subCategory WHERE subcategoryId = ?", Integer.class, user.getOccupation());
+                    Integer categoryId = jdbcTemplate.queryForObject("SELECT categoryId from subCategory WHERE subcategoryName = ?", Integer.class, user.getOccupation());
                     return jdbcTemplate.query("SELECT * FROM course WHERE categoryId = ?", (rs, rowNum) -> new HomeResponseTopHeader(rs.getInt("courseId"),rs.getString("courseName"), rs.getString("coursePhoto")), categoryId);
 
                 }
@@ -497,9 +497,9 @@ public class UserService {
     {
         topHeaderUpperLimit=topHeaderPages;
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = jdbcTemplate.queryForObject("SELECT occupation FROM user WHERE userName = ?", (rs, rowNum) -> new User(rs.getInt("occupation")), userName);
+        User user = jdbcTemplate.queryForObject("SELECT occupation FROM user WHERE userName = ?", (rs, rowNum) -> new User(rs.getString("occupation")), userName);
         if(user != null) {
-            if (user.getOccupation() == 0) {
+            if (user.getOccupation().equals("other")) {
                 List<HomeResponseTopHeader> list = jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course limit ?,?", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class),topHeaderLowerLimit,topHeaderUpperLimit);
                 topHeaderLowerLimit = topHeaderLowerLimit+topHeaderPages;
 
@@ -514,14 +514,14 @@ public class UserService {
                 // return jdbcTemplate.query("SELECT coursePhoto, courseName FROM course limit ?,?", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class),,topHeaderLowerLimit,topHeaderUpperLimit);
             } else {
                 try {
-                    List<HomeResponseTopHeader> course = jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course WHERE subCategoryId= ? limit ?,?", (rs, rowNum) -> new HomeResponseTopHeader(rs.getInt("courseId"),rs.getString("courseName"), rs.getString("coursePhoto")), user.getOccupation(),topHeaderLowerLimit,topHeaderUpperLimit);
+                    List<HomeResponseTopHeader> course = jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course WHERE subCategoryName= ? limit ?,?", (rs, rowNum) -> new HomeResponseTopHeader(rs.getInt("courseId"),rs.getString("courseName"), rs.getString("coursePhoto")), user.getOccupation(),topHeaderLowerLimit,topHeaderUpperLimit);
                     topHeaderLowerLimit = topHeaderLowerLimit+topHeaderPages;
                     if (course.size() != 0) {
                         return course;
                     }
                 } catch (NullPointerException e) {
                     topHeaderLowerLimit=0;
-                    Integer categoryId = jdbcTemplate.queryForObject("SELECT categoryId from subCategory WHERE subcategoryId = ?", Integer.class, user.getOccupation());
+                    Integer categoryId = jdbcTemplate.queryForObject("SELECT categoryId from subCategory WHERE subcategoryName = ?", Integer.class, user.getOccupation());
                     return jdbcTemplate.query("SELECT * FROM course WHERE categoryId = ? limit ?,?", (rs, rowNum) -> new HomeResponseTopHeader(rs.getInt("courseId"),rs.getString("courseName"), rs.getString("coursePhoto")), categoryId,topHeaderLowerLimit, topHeaderUpperLimit);
 
                 }
@@ -671,7 +671,8 @@ public class UserService {
         for(int i=0;i<lessonList.size();i++) {
             if(lessonList.get(i).getLessonId() == videoPauseRequest.getLessonId()) {
                 jdbcTemplate.update("UPDATE lessonProgress SET pauseTime=? WHERE lessonId=? and userName=? and chapterId=?", videoPauseTime,videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
-                jdbcTemplate.update("UPDATE lessonProgress SET updatedTime = ? WHERE lessonId=? and userName=? and chapterId=?", formatDateTime,videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
+               // jdbcTemplate.update("UPDATE lessonProgress SET updatedTime = ? WHERE lessonId=? and userName=? and chapterId=?", formatDateTime,videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
+
                 String lessonDuration = jdbcTemplate.queryForObject("SELECT lessonDuration FROM lesson WHERE lessonId=?", String.class, videoPauseRequest.getLessonId());
                 if(lessonDuration != null) {
                     if (lessonDuration.equals(videoPauseTime)) {
