@@ -33,21 +33,21 @@ public class ModuleTestController {
 
     @PostMapping("/submit")
     public ResponseEntity<?> submitUserAnswers(@RequestBody UserAnswers userAnswers) {
-        if(userAnswers.getTestId() == this.testId)
+        if(userAnswers.getTestId() != this.testId)
             return new ResponseEntity<>(Collections.singletonMap("message","Invalid Test Id"),HttpStatus.NOT_FOUND);
         return new ResponseEntity<>( testService.userAnswers(userAnswers),HttpStatus.OK);
     }
 
     @GetMapping("/resultHeader")
     public ResponseEntity<?> getResultHeader(@RequestParam Integer testId) {
-        if(this.testId == testId)
+        if(this.testId != testId)
             return new ResponseEntity<>(Collections.singletonMap("message","Invalid Test Id"),HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(testService.getResultHeader(testId),HttpStatus.OK);
     }
 
     @GetMapping("/resultAnswers")
     public ResponseEntity<?> getResultAnswers(@RequestParam Integer testId) {
-        if(this.testId == testId)
+        if(this.testId != testId)
             return new ResponseEntity<>(Collections.singletonMap("message","Invalid Test Id"),HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(testService.getResultAnswers(testId),HttpStatus.OK);
     }
