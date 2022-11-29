@@ -473,15 +473,19 @@ public class UserService {
         User user = jdbcTemplate.queryForObject("SELECT occupation FROM user WHERE userName = ?", (rs, rowNum) -> new User(rs.getString("occupation")), userName);
         if(user != null) {
             if (user.getOccupation().equals("other")) {
+                System.out.println(user.getOccupation());
 //                List<HomeResponseTopHeader> list = jdbcTemplate.query("SELECT coursePhoto, courseName FROM course", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class));
                 return jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class));
             } else {
                 try {
-                    List<HomeResponseTopHeader> course = jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course WHERE subCategoryName= ?", (rs, rowNum) -> new HomeResponseTopHeader(rs.getInt("courseId"),rs.getString("courseName"), rs.getString("coursePhoto")), user.getOccupation());
+                    System.out.println(user.getOccupation());
+                    Integer subcategoryId = jdbcTemplate.queryForObject("SELECT subCategoryId FROM subCategory WHERE subCategoryName=?",Integer.class,user.getOccupation());
+                    List<HomeResponseTopHeader> course = jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course WHERE subCategoryId=?", (rs, rowNum) -> new HomeResponseTopHeader(rs.getInt("courseId"),rs.getString("courseName"), rs.getString("coursePhoto")), subcategoryId);
                     if (course.size() != 0) {
                         return course;
                     }
                 } catch (NullPointerException e) {
+                    System.out.println(user.getOccupation());
                     Integer categoryId = jdbcTemplate.queryForObject("SELECT categoryId from subCategory WHERE subcategoryName = ?", Integer.class, user.getOccupation());
                     return jdbcTemplate.query("SELECT * FROM course WHERE categoryId = ?", (rs, rowNum) -> new HomeResponseTopHeader(rs.getInt("courseId"),rs.getString("courseName"), rs.getString("coursePhoto")), categoryId);
 

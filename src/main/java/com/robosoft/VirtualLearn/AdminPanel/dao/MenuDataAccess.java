@@ -26,6 +26,8 @@ public class MenuDataAccess {
             return null;
         query = "select profilePhoto,fullName,occupation from user where userName='" + userName + "'";
         SideBarResponse response = jdbcTemplate.queryForObject(query, new BeanPropertyRowMapper<>(SideBarResponse.class));
+        Integer notificationCount = jdbcTemplate.queryForObject("select count(notificationId) from notification where userName='" + userName + "' and readStatus=false", Integer.class);
+        response.setNotificationCount(notificationCount);
         return response;
     }
 
