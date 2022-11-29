@@ -94,6 +94,7 @@ public class FinalTestService {
     public void certificate(Integer testId) throws IOException, ParseException {
 
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        String fullName = jdbcTemplate.queryForObject("SELECT fullName FROM user WHERE username=?",String.class,userName);
         String courseName = jdbcTemplate.queryForObject("SELECT courseName FROM course WHERE courseId=(SELECT courseId FROM chapter WHERE chapterId=(SELECT chapterId FROM test WHERE testId=?))", String.class, testId);
         Integer courseId = jdbcTemplate.queryForObject("SELECT courseId FROM course WHERE courseId=(SELECT courseId FROM chapter WHERE chapterId=(SELECT chapterId FROM test WHERE testId=?))", Integer.class, testId);
         String joinDate = jdbcTemplate.queryForObject("SELECT joinDate FROM enrollment WHERE userName = ? and courseId=?", String.class, userName, courseId);
@@ -112,7 +113,7 @@ public class FinalTestService {
         g.drawString("Certificate of Completion", 90, 190);
         g.setFont(new Font("TimesRoman", Font.PLAIN, 70));
         g.setColor(Color.RED);
-        g.drawString(userName, 90, 310);
+        g.drawString(fullName.toUpperCase(), 90, 310);
         g.setFont(new Font("TimesRoman", Font.PLAIN, 50));
         g.setColor(Color.BLACK);
         if(courseName != null) {
