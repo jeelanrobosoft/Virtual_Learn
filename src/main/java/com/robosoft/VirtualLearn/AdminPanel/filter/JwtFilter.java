@@ -35,19 +35,8 @@ public class JwtFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(jwtToken) && jwtTokenUtil.validateToken(jwtToken)) {
                 UserDetails userDetails = new User(jwtTokenUtil.getUsernameFromToken(jwtToken), "", jwtTokenUtil.getRolesFromToken(jwtToken));
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-//                /************************************* Experiment **************************************/
-//                String userName = jwtTokenUtil.getUsernameFromToken(jwtToken);
-//                System.out.println(userName);
-//                String loginUserName = SecurityContextHolder.getContext().getAuthentication().getName();
-//                System.out.println(loginUserName);
-//                if(userName.equals(loginUserName) == false)
-//                    throw new NullPointerException();
-//                /************************************* Experiment **************************************/
-
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             } else {
-
-
             }
         } catch (ExpiredJwtException ex) {
             String isRefreshToken = request.getHeader("isRefreshToken");
