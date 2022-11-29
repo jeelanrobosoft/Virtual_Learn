@@ -11,4 +11,6 @@ import lombok.NoArgsConstructor;
 public class FinalTestResultResponse {
     private String congratulations;
     private float approvalRate;
+    private String certificateUrl;
+    private Integer courseId;
 }
