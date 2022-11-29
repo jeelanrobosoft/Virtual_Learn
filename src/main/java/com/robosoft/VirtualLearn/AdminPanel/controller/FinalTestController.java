@@ -66,7 +66,7 @@ public class FinalTestController {
         return Collections.singletonMap("certificate", finalTestService.getPdfUrl(courseId));
     }
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = 3600000)
     public void clearTestId(){
         this.testId = null;
     }
