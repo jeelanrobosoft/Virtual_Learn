@@ -42,7 +42,7 @@ public class FinalTestDataAccess {
     public FinalTestResultResponse getFinalTestResult(Integer testId) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         float chapterTestPercentage = jdbcTemplate.queryForObject("select coursePercentage from courseProgress where userName='" + userName + "' and courseId=(select distinct(courseId) from chapterProgress where testId=" + testId + ")", Float.class);
-        String courseName ="You have Completed the course: " +  jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + testId + "))", String.class) + " with";
+        String courseName =jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + testId + "))", String.class);
 
         return new FinalTestResultResponse(courseName,chapterTestPercentage);
     }
