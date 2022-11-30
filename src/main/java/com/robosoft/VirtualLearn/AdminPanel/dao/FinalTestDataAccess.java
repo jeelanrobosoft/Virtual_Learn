@@ -67,8 +67,9 @@ public class FinalTestDataAccess {
         jdbcTemplate.update("update courseProgress set coursePercentage=" + coursePercentage + ",courseCompletedStatus=true where courseId=" + courseId + " and userName='" + userName + "'");
         LocalDate courseCompletedDate = LocalDate.now();
         jdbcTemplate.update("update enrollment set completedDate='" + courseCompletedDate + "',courseScore=" + coursePercentage + " where userName='" + userName + "' and courseId=(select courseId from chapter where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'))");
-        String congratulationsMessage = "You have Completed Chapter " + jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class) + ", Final Test from course: " +  jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
-        return new SubmitResponse(chapterTestPercentage,congratulationsMessage);
+        Integer chapterNumber = jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", Integer.class);
+        String courseName = jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
+        return new SubmitResponse(chapterTestPercentage,chapterNumber,courseName);
     }
 
     public float updateUserAnswerTable(UserAnswers userAnswers) {

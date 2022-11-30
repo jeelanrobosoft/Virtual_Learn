@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SubmitResponse {
     private float chapterTestPercentage;
-    private String congratulations;
+    private Integer chapterNumber;
+    private String courseName;
 }
