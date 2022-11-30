@@ -61,7 +61,7 @@ public class RegistrationController {
         String addDetails = registrationService.addDetails(registration);
         if (addDetails == null)
             return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "User Created")));
-        return ResponseEntity.of(Optional.of(Collections.singletonMap("message", status)));
+        return ResponseEntity.of(Optional.of(Collections.singletonMap("message", addDetails)));
     }
 
     @Scheduled(fixedRate = 300000)
