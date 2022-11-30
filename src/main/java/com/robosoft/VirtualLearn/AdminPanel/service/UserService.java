@@ -541,7 +541,7 @@ public class UserService {
 
 
     public List<HomeAllCourse> getAllCourses() {
-        return jdbcTemplate.query("SELECT overView.courseId, coursePhoto, courseName,categoryId, chapterCount FROM course,overView WHERE course.courseId = overView.courseId", (rs, rowNum) -> new HomeAllCourse(rs.getInt("courseId"), rs.getString("coursePhoto"),rs.getString("courseName"),  rs.getInt("categoryId"), rs.getInt("chapterCount")));
+        return jdbcTemplate.query("SELECT overView.courseId, coursePhoto, courseName,course.categoryId, chapterCount FROM course,overView WHERE course.courseId = overView.courseId", (rs, rowNum) -> new HomeAllCourse(rs.getInt("courseId"), rs.getString("coursePhoto"),rs.getString("courseName"),  rs.getInt("categoryId"), rs.getInt("chapterCount")));
     }
 
     public List<HomeAllCourse> getAllCoursesPagination(Integer allCoursePageLimit) {
