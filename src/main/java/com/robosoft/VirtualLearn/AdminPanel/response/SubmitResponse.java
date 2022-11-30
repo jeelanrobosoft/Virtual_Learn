@@ -12,4 +12,5 @@ public class SubmitResponse {
     private float chapterTestPercentage;
     private Integer chapterNumber;
     private String courseName;
+    private String chapterName;
 }
