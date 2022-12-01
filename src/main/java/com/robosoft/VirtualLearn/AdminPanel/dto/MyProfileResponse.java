@@ -15,5 +15,6 @@ public class MyProfileResponse {
     private String userName;
     private String email;
     private String mobileNumber;
-    private Date dateOfBirth;
+    private String dateOfBirth;
+    private String gender;
 }
