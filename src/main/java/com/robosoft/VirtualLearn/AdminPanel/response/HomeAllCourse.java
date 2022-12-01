@@ -15,7 +15,9 @@ public class HomeAllCourse {
     private String coursePhoto;
     private String courseName;
     private Integer categoryId;
+    private String  categoryName;
     private Integer chapterCount;
+
 
     public HomeAllCourse(String coursePhoto, String courseName, int categoryId, int chapterCount) {
         this.coursePhoto = coursePhoto;
