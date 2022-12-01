@@ -128,7 +128,7 @@ public class LoginController {
     }
 
     // Event Scheduler which makes mobileNumber reference null
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 3600000)
     public void eventScheduler(){
         mobileNumber = null;
     }
