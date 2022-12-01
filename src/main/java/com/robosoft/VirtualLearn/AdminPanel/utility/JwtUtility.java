@@ -60,7 +60,7 @@ public class JwtUtility implements Serializable {
 // parser().setSigningKey(secret).parseClaimsJws(authToken);
     public boolean validateToken(String authToken) {
         try {
-            Jws<Claims> claims = Jwts.parserBuilder().setSigningKey(secret).build().parseClaimsJws(authToken);
+            Jws<Claims> claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(authToken);
             return true;
         } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException ex) {
             throw new BadCredentialsException("INVALID_CREDENTIALS", ex);

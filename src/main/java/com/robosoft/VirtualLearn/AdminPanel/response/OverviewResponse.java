@@ -21,6 +21,8 @@ public class OverviewResponse {
     private Integer lessonCount;
     private String courseTagLine;
     private String previewVideo;
+    private String previewVideoName;
+    private String previewVideoDuration;
     private String description;
     private String courseDuration;
     private Integer courseMaterialId;
