@@ -26,12 +26,18 @@ public class SecurityConfiguration {
     @Autowired
     private JwtAuthenticationEntryPoint authenticationEntryPoint;
 
+
+    private static final String[] BASE_URLs = { "/newUser/**", "/login", "/refreshToken",
+                                                "/admin/register", "/admin/login","/refreshToken","/send","/resetPassword",
+                                                "/privacyPolicy","/termsAndConditions","/v3/api-docs","/v2/api-docs","/swagger-resources/**",
+                                                "/swagger-ui/**","/webjars/**"};
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
                 .authorizeHttpRequests()
-                .antMatchers("/newUser/***", "/login", "/refreshToken", "/admin/register", "/admin/login","/refreshToken","/send","/resetPassword","/privacyPolicy","/termsAndConditions").permitAll()
+                .antMatchers(BASE_URLs).permitAll()
                 .antMatchers("/admin/***").hasRole("ADMIN")
                 .antMatchers("/user/***").hasRole("USER")
                 .anyRequest().authenticated()
