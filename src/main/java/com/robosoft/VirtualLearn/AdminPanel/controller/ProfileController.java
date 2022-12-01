@@ -37,8 +37,10 @@ public class ProfileController {
     @PutMapping("/save")
     public Map saveMyProfile(@ModelAttribute SaveProfile saveProfile) throws IOException, ParseException {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        profileService.saveMyProfile(saveProfile, userName);
-        return Collections.singletonMap("message", "Successfully updated profile");
+       String message = profileService.saveMyProfile(saveProfile, userName);
+       if(message == null)
+           return Collections.singletonMap("message", "Successfully updated profile");
+       return Collections.singletonMap("message", message);
 
     }
 

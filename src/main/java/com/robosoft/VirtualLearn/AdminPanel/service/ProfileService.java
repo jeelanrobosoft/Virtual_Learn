@@ -6,6 +6,8 @@ import com.google.cloud.storage.*;
 import com.robosoft.VirtualLearn.AdminPanel.dao.ProfileDao;
 import com.robosoft.VirtualLearn.AdminPanel.entity.ChangePassword;
 import com.robosoft.VirtualLearn.AdminPanel.entity.SaveProfile;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +22,7 @@ import java.nio.file.Path;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
 
 import static com.robosoft.VirtualLearn.AdminPanel.common.Constants.*;
@@ -55,22 +58,53 @@ public class ProfileService {
         return String.format(DOWNLOAD_URL, URLEncoder.encode(objectName));
     }
 
-    public void saveMyProfile(SaveProfile saveProfile, String userName) throws IOException, ParseException {
+    public String saveMyProfile(SaveProfile saveProfile, String userName) throws IOException, ParseException {
         String profilePhotoLink = null;
         String finalDateOfBirth = null;
-        if (saveProfile.getProfilePhoto() != null) {
+        Integer number = checkStringContainsNumberOrNot(saveProfile.getOccupation());
+        if(number == 1)
+            return "Invalid Occupation";
+        if( saveProfile.getGender().toLowerCase(Locale.ROOT).equals("male")
+                || saveProfile.getGender().toLowerCase(Locale.ROOT).equals("female")|| saveProfile.getGender().toLowerCase(Locale.ROOT).equals("others"))
+        {
+            if(saveProfile.getTwitterLink().toLowerCase(Locale.ROOT).contains("twitter") && saveProfile.getFaceBookLink().toLowerCase(Locale.ROOT).contains("facebook"))
+            {
+
+        if (saveProfile.getProfilePhoto().isEmpty() != true) {
             profilePhotoLink = getFileUrl(saveProfile.getProfilePhoto());
         }
-        if (saveProfile.getDateOfBirth() != null) {
+        System.out.println();
+        if (saveProfile.getDateOfBirth().isEmpty() != true) {
             Date dateOfBirth = new SimpleDateFormat("dd/MM/yyyy").parse(saveProfile.getDateOfBirth());
             SimpleDateFormat newFormat = new SimpleDateFormat("yyyy-MM-dd");
             finalDateOfBirth = newFormat.format(dateOfBirth);
         }
         profileDao.saveProfile(saveProfile, profilePhotoLink, finalDateOfBirth, userName);
+        return null;
+            }
+            else
+                return "Invalid facebook or twitter link";
+        }
+        else
+            return "Invalid gender";
     }
 
     public String changePassword(ChangePassword password) {
-        return profileDao.changePassword(password);
+        if(password.getNewPassword().length() >= 5)
+            return profileDao.changePassword(password);
+        else
+            return "Invalid Password";
+    }
+
+    public int checkStringContainsNumberOrNot(String s) {
+        char[] chars = s.toCharArray();
+        StringBuilder sb = new StringBuilder();
+        for (char c : chars) {
+            if (Character.isDigit(c)) {
+                return 1;
+            }
+        }
+        return 0;
     }
 }
 

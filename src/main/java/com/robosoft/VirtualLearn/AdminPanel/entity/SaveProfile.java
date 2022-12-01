@@ -8,7 +8,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
 public class SaveProfile {
     private MultipartFile profilePhoto;
     private String occupation;
@@ -16,6 +15,8 @@ public class SaveProfile {
     private String dateOfBirth;
     private String twitterLink;
     private String faceBookLink;
+
+
 
 
 }

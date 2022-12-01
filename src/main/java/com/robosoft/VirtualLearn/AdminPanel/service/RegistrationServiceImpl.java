@@ -58,11 +58,9 @@ public class RegistrationServiceImpl implements RegistrationService{
         Integer status = jdbcTemplate.queryForObject("select count(*) from otpVerification where status=false and mobileNumber='" + registration.getMobileNumber() + "'", Integer.class);
         if(status == 0)
             return "Invalid Mobile Number";
-        if(registration.getFullName().length() >= 5 && registration.getUserName().length() >= 5
+        if( (registration.getFullName().length() >= 5) && registration.getUserName().length() >= 5
                 && registration.getEmail().length() >= 10 && registration.getPassword().length() >= 5)
         {
-            return "Invalid fullName or userName or Email or password";
-        }
         String query = "select count(*) from user where userName='" + registration.getUserName() + "'";
         if (jdbcTemplate.queryForObject(query, Integer.class) != 1) {
             if (jdbcTemplate.queryForObject("select count(*) from user where email='" + registration.getEmail() + "'", Integer.class) != 1) {
@@ -73,6 +71,10 @@ public class RegistrationServiceImpl implements RegistrationService{
         } else
             return "User Name already exists";
         return null;
+
+        }
+        else
+            return "Invalid fullName or userName or Email or password";
     }
 
     public int checkForVerificationStatus(String mobileNumber){
