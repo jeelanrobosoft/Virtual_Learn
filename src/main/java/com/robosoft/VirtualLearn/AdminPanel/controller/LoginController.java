@@ -26,6 +26,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 @RestController
+@CrossOrigin(
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS},
+        origins ={"http://localhost:3000"})
 public class LoginController {
     @Autowired
     private JwtUtility jwtUtility;

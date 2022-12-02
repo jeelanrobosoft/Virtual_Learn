@@ -690,10 +690,12 @@ public class UserService {
             if(lessonList.get(i).getLessonId() == videoPauseRequest.getLessonId()) {
                 jdbcTemplate.update("UPDATE lessonProgress SET pauseTime=? WHERE lessonId=? and userName=? and chapterId=?", videoPauseTime,videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
                 // jdbcTemplate.update("UPDATE lessonProgress SET updatedTime = ? WHERE lessonId=? and userName=? and chapterId=?", formatDateTime,videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
-
                 String lessonDuration = jdbcTemplate.queryForObject("SELECT lessonDuration FROM lesson WHERE lessonId=?", String.class, videoPauseRequest.getLessonId());
+                SimpleDateFormat format1 = new SimpleDateFormat("HH:mm:ss"); // 12 hour format
+                java.util.Date d1 =(java.util.Date)format.parse(lessonDuration);
+                java.sql.Time ppstime = new java.sql.Time(d1.getTime());
                 if(lessonDuration != null) {
-                    if (lessonDuration.equals(videoPauseTime)) {
+                    if (videoPauseTime.equals(lessonDuration)) {
                         jdbcTemplate.update("UPDATE lessonProgress SET lessonCompletedStatus=? WHERE lessonId = ? and userName=? and chapterId=?", true, videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
 
                         try
