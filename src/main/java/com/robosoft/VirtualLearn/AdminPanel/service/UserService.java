@@ -678,7 +678,7 @@ public class UserService {
 
     public void updateVideoPauseTime(VideoPauseRequest videoPauseRequest) throws IOException, ParseException, IOException, ParseException {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        Time pauseTime = videoPauseRequest.getPauseTime();
+        java.sql.Time pauseTime = videoPauseRequest.getPauseTime();
         String videoPauseTime = pauseTime.toString();
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -692,10 +692,10 @@ public class UserService {
                 // jdbcTemplate.update("UPDATE lessonProgress SET updatedTime = ? WHERE lessonId=? and userName=? and chapterId=?", formatDateTime,videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
                 String lessonDuration = jdbcTemplate.queryForObject("SELECT lessonDuration FROM lesson WHERE lessonId=?", String.class, videoPauseRequest.getLessonId());
                 SimpleDateFormat format1 = new SimpleDateFormat("HH:mm:ss"); // 12 hour format
-                java.util.Date d1 =(java.util.Date)format.parse(lessonDuration);
+                java.util.Date d1 =(java.util.Date)format1.parse(lessonDuration);
                 java.sql.Time ppstime = new java.sql.Time(d1.getTime());
                 if(lessonDuration != null) {
-                    if (videoPauseTime.equals(lessonDuration)) {
+                    if (pauseTime.compareTo(ppstime) == 0 || pauseTime.after(ppstime)) {
                         jdbcTemplate.update("UPDATE lessonProgress SET lessonCompletedStatus=? WHERE lessonId = ? and userName=? and chapterId=?", true, videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
 
                         try
