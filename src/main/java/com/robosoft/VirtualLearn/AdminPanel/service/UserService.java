@@ -16,14 +16,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -388,15 +386,14 @@ public class UserService {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         try {
             jdbcTemplate.queryForObject("SELECT userName FROM enrollment WHERE courseId = ? AND userName = ?", new BeanPropertyRowMapper<>(Enrollment.class), courseId, userName);
-            List<Integer> chapterIds = jdbcTemplate.queryForList("SELECT chapterId FROM chapter WHERE courseId = ?", Integer.class, courseId);
+            List<Integer> chapterIds = jdbcTemplate.queryForList("SELECT chapterId FROM chapterProgress WHERE courseId = ? AND userName = ? AND chapterCompletedStatus = false ORDER BY chapterId limit 1", Integer.class, courseId, userName);
             Integer lessonId = 0;
             for (int chapterId : chapterIds) {
-                lessonId = jdbcTemplate.queryForObject("SELECT lesson.lessonId FROM lesson INNER JOIN lessonProgress ON lesson.lessonId = lessonProgress.lessonId WHERE lessonProgress.updatedTime = (SELECT max(updatedTime) FROM lessonProgress) AND lessonProgress.pauseTime < lesson.lessonDuration  AND lessonProgress.pauseTime > '00.00.00' AND lessonProgress.userName = ? AND lesson.chapterId = ?", Integer.class, userName, chapterId);
+                lessonId = jdbcTemplate.queryForObject("SELECT lesson.lessonId FROM lesson INNER JOIN lessonProgress ON lesson.lessonId = lessonProgress.lessonId WHERE lessonProgress.updatedTime = (SELECT max(updatedTime) FROM lessonProgress where lessonProgress.userName = ? and chapterId = ?) AND lessonProgress.pauseTime < lesson.lessonDuration  AND lessonProgress.pauseTime > '00:00:00'AND lessonProgress.userName = ? AND lesson.chapterId = ?", Integer.class, userName, chapterId,userName,chapterId);
                 break;
             }
             return jdbcTemplate.queryForObject("SELECT chapter.chapterId,lessonName,chapterNumber,lessonNumber,lesson.lessonId,pauseTime,videoLink FROM lesson INNER JOIN lessonProgress ON lesson.lessonId = lessonProgress.lessonId INNER JOIN chapter ON lesson.chapterId = chapter.chapterId AND lesson.lessonId = ? AND lessonProgress.userName = ?", new BeanPropertyRowMapper<>(Continue.class), lessonId, userName);
         } catch (Exception e) {
-            e.printStackTrace();
             return null;
         }
     }
