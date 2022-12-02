@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -325,7 +327,7 @@ public class UserController {
     }
 
     @PutMapping("/pauseTime")
-    public ResponseEntity<?> updateLessonCompletionStatus(@RequestBody VideoPauseRequest videoPauseRequest) {
+    public ResponseEntity<?> updateLessonCompletionStatus(@RequestBody VideoPauseRequest videoPauseRequest) throws IOException, ParseException {
         userService.updateVideoPauseTime(videoPauseRequest);
         return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Updated SuccessFully")));
     }

@@ -15,7 +15,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.sql.Time;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -36,6 +38,7 @@ public class UserService {
     int allCourseLowerLimit = 0;
     int allCourseUpperLimit;
 
+    private FinalTestService finalTestService;
 
     public List<Category> getCategories() {
         List<Category> categories = jdbcTemplate.query("SELECT * FROM category limit ?,?", (rs, rowNum) ->
@@ -388,11 +391,12 @@ public class UserService {
             List<Integer> chapterIds = jdbcTemplate.queryForList("SELECT chapterId FROM chapter WHERE courseId = ?", Integer.class, courseId);
             Integer lessonId = 0;
             for (int chapterId : chapterIds) {
-                lessonId = jdbcTemplate.queryForObject("SELECT lesson.lessonId FROM lesson INNER JOIN lessonProgress ON lesson.lessonId = lessonProgress.lessonId WHERE lessonProgress.updatedTime = (SELECT max(updatedTime) FROM lessonProgress) AND lessonProgress.userName = ? AND lesson.chapterId = ?", Integer.class, userName, chapterId);
+                lessonId = jdbcTemplate.queryForObject("SELECT lesson.lessonId FROM lesson INNER JOIN lessonProgress ON lesson.lessonId = lessonProgress.lessonId WHERE lessonProgress.updatedTime = (SELECT max(updatedTime) FROM lessonProgress) AND lessonProgress.pauseTime < lesson.lessonDuration  AND lessonProgress.pauseTime > '00.00.00' AND lessonProgress.userName = ? AND lesson.chapterId = ?", Integer.class, userName, chapterId);
                 break;
             }
             return jdbcTemplate.queryForObject("SELECT chapter.chapterId,lessonName,chapterNumber,lessonNumber,lesson.lessonId,pauseTime,videoLink FROM lesson INNER JOIN lessonProgress ON lesson.lessonId = lessonProgress.lessonId INNER JOIN chapter ON lesson.chapterId = chapter.chapterId AND lesson.lessonId = ? AND lessonProgress.userName = ?", new BeanPropertyRowMapper<>(Continue.class), lessonId, userName);
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -672,45 +676,78 @@ public class UserService {
         return "Enrolled successfully";
     }
 
-    public void updateVideoPauseTime(VideoPauseRequest videoPauseRequest) {
+    public void updateVideoPauseTime(VideoPauseRequest videoPauseRequest) throws IOException, ParseException, IOException, ParseException {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         Time pauseTime = videoPauseRequest.getPauseTime();
         String videoPauseTime = pauseTime.toString();
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String formatDateTime = now.format(format);
-        List<Lesson> lessonList = jdbcTemplate.query("SELECT * FROM lesson WHERE chapterId=?", new BeanPropertyRowMapper<>(Lesson.class), videoPauseRequest.getChapterId());
+        List<Lesson> lessonList = jdbcTemplate.query("SELECT * FROM lesson WHERE chapterId=?",new BeanPropertyRowMapper<>(Lesson.class),videoPauseRequest.getChapterId());
         // List<Lesson> sortedList = lessonList.stream().sorted().collect(Collectors.toList());
         Collections.sort(lessonList);
-        for (int i = 0; i < lessonList.size(); i++) {
-            if (lessonList.get(i).getLessonId() == videoPauseRequest.getLessonId()) {
-                jdbcTemplate.update("UPDATE lessonProgress SET pauseTime=? WHERE lessonId=? and userName=? and chapterId=?", videoPauseTime, videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
+        for(int i=0;i<lessonList.size();i++) {
+            if(lessonList.get(i).getLessonId() == videoPauseRequest.getLessonId()) {
+                jdbcTemplate.update("UPDATE lessonProgress SET pauseTime=? WHERE lessonId=? and userName=? and chapterId=?", videoPauseTime,videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
                 // jdbcTemplate.update("UPDATE lessonProgress SET updatedTime = ? WHERE lessonId=? and userName=? and chapterId=?", formatDateTime,videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
 
                 String lessonDuration = jdbcTemplate.queryForObject("SELECT lessonDuration FROM lesson WHERE lessonId=?", String.class, videoPauseRequest.getLessonId());
-                if (lessonDuration != null) {
+                if(lessonDuration != null) {
                     if (lessonDuration.equals(videoPauseTime)) {
                         jdbcTemplate.update("UPDATE lessonProgress SET lessonCompletedStatus=? WHERE lessonId = ? and userName=? and chapterId=?", true, videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
 
-                        try {
-                            jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonId=?", true, lessonList.get(i + 1).getLessonId());
-                        } catch (Exception e) {
-                            boolean chapterCompleted = jdbcTemplate.queryForObject("SELECT chapterCompletedStatus FROM chapterProgress WHERE chapterId=? and userName=?", Boolean.class, videoPauseRequest.getChapterId(), userName);
-                            if (chapterCompleted == true) {
-                                List<Chapter> chaptersList = jdbcTemplate.query("SELECT * FROM chapter WHERE courseId=?", new BeanPropertyRowMapper<>(Chapter.class), videoPauseRequest.getCourseId());
+                        try
+                        {
+
+                            jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonId=?", true, lessonList.get(i+1).getLessonId());
+                        }
+                        catch(Exception e)
+                        {
+                            try
+                            {
+                                Integer testId=jdbcTemplate.queryForObject("SELECT testId FROM test WHERE chapterId=?",Integer.class,videoPauseRequest.getChapterId());
+                            }
+                            catch(Exception exception)
+                            {
+                                jdbcTemplate.update("UPDATE chapterProgress SET chapterCompletedStatus=? WHERE chapterId=?",true,videoPauseRequest.getChapterId());
+                            }
+                            boolean chapterCompleted = jdbcTemplate.queryForObject("SELECT chapterCompletedStatus FROM chapterProgress WHERE chapterId=? and userName=?", Boolean.class,videoPauseRequest.getChapterId(),userName);
+                            if(chapterCompleted == true)
+                            {
+                                List<Chapter> chaptersList = jdbcTemplate.query("SELECT * FROM chapter WHERE courseId=?",new BeanPropertyRowMapper<>(Chapter.class), videoPauseRequest.getCourseId());
                                 //List<Chapter> sortedChapterList = chaptersList.stream().sorted().collect(Collectors.toList());
                                 Collections.sort(chaptersList);
-                                System.out.println(chaptersList + "++++++++++++++++++++");
-                                for (int j = 0; j < chaptersList.size(); j++) {
-                                    if (chaptersList.get(j).getChapterId() == videoPauseRequest.getChapterId()) {
-                                        try {
-                                            List<Lesson> lessonsList = jdbcTemplate.query("SELECT *  FROM lesson WHERE chapterId=?", new BeanPropertyRowMapper<>(Lesson.class), chaptersList.get(j + 1).getChapterId());
+                                for(int j=0;j<chaptersList.size();j++)
+                                {
+                                    if(chaptersList.get(j).getChapterId() == videoPauseRequest.getChapterId())
+                                    {
+                                        try
+                                        {
+                                            List<Lesson> lessonsList = jdbcTemplate.query("SELECT *  FROM lesson WHERE chapterId=?", new BeanPropertyRowMapper<>(Lesson.class), chaptersList.get(j+1).getChapterId());
                                             List<Lesson> sortedLessonsList = lessonsList.stream().sorted().collect(Collectors.toList());
-                                            jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonId=?", true, sortedLessonsList.get(0).getLessonId());
-                                        } catch (Exception ex) {
+                                            jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonId=?", true,sortedLessonsList.get(0).getLessonId());
+                                        }
+                                        catch(Exception ex)
+                                        {
                                             break;
                                         }
                                     }
+                                }
+                                boolean completedStatus=true;
+                                for(Chapter ch:chaptersList)
+                                {
+                                    completedStatus = jdbcTemplate.queryForObject("SELECT chapterCompletedStatus FROM chapterProgress WHERE chapterId=?",Boolean.class,ch.getChapterId());
+                                    if(completedStatus == false)
+                                    {
+                                        completedStatus=false;
+                                        break;
+                                    }
+                                }
+                                if(completedStatus == true)
+                                {
+                                    jdbcTemplate.update("UPDATE courseCompletedStatus= ? WHERE courseId=?",true,videoPauseRequest.getCourseId());
+                                    finalTestService.certificateWithoutTest(videoPauseRequest.getCourseId());
+
                                 }
                             }
                         }
@@ -725,4 +762,3 @@ public class UserService {
         }
     }
 }
-

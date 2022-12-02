@@ -134,6 +134,49 @@ public class FinalTestService {
         jdbcTemplate.update("INSERT INTO certificate(certificateNumber,courseId,UserName,certificateUrl,pdfUrl) values(?,?,?,?,?)", certificateNumber, courseId, userName, url,pdfUrl);
     }
 
+    public void certificateWithoutTest(Integer courseId) throws IOException, ParseException {
+
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        String fullName = jdbcTemplate.queryForObject("SELECT fullName FROM user WHERE username=?",String.class,userName);
+        String courseName = jdbcTemplate.queryForObject("SELECT courseName FROM course WHERE courseId=?", String.class,courseId);
+        //Integer courseId = jdbcTemplate.queryForObject("SELECT courseId FROM course WHERE courseId=(SELECT courseId FROM chapter WHERE chapterId=(SELECT chapterId FROM test WHERE testId=?))", Integer.class, testId);
+        String joinDate = jdbcTemplate.queryForObject("SELECT joinDate FROM enrollment WHERE userName = ? and courseId=?", String.class, userName, courseId);
+        String completedDate = jdbcTemplate.queryForObject("SELECT completedDate FROM enrollment WHERE userName = ? and courseId=?", String.class, userName, courseId);
+        String duration = jdbcTemplate.queryForObject("SELECT courseDuration FROM course WHERE courseId = ?", String.class, courseId);
+        BufferedImage image = ImageIO.read(new File("src/main/resources/Final Certificate.png"));
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm"); // 12-hour format
+        java.util.Date d1 = format.parse(duration);
+        java.sql.Time pastime = new java.sql.Time(d1.getTime());
+        int hour = pastime.getHours();
+        int minute = pastime.getMinutes();
+        Graphics g = image.getGraphics();
+        g.setFont(g.getFont().deriveFont(25f));
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("TimesRoman", Font.PLAIN, 50));
+        g.drawString("Certificate of Completion", 90, 190);
+        g.setFont(new Font("TimesRoman", Font.PLAIN, 70));
+        g.setColor(Color.RED);
+        g.drawString(fullName.toUpperCase(), 90, 310);
+        g.setFont(new Font("TimesRoman", Font.PLAIN, 50));
+        g.setColor(Color.BLACK);
+        if(courseName != null) {
+            g.drawString(courseName, 90, 460);
+        }
+        g.setFont(new Font("TimesRoman", Font.PLAIN, 35));
+        g.drawString("Join Date: " + joinDate + " Completed Date: " + completedDate + " " + hour + "h " + minute + "m ", 90, 550);
+        String certificateNumber = " Certificate Number: CER57RF9" + userName + "S978" + courseId;
+        g.drawString(certificateNumber, 90, 700);
+        g.dispose();
+        ImageIO.write(image, "jpg", new File("src/main/resources/CertificateData/" + userName + courseId + ".png"));
+        File fileItem = new File("src/main/resources/CertificateData/" + userName + courseId + ".png");
+        FileInputStream input = new FileInputStream(fileItem);
+        MultipartFile multipartFile = new MockMultipartFile("fileItem", fileItem.getName(), "image/png", IOUtils.toByteArray(input));
+        String url = getFileUrl(multipartFile);
+        String pdfUrl = pdf(userName,courseId);
+        jdbcTemplate.update("delete from certificate where userName='" + userName + "' and courseId=" + courseId);
+        jdbcTemplate.update("INSERT INTO certificate(certificateNumber,courseId,UserName,certificateUrl,pdfUrl) values(?,?,?,?,?)", certificateNumber, courseId, userName, url,pdfUrl);
+    }
+
     public String pdf(String userName, Integer courseId) throws IOException {
         Path _dataDir = Paths.get("src/main/resources/CertificateData");
         Document document = new Document();
