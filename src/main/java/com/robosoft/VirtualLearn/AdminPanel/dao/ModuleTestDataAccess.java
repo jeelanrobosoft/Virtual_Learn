@@ -3,19 +3,18 @@ package com.robosoft.VirtualLearn.AdminPanel.dao;
 
 import com.robosoft.VirtualLearn.AdminPanel.dto.ResultAnswerRequest;
 import com.robosoft.VirtualLearn.AdminPanel.dto.ResultHeaderRequest;
-import com.robosoft.VirtualLearn.AdminPanel.entity.Answers;
-import com.robosoft.VirtualLearn.AdminPanel.entity.ModuleTest;
-import com.robosoft.VirtualLearn.AdminPanel.entity.Question;
-import com.robosoft.VirtualLearn.AdminPanel.entity.UserAnswers;
+import com.robosoft.VirtualLearn.AdminPanel.entity.*;
 import com.robosoft.VirtualLearn.AdminPanel.response.SubmitResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.ListIterator;
 
 @Service
 public class ModuleTestDataAccess {
@@ -33,7 +32,7 @@ public class ModuleTestDataAccess {
             return null;
         }
         moduleTest.setChapterNumber(jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + testId + ")", Integer.class));
-        moduleTest.setChapterName(jdbcTemplate.queryForObject("select chapterName from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + testId +")", String.class));
+        moduleTest.setChapterName(jdbcTemplate.queryForObject("select chapterName from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + testId + ")", String.class));
         moduleTest.setQuestions(questions);
         return moduleTest;
     }
@@ -41,11 +40,12 @@ public class ModuleTestDataAccess {
     public SubmitResponse userAnswers(UserAnswers userAnswers) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         jdbcTemplate.update("update chapterProgress set chapterCompletedStatus=true,chapterStatus=false where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'");
+        activeNextLessonStatus(userAnswers.getTestId());
         float chapterTestPercentage = updateUserAnswerTable(userAnswers);
         jdbcTemplate.update("update chapterProgress set chapterTestPercentage=" + chapterTestPercentage + " where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'");
         String coursePhoto = jdbcTemplate.queryForObject("select coursePhoto from course where courseId=(select distinct(courseId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class);
         String chapterName = jdbcTemplate.queryForObject("select chapterName from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class);
-        String description = "Completed Chapter " + jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class) + " - " + chapterName +" - " + jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
+        String description = "Completed Chapter " + jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class) + " - " + chapterName + " - " + jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
         String description1 = "You Scored " + jdbcTemplate.queryForObject("select chapterTestPercentage from chapterProgress where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ") and userName='" + userName + "'", String.class) + "% in Chapter" + jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class) + " - Setting up a new project, of course - " + jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
         LocalDateTime dateTime = LocalDateTime.now();
         DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
@@ -54,7 +54,7 @@ public class ModuleTestDataAccess {
         jdbcTemplate.update("insert into notification(userName,description,timeStamp,notificationUrl) values(?,?,?,?)", userName, description1, formatDateTime, coursePhoto);
         Integer chapterNumber = jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", Integer.class);
         String courseName = jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
-        return new SubmitResponse(chapterTestPercentage,chapterNumber,courseName,chapterName);
+        return new SubmitResponse(chapterTestPercentage, chapterNumber, courseName, chapterName);
     }
 
     public float updateUserAnswerTable(UserAnswers userAnswers) {
@@ -78,7 +78,7 @@ public class ModuleTestDataAccess {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         float chapterTestPercentage = jdbcTemplate.queryForObject("select chapterTestPercentage from chapterProgress where testId=" + testId + " and userName='" + userName + "'", Float.class);
         String chapterName = jdbcTemplate.queryForObject("select chapterName from chapter where chapterId=(select chapterId from test where testId=" + testId + ")", String.class);
-        Integer chapterNumber = jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select chapterId from test where testId=" + testId+ ")", Integer.class);
+        Integer chapterNumber = jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select chapterId from test where testId=" + testId + ")", Integer.class);
         String courseName = jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select chapterId from test where testId=" + testId + "))", String.class);
         int totalNumberOfQuestions = jdbcTemplate.queryForObject("select questionsCount from test where testId=" + testId, Integer.class);
         int correctAnswers = jdbcTemplate.queryForObject("select count(*) from userAnswer where userAnswerStatus=true and testId=" + testId, Integer.class);
@@ -91,11 +91,29 @@ public class ModuleTestDataAccess {
         return jdbcTemplate.query("select question.questionId,questionName,option_1,option_2,option_3,option_4,correctAnswer,userAnswer,userAnswerStatus from question inner join userAnswer on question.questionId=userAnswer.questionId where userAnswer.testId=" + testId + " and userName='" + userName + "'", new BeanPropertyRowMapper<>(ResultAnswerRequest.class));
     }
 
-    public String checkForCompletedStatus(Integer testId){
+    public String checkForCompletedStatus(Integer testId) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         Integer status = jdbcTemplate.queryForObject("select count(chapterCompletedStatus) from chapterProgress where userName='" + userName + "' and testId=" + testId + " and chapterCompletedStatus=true", Integer.class);
-        if(status == 0)
+        if (status == 0)
             return null;
         return "You have already attended test";
     }
+
+
+    public void activeNextLessonStatus(Integer testId) {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<ChapterId> chapterIds = jdbcTemplate.query("select chapterId from chapter where courseId=(select distinct(courseId) from chapterProgress where testId=" + testId + " and userName='" + userName + "')", new BeanPropertyRowMapper<>(ChapterId.class));
+        Integer completedChapterId = jdbcTemplate.queryForObject("select distinct(chapterId) from chapterProgress where testId=" + testId, Integer.class);
+        ListIterator iterator = chapterIds.listIterator();
+        while (iterator.hasNext()) {
+            ChapterId chapterId = (ChapterId) iterator.next();
+            if (chapterId.getChapterId() == completedChapterId) {
+                ChapterId nextChapterId = (ChapterId) iterator.next();
+                jdbcTemplate.update("update lessonProgress set lessonStatus=true where lessonId=" + jdbcTemplate.query("select lessonId from lesson where chapterId=" + nextChapterId.getChapterId(), new BeanPropertyRowMapper<>(Lesson.class)).get(0).getLessonId());
+            }
+        }
+    }
+
 }
+
+

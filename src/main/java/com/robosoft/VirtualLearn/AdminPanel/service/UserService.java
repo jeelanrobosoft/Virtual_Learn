@@ -707,6 +707,7 @@ public class UserService {
                         {
                             try
                             {
+
                                 Integer testId=jdbcTemplate.queryForObject("SELECT testId FROM test WHERE chapterId=?",Integer.class,videoPauseRequest.getChapterId());
                             }
                             catch(Exception exception)
@@ -726,8 +727,9 @@ public class UserService {
                                         try
                                         {
                                             List<Lesson> lessonsList = jdbcTemplate.query("SELECT *  FROM lesson WHERE chapterId=?", new BeanPropertyRowMapper<>(Lesson.class), chaptersList.get(j+1).getChapterId());
-                                            List<Lesson> sortedLessonsList = lessonsList.stream().sorted().collect(Collectors.toList());
-                                            jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonId=?", true,sortedLessonsList.get(0).getLessonId());
+                                            Collections.sort(lessonsList);
+                                            //List<Lesson> sortedLessonsList = lessonsList.stream().sorted().collect(Collectors.toList());
+                                            jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonId=?", true,lessonsList.get(0).getLessonId());
                                         }
                                         catch(Exception ex)
                                         {
