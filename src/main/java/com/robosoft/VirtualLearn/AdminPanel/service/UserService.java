@@ -674,7 +674,10 @@ public class UserService {
     }
 
     public void updateVideoPauseTime(VideoPauseRequest videoPauseRequest) throws IOException, ParseException, IOException, ParseException {
+
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        jdbcTemplate.update("UPDATE chapterProgress SET chapterStatus=? WHERE chapterId=? and userName=? and courseId=?", true, videoPauseRequest.getChapterId(), userName, videoPauseRequest.getCourseId());
+        jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonID=? and username=?", true, videoPauseRequest.getLessonId(), userName);
         java.sql.Time pauseTime = videoPauseRequest.getPauseTime();
         String videoPauseTime = pauseTime.toString();
         LocalDateTime now = LocalDateTime.now();
@@ -693,6 +696,7 @@ public class UserService {
                 java.sql.Time ppstime = new java.sql.Time(d1.getTime());
                 if(lessonDuration != null) {
                     if (pauseTime.compareTo(ppstime) == 0 || pauseTime.after(ppstime)) {
+
                         jdbcTemplate.update("UPDATE lessonProgress SET lessonCompletedStatus=? WHERE lessonId = ? and userName=? and chapterId=?", true, videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
 
                         try
@@ -710,6 +714,7 @@ public class UserService {
                             catch(Exception exception)
                             {
                                 jdbcTemplate.update("UPDATE chapterProgress SET chapterCompletedStatus=? WHERE chapterId=?",true,videoPauseRequest.getChapterId());
+                                jdbcTemplate.update("UPDATE chapterProgress SEt chapterStatus=? WHERE chapterId=?",false,videoPauseRequest.getChapterId());
                             }
                             boolean chapterCompleted = jdbcTemplate.queryForObject("SELECT chapterCompletedStatus FROM chapterProgress WHERE chapterId=? and userName=?", Boolean.class,videoPauseRequest.getChapterId(),userName);
                             if(chapterCompleted == true)
@@ -753,8 +758,8 @@ public class UserService {
                             }
                         }
                     } else if (!(lessonDuration.equals("00:00:00"))) {
-                        jdbcTemplate.update("UPDATE chapterProgress SET chapterStatus=? WHERE chapterId=? and userName=? and courseId=?", true, videoPauseRequest.getChapterId(), userName, videoPauseRequest.getCourseId());
-                        jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonID=? and username=?", true, videoPauseRequest.getLessonId(), userName);
+                      //  jdbcTemplate.update("UPDATE chapterProgress SET chapterStatus=? WHERE chapterId=? and userName=? and courseId=?", true, videoPauseRequest.getChapterId(), userName, videoPauseRequest.getCourseId());
+                       // jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonID=? and username=?", true, videoPauseRequest.getLessonId(), userName);
                     }
                 }
 
