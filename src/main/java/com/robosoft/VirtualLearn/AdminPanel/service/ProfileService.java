@@ -75,7 +75,7 @@ public class ProfileService {
         }
         System.out.println();
         if (saveProfile.getDateOfBirth().isEmpty() != true) {
-            Date dateOfBirth = new SimpleDateFormat("dd/MM/yyyy").parse(saveProfile.getDateOfBirth());
+            Date dateOfBirth = new SimpleDateFormat("yyyy-MM-dd").parse(saveProfile.getDateOfBirth());
             SimpleDateFormat newFormat = new SimpleDateFormat("yyyy-MM-dd");
             finalDateOfBirth = newFormat.format(dateOfBirth);
         }

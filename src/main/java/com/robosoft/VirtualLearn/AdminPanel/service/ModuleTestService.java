@@ -9,6 +9,7 @@ import com.robosoft.VirtualLearn.AdminPanel.response.SubmitResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLException;
 import java.util.List;
 
 @Service
@@ -21,7 +22,7 @@ public class ModuleTestService {
         return dataAccess.moduleTestQuestions(testId);
     }
 
-    public SubmitResponse userAnswers(UserAnswers userAnswers) {
+    public SubmitResponse userAnswers(UserAnswers userAnswers) throws SQLException {
         return dataAccess.userAnswers(userAnswers);
     }
 

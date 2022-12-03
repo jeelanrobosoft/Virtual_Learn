@@ -11,8 +11,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Array;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -37,8 +41,11 @@ public class ModuleTestDataAccess {
         return moduleTest;
     }
 
-    public SubmitResponse userAnswers(UserAnswers userAnswers) {
+    public SubmitResponse userAnswers(UserAnswers userAnswers) throws SQLException {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        Integer status = checkQuestions(userAnswers);
+        if(status == 0)
+            return null;
         jdbcTemplate.update("update chapterProgress set chapterCompletedStatus=true,chapterStatus=false where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'");
         activeNextLessonStatus(userAnswers.getTestId());
         float chapterTestPercentage = updateUserAnswerTable(userAnswers);
@@ -55,6 +62,17 @@ public class ModuleTestDataAccess {
         Integer chapterNumber = jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", Integer.class);
         String courseName = jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
         return new SubmitResponse(chapterTestPercentage, chapterNumber, courseName, chapterName);
+    }
+
+    private Integer checkQuestions(UserAnswers userAnswers) throws SQLException {
+        List<Integer> questionIds =jdbcTemplate.queryForList("select questionId from question where testId=" + userAnswers.getTestId(), Integer.class);
+        List<Integer> userQuestions = new ArrayList<>();
+        for (Answers answers: userAnswers.getUserAnswers()) {
+            userQuestions.add(answers.getQuestionId());
+        }
+        if(questionIds.equals(userQuestions))
+            return 1;
+        return 0;
     }
 
     public float updateUserAnswerTable(UserAnswers userAnswers) {

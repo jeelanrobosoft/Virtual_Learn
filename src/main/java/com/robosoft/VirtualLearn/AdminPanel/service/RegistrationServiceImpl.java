@@ -16,6 +16,9 @@ import org.springframework.stereotype.Service;
 public class RegistrationServiceImpl implements RegistrationService{
     @Autowired
     DataAccessService dataAccessService;
+
+    @Autowired
+    ProfileService profileService;
     @Autowired
     JdbcTemplate jdbcTemplate;
 
@@ -58,6 +61,9 @@ public class RegistrationServiceImpl implements RegistrationService{
         Integer status = jdbcTemplate.queryForObject("select count(*) from otpVerification where status=false and mobileNumber='" + registration.getMobileNumber() + "'", Integer.class);
         if(status == 0)
             return "Invalid Mobile Number";
+        status = profileService.checkStringContainsNumberOrNot(registration.getFullName());
+        if(status == 1)
+            return "Full Name cannot contain digits";
         if( (registration.getFullName().length() >= 5) && registration.getUserName().length() >= 5
                 && registration.getEmail().length() >= 10 && registration.getPassword().length() >= 5)
         {

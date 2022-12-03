@@ -11,6 +11,7 @@ import io.jsonwebtoken.impl.DefaultClaims;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -48,16 +49,19 @@ public class LoginController {
     @PutMapping("/login")
     public JwtResponse login(@RequestBody JwtRequest jwtRequest) throws Exception {
         try {
-            authenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(jwtRequest.getUserName(), jwtRequest.getPassword()));
+            authenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(jwtRequest.getUserName().trim(), jwtRequest.getPassword().trim()));
         } catch (DisabledException e) {
             throw new Exception("User Disabled");
         } catch (Exception e) {
             throw new BadCredentialsException("Invalid Credentials");
         }
-        final UserDetails userDetails = myUserDetailsService.loadUserByUsername(jwtRequest.getUserName());
+        final UserDetails userDetails = myUserDetailsService.loadUserByUsername(jwtRequest.getUserName().trim());
         final String token = jwtUtility.generateToken(userDetails);
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities()));
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("JWT_Token",token);
         return new JwtResponse(token);
+//        ResponseEntity.ok().headers(headers).body(Collections.singletonMap("status","Login successfully"))
     }
 
     @GetMapping("/refreshToken")
