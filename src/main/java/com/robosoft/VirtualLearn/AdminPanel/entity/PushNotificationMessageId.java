@@ -8,9 +8,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Notification {
-    private String body;
-    private String title;
-
-
+public class PushNotificationMessageId {
+    private String message_id;
 }

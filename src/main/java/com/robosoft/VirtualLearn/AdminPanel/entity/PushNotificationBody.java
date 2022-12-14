@@ -5,12 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.management.loading.PrivateClassLoader;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Notification {
-    private String body;
-    private String title;
-
-
+public class PushNotificationBody {
+    private String to;
+    private Notification notification;
 }

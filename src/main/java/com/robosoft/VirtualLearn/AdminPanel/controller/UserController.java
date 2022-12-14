@@ -22,6 +22,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/user")
+@CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
     @Autowired
     private UserService userService;
@@ -63,10 +64,11 @@ public class UserController {
     public ResponseEntity<?> getSubcategoryWithoutPagination(@RequestParam Integer categoryId) {
         List<SubCategory> subCategories = userService.getSubCategoriesWithoutPagination(categoryId);
 
-        if ((subCategories) != null)
-            return ResponseEntity.of(Optional.of(subCategories));
-        else
+        if ((subCategories) == null && subCategories.isEmpty() )
             return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "No SubCategories added Yet"))).status(HttpStatus.NOT_FOUND).build();
+        else
+            return ResponseEntity.of(Optional.of(subCategories));
+
     }
 
     @GetMapping("/allSubCategoriesWP")
@@ -119,6 +121,7 @@ public class UserController {
             return ResponseEntity.of(Optional.of(courseResponses));
 
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseEntity<>(Collections.singletonMap("message", "Invalid Input"), HttpStatus.BAD_REQUEST);
         }
     }
@@ -219,12 +222,26 @@ public class UserController {
             return new ResponseEntity<>(Collections.singletonMap("message", "Invalid Input"), HttpStatus.BAD_REQUEST);
         }
     }
+    @GetMapping("/searchOfCategory")
+    public ResponseEntity<?> searchOfCategory(@RequestParam Integer categoryId ,@RequestParam String searchKey) {
+        try {
+            List<AllCoursesResponse> allCoursesResponses = userService.searchCoursesOfCategory(categoryId,searchKey);
+
+            if (allCoursesResponses.isEmpty())
+                return new ResponseEntity<>(Collections.singletonMap("message", "No Matching Course"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(allCoursesResponses, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(Collections.singletonMap("message", "Invalid Input"), HttpStatus.BAD_REQUEST);
+        }
+    }
 
     @PostMapping("/applyFilter")
     public ResponseEntity<?> applyFilter(@RequestBody FilterRequest filterRequest) {
         List<AllCoursesResponse> allCoursesResponses = userService.searchFilter(filterRequest);
         if (allCoursesResponses == null || allCoursesResponses.isEmpty()) {
-            return new ResponseEntity<>(Collections.singletonMap("message", "No Matching Course"), HttpStatus.NOT_FOUND);
+//            return new ResponseEntity<>(Collections.singletonMap("message", "No Matching Course"), HttpStatus.OK);
+            return null;
         }
         return new ResponseEntity<>(allCoursesResponses, HttpStatus.OK);
     }
