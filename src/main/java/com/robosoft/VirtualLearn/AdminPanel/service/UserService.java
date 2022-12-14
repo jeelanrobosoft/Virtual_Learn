@@ -777,25 +777,25 @@ public class UserService {
     public List<HomeAllCourse> getPopularCourses() {
         List<HomeAllCourse> popularCourseList = new ArrayList<>();
         List<Enrollment> allEnrolledCourses = jdbcTemplate.query("SELECT distinct courseId FROM enrollment", (rs, rowNum) -> new Enrollment(rs.getInt("courseId")));
-            for (Enrollment allEnrolledCourse : allEnrolledCourses) {
-                Integer enrolmentCount = jdbcTemplate.queryForObject("SELECT count(courseId) FROM enrollment WHERE courseId= ?", Integer.class, allEnrolledCourse.getCourseId());
-                Course course = jdbcTemplate.queryForObject("SELECT * FROM course WHERE courseId = ?", new BeanPropertyRowMapper<>(Course.class), allEnrolledCourse.getCourseId());
-                String categoryName = getCategoryName(course.getCategoryId());
-                if (enrolmentCount != null) {
-                    if (enrolmentCount >= 0 || enrolmentCount==null) {
-                        HomeAllCourse homeAllCourse = new HomeAllCourse();
-                        Integer chapterCount =  getChapterCount(course.getCourseId());
-                        homeAllCourse.setCourseId(course.getCourseId());
-                        homeAllCourse.setCoursePhoto(course.getCoursePhoto());
-                        homeAllCourse.setCourseName(course.getCourseName());
-                        homeAllCourse.setCategoryId(course.getCategoryId());
-                        homeAllCourse.setCategoryName(categoryName);
-                        homeAllCourse.setChapterCount(chapterCount);
-                        popularCourseList.add(homeAllCourse);
-                    }
+        for (Enrollment allEnrolledCourse : allEnrolledCourses) {
+            Integer enrolmentCount = jdbcTemplate.queryForObject("SELECT count(courseId) FROM enrollment WHERE courseId= ?", Integer.class, allEnrolledCourse.getCourseId());
+            Course course = jdbcTemplate.queryForObject("SELECT * FROM course WHERE courseId = ?", new BeanPropertyRowMapper<>(Course.class), allEnrolledCourse.getCourseId());
+            String categoryName = getCategoryName(course.getCategoryId());
+            if (enrolmentCount != null) {
+                if (enrolmentCount >= 0 || enrolmentCount==null) {
+                    HomeAllCourse homeAllCourse = new HomeAllCourse();
+                    Integer chapterCount =  getChapterCount(course.getCourseId());
+                    homeAllCourse.setCourseId(course.getCourseId());
+                    homeAllCourse.setCoursePhoto(course.getCoursePhoto());
+                    homeAllCourse.setCourseName(course.getCourseName());
+                    homeAllCourse.setCategoryId(course.getCategoryId());
+                    homeAllCourse.setCategoryName(categoryName);
+                    homeAllCourse.setChapterCount(chapterCount);
+                    popularCourseList.add(homeAllCourse);
                 }
             }
-            System.out.println(popularCourseList);
+        }
+        System.out.println(popularCourseList);
         return popularCourseList;
     }
 
@@ -806,7 +806,7 @@ public class UserService {
         int size = allNewCourses.size() - 1;
         int newCourseLimit = size / 2;
         for (int i = size; i >= newCourseLimit; i--) {
-           // HomeAllCourse homeAllCourse = jdbcTemplate.queryForObject("SELECT overView.courseId, coursePhoto, courseName,course.categoryId,categoryName,chapterCount FROM course,overView, category WHERE course.courseId=? and course.courseId = overView.courseId and categoryName=(SELECT categoryName FROM category ct WHERE ct.categoryId=course.categoryId)", new BeanPropertyRowMapper<>(HomeAllCourse.class), allNewCourses.get(i).getCourseId());
+            // HomeAllCourse homeAllCourse = jdbcTemplate.queryForObject("SELECT overView.courseId, coursePhoto, courseName,course.categoryId,categoryName,chapterCount FROM course,overView, category WHERE course.courseId=? and course.courseId = overView.courseId and categoryName=(SELECT categoryName FROM category ct WHERE ct.categoryId=course.categoryId)", new BeanPropertyRowMapper<>(HomeAllCourse.class), allNewCourses.get(i).getCourseId());
             newCourseList.add(allNewCourses.get(i));
         }
         return newCourseList;
@@ -825,10 +825,9 @@ public class UserService {
             if (enrollmentCount != null) {
                 if (enrollmentCount >= 0) {
                     try {
-                        String categoryName = jdbcTemplate.queryForObject("SELECT categoryName FROM category WHERE categoryId=?", String.class, category.getCategoryId());                        List<Course> courses = jdbcTemplate.query("SELECT * FROM course WHERE categoryId = ?", new BeanPropertyRowMapper<>(Course.class),category.getCategoryId());
                         TopCourseResponse topCourseResponse = new TopCourseResponse();
-                        topCourseResponse.setCategoryId(category.getCategoryId());
-                        topCourseResponse.setCategoryName(categoryName);
+                        String categoryName = jdbcTemplate.queryForObject("SELECT categoryName FROM category WHERE categoryId=?", String.class, category.getCategoryId());
+                        List<Course> courses = jdbcTemplate.query("SELECT * FROM course WHERE categoryId = ?", new BeanPropertyRowMapper<>(Course.class),category.getCategoryId());
                         List<PopularCourseInEachCategory> popularCourseInEachCategoryList = new ArrayList<>();
                         for(Course c: courses)
                         {
@@ -843,8 +842,17 @@ public class UserService {
                             popularCourseInEachCategoryList.add(popularCourseInEachCategory);
 
                         }
-                        topCourseResponse.setPopularCourseInEachCategoryList(popularCourseInEachCategoryList);
-                        topCoursesList.add(topCourseResponse);
+                        System.out.println("before "+popularCourseInEachCategoryList);
+                        if(popularCourseInEachCategoryList != null && popularCourseInEachCategoryList.size() !=0)
+                        {
+                            System.out.println("after "+popularCourseInEachCategoryList);
+                            topCourseResponse.setCategoryId(category.getCategoryId());
+                            topCourseResponse.setCategoryName(categoryName);
+                            topCourseResponse.setPopularCourseInEachCategoryList(popularCourseInEachCategoryList);
+                        }
+                        if(topCourseResponse.getCategoryId() != null && topCourseResponse.getCategoryName() !=null && topCourseResponse.getPopularCourseInEachCategoryList() != null && topCourseResponse.getPopularCourseInEachCategoryList().size() != 0){
+                            topCoursesList.add(topCourseResponse);
+                        }
                     } catch (EmptyResultDataAccessException exp) {
                         return null;
                     }

@@ -105,7 +105,7 @@ public class ModuleTestDataAccess {
         String courseName = jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select chapterId from test where testId=" + testId + "))", String.class);
         int totalNumberOfQuestions = jdbcTemplate.queryForObject("select questionsCount from test where testId=" + testId, Integer.class);
         System.out.println(totalNumberOfQuestions);
-        int correctAnswers = jdbcTemplate.queryForObject("select count(*) from userAnswer where userAnswerStatus=true and testId=" + testId + "' and userName='" + userName + "'", Integer.class);
+        int correctAnswers = jdbcTemplate.queryForObject("select count(*) from userAnswer where userAnswerStatus=true and testId=" + testId + " and userName='" + userName + "'", Integer.class);
         System.out.println(correctAnswers);
         int wrongAnswers = totalNumberOfQuestions - correctAnswers;
         System.out.println(wrongAnswers);
