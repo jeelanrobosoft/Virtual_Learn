@@ -28,26 +28,26 @@ public class RegistrationController {
     private String mobileNumber = null;
 
     @PutMapping("/continue")
-    public Map sendCodeInSMS(@RequestBody MobileAuth mobileAuth) {
+    public ResponseEntity<?> sendCodeInSMS(@RequestBody MobileAuth mobileAuth) {
         int status = service.checkMobileNumber(mobileAuth);
         if (status == 1)
-            return Collections.singletonMap("message", "User already exists");
+            return new ResponseEntity<>(Collections.singletonMap("message", "User already exists"),HttpStatus.NOT_ACCEPTABLE);
         service.deletePreviousOtp(mobileAuth.getMobileNumber());
         mobileNumber = mobileAuth.getMobileNumber();
         String twoFaCode = String.valueOf(new Random().nextInt(8999) + 1000);
-        return Collections.singletonMap("message", "OTP Valid For " + service.sendOtp(mobileAuth, twoFaCode) + " Minutes");
+        return new ResponseEntity<>(Collections.singletonMap("message", "OTP Valid For " + service.sendOtp(mobileAuth, twoFaCode) + " Minutes"),HttpStatus.OK);
     }
 
     @PutMapping("/resend")
-    public Map ResendCodeInSMS(@RequestBody MobileAuth mobileAuth) {
+    public ResponseEntity<?> ResendCodeInSMS(@RequestBody MobileAuth mobileAuth) {
         service.deletePreviousOtp(mobileAuth.getMobileNumber());
         String twoFaCode = String.valueOf(new Random().nextInt(8999) + 1000);
-        return Collections.singletonMap("message", "OTP Valid For " + service.sendOtp(mobileAuth, twoFaCode) + " Minutes");
+        return new ResponseEntity<>(Collections.singletonMap("message", "OTP Valid For " + service.sendOtp(mobileAuth, twoFaCode) + " Minutes"),HttpStatus.OK);
     }
 
     @PostMapping("/verify")
-    public Map verifyOtp(@RequestBody MobileAuth otp) {
-        return Collections.singletonMap("message", service.verifyOtp(otp));
+    public ResponseEntity<?> verifyOtp(@RequestBody MobileAuth otp) {
+        return new ResponseEntity<>(Collections.singletonMap("message", service.verifyOtp(otp)),HttpStatus.OK);
     }
 
 
