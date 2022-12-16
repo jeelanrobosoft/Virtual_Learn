@@ -141,6 +141,17 @@ public class ModuleTestDataAccess {
         }
     }
 
+    public Integer checkForCourseScore(Integer testId) {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        Integer courseId = jdbcTemplate.queryForObject("select courseId from chapter where chapterId=(select chapterId from chapterProgress where testId=" + testId + " and userName='" + userName + "')",Integer.class);
+        return jdbcTemplate.queryForObject("select courseScore from enrollment where userName=? and courseId=?", Integer.class,userName,courseId);
+    }
+
+    public Integer getCourseId(Integer testId) {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        return jdbcTemplate.queryForObject("select courseId from chapter where chapterId=(select chapterId from chapterProgress where testId=" + testId + " and userName='" + userName + "')",Integer.class);
+
+    }
 }
 
 
