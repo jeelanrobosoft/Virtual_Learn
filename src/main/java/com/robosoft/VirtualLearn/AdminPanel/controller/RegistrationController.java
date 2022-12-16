@@ -65,7 +65,7 @@ public class RegistrationController {
         return ResponseEntity.of(Optional.of(Collections.singletonMap("message", addDetails)));
     }
 
-    @Scheduled(fixedRate = 300000)
+    @Scheduled(fixedRate = 3600000)
     public void eventScheduler(){
         mobileNumber = null;
     }
