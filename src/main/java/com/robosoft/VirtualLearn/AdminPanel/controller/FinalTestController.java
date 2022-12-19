@@ -19,6 +19,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/user")
+@CrossOrigin("http://localhost:3000")
 public class FinalTestController {
     @Autowired
     FinalTestService finalTestService;
@@ -45,7 +46,6 @@ public class FinalTestController {
         if(this.testId != testId)
             return new ResponseEntity<>(Collections.singletonMap("message","Invalid Test Id"),HttpStatus.NOT_FOUND);
         SubmitResponse testPercentage = finalTestService.userAnswers(userAnswers);
-        finalTestService.certificate(userAnswers.getTestId());
         return new ResponseEntity<>(testPercentage,HttpStatus.OK);
     }
 

@@ -15,14 +15,14 @@ import java.util.Optional;
 @ControllerAdvice
 public class MyControllerAdvice {
 
-//    @ExceptionHandler(EmptyResultDataAccessException.class)
-//    public ResponseEntity<Map> handleEmptyResult(EmptyResultDataAccessException exception) {
-//        return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Input field is incorrect")));
-//    }
+    @ExceptionHandler(EmptyResultDataAccessException.class)
+    public ResponseEntity<Map> handleEmptyResult(EmptyResultDataAccessException exception) {
+        return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Input field is incorrect")));
+    }
 
     @ExceptionHandler(ParseException.class)
     public ResponseEntity<Map> handleEmptyResult(ParseException exception) {
-        return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Send Date in dd/mm/yyyy format")));
+        return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Send Date in yyyy-MM-dd format")));
     }
 
     @ExceptionHandler(ApiException.class)

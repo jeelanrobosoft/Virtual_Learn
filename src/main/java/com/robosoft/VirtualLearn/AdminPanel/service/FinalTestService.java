@@ -63,7 +63,7 @@ public class FinalTestService {
         return testDataAccess.getFinalTestResult(testId);
     }
 
-    public SubmitResponse userAnswers(UserAnswers userAnswers) {
+    public SubmitResponse userAnswers(UserAnswers userAnswers) throws IOException, ParseException {
         return testDataAccess.userAnswers(userAnswers);
     }
 
@@ -125,8 +125,8 @@ public class FinalTestService {
             // Upload the image
             Map params1 = ObjectUtils.asMap(
                     "use_filename", true,
-                    "unique_filename", false,
-                    "overwrite", true
+                    "unique_filename", true,
+                    "overwrite", false
             );
             Map uploadResult = cloudinary.uploader().upload(profilePhoto.getBytes(), params1);
             //String publicId = uploadResult.get("public_id").toString();
@@ -140,74 +140,7 @@ public class FinalTestService {
         }
         return null;
     }
-    public void certificate(Integer testId) throws IOException, ParseException {
 
-        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        String fullName = jdbcTemplate.queryForObject("SELECT fullName FROM user WHERE username=?",String.class,userName);
-        String courseName = jdbcTemplate.queryForObject("SELECT courseName FROM course WHERE courseId=(SELECT courseId FROM chapter WHERE chapterId=(SELECT chapterId FROM test WHERE testId=?))", String.class, testId);
-        Integer courseId = jdbcTemplate.queryForObject("SELECT courseId FROM course WHERE courseId=(SELECT courseId FROM chapter WHERE chapterId=(SELECT chapterId FROM test WHERE testId=?))", Integer.class, testId);
-        String joinDate = jdbcTemplate.queryForObject("SELECT joinDate FROM enrollment WHERE userName = ? and courseId=?", String.class, userName, courseId);
-        String completedDate = jdbcTemplate.queryForObject("SELECT completedDate FROM enrollment WHERE userName = ? and courseId=?", String.class, userName, courseId);
-        String duration = jdbcTemplate.queryForObject("SELECT courseDuration FROM course WHERE courseId = ?", String.class, courseId);
-//     File f = new File("src/main/resources/Final Certificate.png");
-//        f.setReadable(true); //read
-//        f.setWritable(true); //write
-//       // f.setExecutable(true); //execute
-        // System.out.println(System.getProperty("com/robosoft/VirtualLearn/FinalCertificate.png"));
-        String certificateUrl = String.format(DOWNLOAD_URL, URLEncoder.encode("FinalCertificate.png"));
-
-        BufferedImage image = ImageIO.read(new URL(certificateUrl));
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm"); // 12-hour format
-        java.util.Date d1 = format.parse(duration);
-        java.sql.Time pastime = new java.sql.Time(d1.getTime());
-        int hour = pastime.getHours();
-        int minute = pastime.getMinutes();
-        Graphics g = image.getGraphics();
-        g.setFont(g.getFont().deriveFont(25f));
-        g.setColor(Color.BLACK);
-        g.setFont(new Font("TimesRoman", Font.PLAIN, 50));
-        g.drawString("Certificate of Completion", 90, 190);
-        g.setFont(new Font("TimesRoman", Font.PLAIN, 70));
-        g.setColor(Color.RED);
-        g.drawString(fullName.toUpperCase(), 90, 310);
-        g.setFont(new Font("TimesRoman", Font.PLAIN, 50));
-        g.setColor(Color.BLACK);
-        if(courseName != null) {
-            g.drawString(courseName, 90, 460);
-        }
-        g.setFont(new Font("TimesRoman", Font.PLAIN, 35));
-        g.drawString("Join Date: " + joinDate + " Completed Date: " + completedDate + " " + hour + "h " + minute + "m ", 90, 550);
-        String certificateNumber = " Certificate Number: CER57RF9" + userName + "S978" + courseId;
-        g.drawString(certificateNumber, 90, 700);
-        g.dispose();
-
-        //*****************************************
-
-
-        //BufferedImage  Convert to  ByteArrayOutputStream
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ImageIO.write(image, "png", out);
-        //ByteArrayOutputStream  Convert to  byte[]
-        byte[] imageByte = out.toByteArray();
-        // Will  byte[]  Convert to  MultipartFile
-        MultipartFile multipartFile11 = new MultipartImage(imageByte, userName+courseId, "image", "png", imageByte.length);
-        //System.out.println(multipartFile11.getName());
-       // String url = getFileUrlCertificate(multipartFile11);
-        String url = uploadProfilePhoto(multipartFile11);
-        System.out.println(url);
-        //**********************************************
-
-
-        // ImageIO.write(image, "png", new File("src/main/resources/" + userName + courseId + ".png"));
-        //File fileItem = new File("src/main/resources/" + userName + courseId + ".png");
-        // FileInputStream input = new FileInputStream(fileItem);
-        //MultipartFile multipartFile = new MockMultipartFile("fileItem", fileItem.getName(), "image/png", IOUtils.toByteArray(input));
-        //String url = getFileUrl(multipartFile);
-        //String pdfUrl = pdf(userName,courseId);
-        //System.out.println(pdfUrl);
-        jdbcTemplate.update("delete from certificate where userName='" + userName + "' and courseId=" + courseId);
-        jdbcTemplate.update("INSERT INTO certificate(certificateNumber,courseId,UserName,certificateUrl) values(?,?,?,?)", certificateNumber, courseId, userName, url);
-    }
 
     public void certificateWithoutTest(Integer courseId) throws IOException, ParseException {
 
@@ -246,26 +179,12 @@ public class FinalTestService {
         String certificateNumber = " Certificate Number: CER57RF9" + userName + "S978" + courseId;
         g.drawString(certificateNumber, 90, 700);
         g.dispose();
-        //BufferedImage  Convert to  ByteArrayOutputStream
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ImageIO.write(image, "png", out);
-        //ByteArrayOutputStream  Convert to  byte[]
         byte[] imageByte = out.toByteArray();
-        // Will  byte[]  Convert to  MultipartFile
         MultipartFile multipartFile11 = new MultipartImage(imageByte, userName+courseId, "image", "png", imageByte.length);
-        //System.out.println(multipartFile11.getName());
         String url = uploadProfilePhoto(multipartFile11);
         System.out.println(url);
-        //**********************************************
-
-
-        // ImageIO.write(image, "png", new File("src/main/resources/" + userName + courseId + ".png"));
-        //File fileItem = new File("src/main/resources/" + userName + courseId + ".png");
-        // FileInputStream input = new FileInputStream(fileItem);
-        //MultipartFile multipartFile = new MockMultipartFile("fileItem", fileItem.getName(), "image/png", IOUtils.toByteArray(input));
-        //String url = getFileUrl(multipartFile);
-        //String pdfUrl = pdf(userName,courseId);
-        //System.out.println(pdfUrl);
         jdbcTemplate.update("delete from certificate where userName='" + userName + "' and courseId=" + courseId);
         jdbcTemplate.update("INSERT INTO certificate(certificateNumber,courseId,UserName,certificateUrl) values(?,?,?,?)", certificateNumber, courseId, userName, url);
     }
@@ -299,6 +218,6 @@ public class FinalTestService {
     public String getPdfUrl(Integer courseId)
     {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        return jdbcTemplate.queryForObject("SELECT pdfUrl FROM certificate WHERE userName=? and courseId=?",String.class,userName,courseId);
+        return jdbcTemplate.queryForObject("SELECT certificateUrl FROM certificate WHERE userName=? and courseId=?",String.class,userName,courseId);
     }
 }

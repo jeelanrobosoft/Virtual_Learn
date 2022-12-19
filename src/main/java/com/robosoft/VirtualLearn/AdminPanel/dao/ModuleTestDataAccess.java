@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 
+import static com.robosoft.VirtualLearn.AdminPanel.entity.PushNotification.sendPushNotification;
+
 @Service
 public class ModuleTestDataAccess {
     @Autowired
@@ -43,22 +45,25 @@ public class ModuleTestDataAccess {
 
     public SubmitResponse userAnswers(UserAnswers userAnswers) throws SQLException {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        Integer status = checkQuestions(userAnswers);
-        if(status == 0)
-            return null;
-        jdbcTemplate.update("update chapterProgress set chapterCompletedStatus=true,chapterStatus=false where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'");
-        activeNextLessonStatus(userAnswers.getTestId());
+//        Integer status = checkQuestions(userAnswers);
+//        if(status == 0)
+//            return null;
         float chapterTestPercentage = updateUserAnswerTable(userAnswers);
         jdbcTemplate.update("update chapterProgress set chapterTestPercentage=" + chapterTestPercentage + " where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'");
+        jdbcTemplate.update("update chapterProgress set chapterCompletedStatus=true,chapterStatus=false where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'");
+        activeNextLessonStatus(userAnswers.getTestId());
         String coursePhoto = jdbcTemplate.queryForObject("select coursePhoto from course where courseId=(select distinct(courseId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class);
         String chapterName = jdbcTemplate.queryForObject("select chapterName from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class);
         String description = "Completed Chapter " + jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class) + " - " + chapterName + " - " + jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
-        String description1 = "You Scored " + jdbcTemplate.queryForObject("select chapterTestPercentage from chapterProgress where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ") and userName='" + userName + "'", String.class) + "% in Chapter" + jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class) + " - Setting up a new project, of course - " + jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
+        String description1 = "You Scored " + jdbcTemplate.queryForObject("select chapterTestPercentage from chapterProgress where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ") and userName='" + userName + "'", String.class) + "% in Chapter" + jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class) + " - " + chapterName +", of course - " + jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
         LocalDateTime dateTime = LocalDateTime.now();
         DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
         String formatDateTime = dateTime.format(format);
         jdbcTemplate.update("insert into notification(userName,description,timeStamp,notificationUrl) values(?,?,?,?)", userName, description, formatDateTime, coursePhoto);
         jdbcTemplate.update("insert into notification(userName,description,timeStamp,notificationUrl) values(?,?,?,?)", userName, description1, formatDateTime, coursePhoto);
+        String fcmToken = jdbcTemplate.queryForObject("select fcmToken from user where userName='" + userName + "'", String.class);
+        sendPushNotification(fcmToken,description,"Congratulations");
+        sendPushNotification(fcmToken,description1,"Hooray...!");
         Integer chapterNumber = jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", Integer.class);
         String courseName = jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
         return new SubmitResponse(chapterTestPercentage, chapterNumber, courseName, chapterName);
@@ -86,7 +91,7 @@ public class ModuleTestDataAccess {
             query = "insert into userAnswer values('" + userName + "'" + "," + courseId + "," + chapterId + "," + userAnswers.getTestId() + "," + uAnswers.getQuestionId() + "," + "'" + uAnswers.getCorrectAnswer() + "'" + "," + "(select if((select correctAnswer from question where questionId=" + uAnswers.getQuestionId() + ") ='" + uAnswers.getCorrectAnswer() + "'" + ",true,false)))";
             jdbcTemplate.update(query);
         }
-        Integer correctAnswerCount = jdbcTemplate.queryForObject("select count(*) from userAnswer where userAnswerStatus=true and testId=" + userAnswers.getTestId(), Integer.class);
+        Integer correctAnswerCount = jdbcTemplate.queryForObject("select count(*) from userAnswer where userAnswerStatus=true and testId=" + userAnswers.getTestId() + " and userName='" + userName + "'", Integer.class);
         Integer questionCount = jdbcTemplate.queryForObject("select questionsCount from test where testId=" + userAnswers.getTestId(), Integer.class);
         float chapterTestPercentage = (correctAnswerCount / (float) questionCount) * 100;
         return chapterTestPercentage;
@@ -99,8 +104,11 @@ public class ModuleTestDataAccess {
         Integer chapterNumber = jdbcTemplate.queryForObject("select chapterNumber from chapter where chapterId=(select chapterId from test where testId=" + testId + ")", Integer.class);
         String courseName = jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select chapterId from test where testId=" + testId + "))", String.class);
         int totalNumberOfQuestions = jdbcTemplate.queryForObject("select questionsCount from test where testId=" + testId, Integer.class);
-        int correctAnswers = jdbcTemplate.queryForObject("select count(*) from userAnswer where userAnswerStatus=true and testId=" + testId, Integer.class);
+        System.out.println(totalNumberOfQuestions);
+        int correctAnswers = jdbcTemplate.queryForObject("select count(*) from userAnswer where userAnswerStatus=true and testId=" + testId + "' and userName='" + userName + "'", Integer.class);
+        System.out.println(correctAnswers);
         int wrongAnswers = totalNumberOfQuestions - correctAnswers;
+        System.out.println(wrongAnswers);
         return new ResultHeaderRequest(chapterNumber, chapterName, chapterTestPercentage, courseName, correctAnswers, wrongAnswers, totalNumberOfQuestions);
     }
 
@@ -128,6 +136,7 @@ public class ModuleTestDataAccess {
             if (chapterId.getChapterId() == completedChapterId) {
                 ChapterId nextChapterId = (ChapterId) iterator.next();
                 jdbcTemplate.update("update lessonProgress set lessonStatus=true where lessonId=" + jdbcTemplate.query("select lessonId from lesson where chapterId=" + nextChapterId.getChapterId(), new BeanPropertyRowMapper<>(Lesson.class)).get(0).getLessonId());
+                jdbcTemplate.update("update chapterProgress set chapterStatus=true where chapterId=" + nextChapterId.getChapterId() + " and userName='" + userName + "'");
             }
         }
     }

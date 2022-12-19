@@ -15,6 +15,6 @@ public class CourseResponse {
     private String coursePhoto;
     private String previewVideo;
     private String courseName;
-    private String chapterCount;
+    private Integer chapterCount;
     private String courseDuration;
 }

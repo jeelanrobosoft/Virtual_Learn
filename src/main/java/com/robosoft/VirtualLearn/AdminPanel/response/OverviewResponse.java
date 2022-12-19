@@ -30,8 +30,8 @@ public class OverviewResponse {
     private List<String> learningOutCome;
     private List<String> requirements;
     private String instructorName;
+    private String designation;
     private String url;
     private String instructorDescription;
     private String profilePhoto;
-
 }

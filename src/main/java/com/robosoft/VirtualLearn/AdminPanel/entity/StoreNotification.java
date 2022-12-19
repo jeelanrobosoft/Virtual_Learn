@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Notification {
+public class StoreNotification {
     private String description;
     private Timestamp timestamp;
     private String notificationUrl;

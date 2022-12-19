@@ -35,7 +35,7 @@ public class MenuDataAccess {
         int courseCompleted = jdbcTemplate.queryForObject("select count(*) from enrollment where completedDate>'0000-00-00' and userName='" + userName + "'", Integer.class);
         int chapterCompletedStatus = jdbcTemplate.queryForObject("select count(*) from chapterProgress where userName='" + userName + "' and chapterCompletedStatus=true", Integer.class);
         int testCompletedStatus = jdbcTemplate.queryForObject("select count(distinct(testId)) from userAnswer where userName='" + userName + "'", Integer.class);
-        MyProfileResponse myProfileResponse = jdbcTemplate.queryForObject("select email,dateOfBirth,mobileNumber,userName,occupation,gender from user where userName='" + userName + "'", (rs, rowNum) -> {
+        MyProfileResponse myProfileResponse = jdbcTemplate.queryForObject("select email,dateOfBirth,mobileNumber,userName,occupation,gender,twitterLink,faceBookLink from user where userName='" + userName + "'", (rs, rowNum) -> {
             MyProfileResponse profileResponse = new MyProfileResponse();
             profileResponse.setUserName(rs.getString("userName"));
             profileResponse.setMobileNumber(rs.getString("mobileNumber"));
@@ -43,6 +43,8 @@ public class MenuDataAccess {
             profileResponse.setDateOfBirth(rs.getString("dateOfBirth"));
             profileResponse.setOccupation(rs.getString("occupation"));
             profileResponse.setGender(rs.getString("gender"));
+            profileResponse.setTwitterLink(rs.getString("twitterLink"));
+            profileResponse.setFaceBookLink(rs.getString("faceBookLink"));
             return profileResponse;
         });
         System.out.println(response.getOccupation());
