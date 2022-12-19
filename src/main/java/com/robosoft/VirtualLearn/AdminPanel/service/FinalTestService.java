@@ -63,7 +63,7 @@ public class FinalTestService {
         return testDataAccess.getFinalTestResult(testId);
     }
 
-    public SubmitResponse userAnswers(UserAnswers userAnswers) {
+    public SubmitResponse userAnswers(UserAnswers userAnswers) throws IOException, ParseException {
         return testDataAccess.userAnswers(userAnswers);
     }
 
@@ -209,6 +209,9 @@ public class FinalTestService {
         jdbcTemplate.update("INSERT INTO certificate(certificateNumber,courseId,UserName,certificateUrl) values(?,?,?,?)", certificateNumber, courseId, userName, url);
     }
 
+    }
+
+
     public void certificateWithoutTest(Integer courseId) throws IOException, ParseException {
 
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -246,17 +249,7 @@ public class FinalTestService {
         String certificateNumber = " Certificate Number: CER57RF9" + userName + "S978" + courseId;
         g.drawString(certificateNumber, 90, 700);
         g.dispose();
-        //BufferedImage  Convert to  ByteArrayOutputStream
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ImageIO.write(image, "png", out);
-        //ByteArrayOutputStream  Convert to  byte[]
-        byte[] imageByte = out.toByteArray();
-        // Will  byte[]  Convert to  MultipartFile
-        MultipartFile multipartFile11 = new MultipartImage(imageByte, userName+courseId, "image", "png", imageByte.length);
-        //System.out.println(multipartFile11.getName());
-        String url = uploadProfilePhoto(multipartFile11);
-        System.out.println(url);
-        //**********************************************
+ 
 
 
         // ImageIO.write(image, "png", new File("src/main/resources/" + userName + courseId + ".png"));
@@ -266,6 +259,13 @@ public class FinalTestService {
         //String url = getFileUrl(multipartFile);
         //String pdfUrl = pdf(userName,courseId);
         //System.out.println(pdfUrl);
+ 
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", out);
+        byte[] imageByte = out.toByteArray();
+        MultipartFile multipartFile11 = new MultipartImage(imageByte, userName+courseId, "image", "png", imageByte.length);
+        String url = uploadProfilePhoto(multipartFile11);
+        System.out.println(url);
         jdbcTemplate.update("delete from certificate where userName='" + userName + "' and courseId=" + courseId);
         jdbcTemplate.update("INSERT INTO certificate(certificateNumber,courseId,UserName,certificateUrl) values(?,?,?,?)", certificateNumber, courseId, userName, url);
     }
@@ -299,6 +299,6 @@ public class FinalTestService {
     public String getPdfUrl(Integer courseId)
     {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        return jdbcTemplate.queryForObject("SELECT pdfUrl FROM certificate WHERE userName=? and courseId=?",String.class,userName,courseId);
+        return jdbcTemplate.queryForObject("SELECT certificateUrl FROM certificate WHERE userName=? and courseId=?",String.class,userName,courseId);
     }
 }

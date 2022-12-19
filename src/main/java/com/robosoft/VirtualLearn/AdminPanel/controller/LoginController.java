@@ -1,8 +1,8 @@
 package com.robosoft.VirtualLearn.AdminPanel.controller;
 
+import com.robosoft.VirtualLearn.AdminPanel.entity.FcmToken;
 import com.robosoft.VirtualLearn.AdminPanel.entity.MobileAuth;
 import com.robosoft.VirtualLearn.AdminPanel.request.JwtRequest;
-import com.robosoft.VirtualLearn.AdminPanel.response.JwtResponse;
 import com.robosoft.VirtualLearn.AdminPanel.service.MyUserDetailsService;
 import com.robosoft.VirtualLearn.AdminPanel.service.RegistrationServiceImpl;
 import com.robosoft.VirtualLearn.AdminPanel.service.UserService;
@@ -27,9 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 @RestController
-@CrossOrigin(
-        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS},
-        origins ={"http://localhost:3000"})
+@CrossOrigin(origins = "http://localhost:3000")
 public class LoginController {
     @Autowired
     private JwtUtility jwtUtility;
@@ -47,7 +45,7 @@ public class LoginController {
     Logger logger = LoggerFactory.getLogger(LoginController.class);
 
     @PutMapping("/login")
-    public JwtResponse login(@RequestBody JwtRequest jwtRequest) throws Exception {
+    public ResponseEntity<?> login(@RequestBody JwtRequest jwtRequest) throws Exception {
         try {
             authenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(jwtRequest.getUserName().trim(), jwtRequest.getPassword().trim()));
         } catch (DisabledException e) {
@@ -59,10 +57,18 @@ public class LoginController {
         final String token = jwtUtility.generateToken(userDetails);
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities()));
         HttpHeaders headers = new HttpHeaders();
-        headers.set("JWT_Token",token);
-        return new JwtResponse(token);
-//        ResponseEntity.ok().headers(headers).body(Collections.singletonMap("status","Login successfully"))
+        headers.set("jwt-token",token);
+        return ResponseEntity.ok().headers(headers).body(Collections.singletonMap("status","Login successfully"));
     }
+
+
+    /****
+     *
+     * For sending token in header
+     * ResponseEntity.ok().headers(headers).body(Collections.singletonMap("status","Login successfully"))
+     * ResponseEntity<?>
+     *
+     */
 
     @GetMapping("/refreshToken")
     public ResponseEntity<?> refreshToken(HttpServletRequest request) throws Exception {
@@ -71,7 +77,9 @@ public class LoginController {
         if(expectedMap == null)
             return new ResponseEntity<>(Collections.singletonMap("Error" , "Token Not Expired"), HttpStatus.NOT_ACCEPTABLE);
         String token = jwtUtility.doGenerateRefreshToken(expectedMap, expectedMap.get("sub").toString());
-        return new ResponseEntity<>(new JwtResponse(token),HttpStatus.OK);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("refreshToken",token);
+        return ResponseEntity.ok().headers(headers).body(Collections.singletonMap("status","Refresh Token Generated"));
     }
 
     @PostMapping("/send")
@@ -79,6 +87,8 @@ public class LoginController {
         int status = service.checkMobileNumber(auth);
         if (status == 0)
             return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Mobile Number not registered")));
+        if(!(auth.getMobileNumber().startsWith("+91")))
+            return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Invalid Mobile number")));
         service.deletePreviousOtp(auth.getMobileNumber());
         mobileNumber = auth.getMobileNumber();
         String twoFaCode = String.valueOf(new Random().nextInt(8999) + 1000);
@@ -132,6 +142,14 @@ public class LoginController {
         } catch (Exception e) {
             return new ResponseEntity<>(Collections.singletonMap("message", "Terms and Conditions Not Found"), HttpStatus.NOT_FOUND);
         }
+    }
+
+    @PostMapping("/fcmToken")
+    public ResponseEntity<?> getFcmToken(@RequestBody FcmToken fcmToken){
+        String response = service.storeFcmToken(fcmToken);
+        if(response.equals("Ok..!"))
+            return new ResponseEntity<>(Collections.singletonMap("status",response),HttpStatus.OK);
+        return new ResponseEntity<>(Collections.singletonMap("Error",response),HttpStatus.NOT_ACCEPTABLE);
     }
 
     // Event Scheduler which makes mobileNumber reference null

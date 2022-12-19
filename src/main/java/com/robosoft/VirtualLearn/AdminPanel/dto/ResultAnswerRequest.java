@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class ResultAnswerRequest {
-    private Integer questionId;
+    private Integer questionNumber;
     private String questionName;
     private String option_1;
     private String option_2;

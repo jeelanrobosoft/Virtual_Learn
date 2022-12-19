@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PopularCourseInEachCategory {
     private String courseName;
+    private Integer courseId;
     private String coursePhoto;
     private Integer chapterCount;
     private String courseDuration;

@@ -19,6 +19,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/user")
+@CrossOrigin(origins = "http://localhost:3000")
 public class ProfileController {
     @Autowired
     MenuService menuService;
@@ -35,12 +36,14 @@ public class ProfileController {
     }
 
     @PutMapping("/save")
-    public Map saveMyProfile(@ModelAttribute SaveProfile saveProfile) throws IOException, ParseException {
+    public ResponseEntity<?> saveMyProfile(@ModelAttribute SaveProfile saveProfile) throws IOException, ParseException {
+        if(saveProfile == null)
+            return new ResponseEntity<>(Collections.singletonMap("Error","All fields are empty"),HttpStatus.NOT_MODIFIED);
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
        String message = profileService.saveMyProfile(saveProfile, userName);
        if(message == null)
-           return Collections.singletonMap("message", "Successfully updated profile");
-       return Collections.singletonMap("message", message);
+           return new ResponseEntity<>(Collections.singletonMap("message", "Successfully updated profile"),HttpStatus.OK);
+       return new ResponseEntity<>(Collections.singletonMap("message", message),HttpStatus.NOT_ACCEPTABLE);
 
     }
 

@@ -65,52 +65,83 @@ public class ProfileService {
     public String saveMyProfile(SaveProfile saveProfile, String userName) throws IOException, ParseException {
         String profilePhotoLink = null;
         String finalDateOfBirth = null;
+        String twitterLink = null;
+        String faceBookLink = null;
+        String gender = null;
         Integer number = checkStringContainsNumberOrNot(saveProfile.getOccupation());
-        if(number == 1)
+        if (number == 1)
             return "Invalid Occupation";
-        if( saveProfile.getGender().toLowerCase(Locale.ROOT).equals("male")
-                || saveProfile.getGender().toLowerCase(Locale.ROOT).equals("female")|| saveProfile.getGender().toLowerCase(Locale.ROOT).equals("others"))
-        {
-            if(saveProfile.getTwitterLink().toLowerCase(Locale.ROOT).contains("twitter") && saveProfile.getFaceBookLink().toLowerCase(Locale.ROOT).contains("facebook"))
-            {
 
-        if (saveProfile.getProfilePhoto().isEmpty() != true) {
-            //profilePhotoLink = getFileUrl(saveProfile.getProfilePhoto());
-            profilePhotoLink =  finalTestService.uploadProfilePhoto(saveProfile.getProfilePhoto());
-            System.out.println(profilePhotoLink);
+        try {
+            if (saveProfile.getGender().toLowerCase(Locale.ROOT).equals("male")
+                    || saveProfile.getGender().toLowerCase(Locale.ROOT).equals("female") || saveProfile.getGender().toLowerCase(Locale.ROOT).equals("prefer not to say") ||
+                    saveProfile.getGender() == null) {
+                gender = saveProfile.getGender();
+            } else {
+                return "Invalid gender";
+            }
+        } catch (Exception e) {
         }
-        System.out.println();
-        if (saveProfile.getDateOfBirth().isEmpty() != true) {
+        try {
+            if ((saveProfile.getTwitterLink().toLowerCase(Locale.ROOT).contains("twitter") ||
+                    saveProfile.getTwitterLink() == null || saveProfile.getTwitterLink().toLowerCase(Locale.ROOT).equals("empty"))) {
+                twitterLink = saveProfile.getTwitterLink();
+            } else
+                return "Invalid facebook or twitter link";
+        } catch (Exception ex) {
+        }
+        try {
+            if (saveProfile.getFaceBookLink().toLowerCase(Locale.ROOT).contains("facebook") || saveProfile.getFaceBookLink() == null
+                    || saveProfile.getFaceBookLink().equals("empty"))
+                faceBookLink = saveProfile.getFaceBookLink();
+            else
+                return "Invalid facebook or twitter link";
+
+        } catch (Exception faceBook) {
+        }
+        try {
+            saveProfile.getProfilePhoto().isEmpty();
+            //profilePhotoLink = getFileUrl(saveProfile.getProfilePhoto());
+            profilePhotoLink = finalTestService.uploadProfilePhoto(saveProfile.getProfilePhoto());
+        } catch (NullPointerException exp) {
+        }
+        try {
+            if(saveProfile.getDateOfBirth().equals("empty"))
+            {
+                finalDateOfBirth = "empty";
+            }
+            else {
             Date dateOfBirth = new SimpleDateFormat("yyyy-MM-dd").parse(saveProfile.getDateOfBirth());
             SimpleDateFormat newFormat = new SimpleDateFormat("yyyy-MM-dd");
             finalDateOfBirth = newFormat.format(dateOfBirth);
-        }
-        profileDao.saveProfile(saveProfile, profilePhotoLink, finalDateOfBirth, userName);
-        return null;
             }
-            else
-                return "Invalid facebook or twitter link";
+        } catch (Exception e) {
         }
-        else
-            return "Invalid gender";
+        profileDao.saveProfile(saveProfile, twitterLink, faceBookLink, gender, profilePhotoLink, finalDateOfBirth, userName);
+        return null;
     }
 
+
     public String changePassword(ChangePassword password) {
-        if(password.getNewPassword().length() >= 5)
+        if (password.getNewPassword().length() >= 5)
             return profileDao.changePassword(password);
         else
             return "Invalid Password";
     }
 
     public int checkStringContainsNumberOrNot(String s) {
-        char[] chars = s.toCharArray();
-        StringBuilder sb = new StringBuilder();
-        for (char c : chars) {
-            if (Character.isDigit(c)) {
-                return 1;
+        if (s != null) {
+            char[] chars = s.toCharArray();
+            StringBuilder sb = new StringBuilder();
+            for (char c : chars) {
+                if (Character.isDigit(c)) {
+                    return 1;
+                }
             }
+            return 0;
         }
         return 0;
     }
+
 }
 
