@@ -13,6 +13,7 @@ import org.springframework.web.servlet.config.annotation.*;
 @EnableScheduling
 @EnableWebMvc
 public class VirtualLearnApplication extends WebMvcConfigurerAdapter {
+
 	public static void main(String[] args) {
 		SpringApplication.run(VirtualLearnApplication.class, args);
 	}

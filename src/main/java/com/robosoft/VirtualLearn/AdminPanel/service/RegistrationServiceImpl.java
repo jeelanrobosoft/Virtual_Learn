@@ -27,6 +27,7 @@ public class RegistrationServiceImpl implements RegistrationService{
     @Autowired
     JdbcTemplate jdbcTemplate;
 
+
     private final static String ACCOUNT_SID = "ACd7b80d5a6e82ec89f4be4cc8779fd230";
     private final static String AUTH_ID = "39e3d1b7d8afb09ba645714abbd184c6";
 //    +19896822968
@@ -46,7 +47,7 @@ public class RegistrationServiceImpl implements RegistrationService{
 
     @Override
     public long sendOtp(MobileAuth mobileAuth, String twoFaCode) {
-        Message.creator(new PhoneNumber("+919591726087"),new PhoneNumber("+19896822968"), /*new PhoneNumber("+17207131767"),*/
+        Message.creator(new PhoneNumber("+918431913658"),new PhoneNumber("+17207131767"), /*new PhoneNumber("+17207131767"),*/
                 "Your Two Factor Authentication code is: " + twoFaCode).create();
         return dataAccessService.saveOtp(mobileAuth.getMobileNumber(), twoFaCode);
     }
@@ -67,9 +68,16 @@ public class RegistrationServiceImpl implements RegistrationService{
     }
 
     @Override
-    public void resetPassword(MobileAuth auth) {
+    public String resetPassword(MobileAuth auth) {
+        String existingPassword = dataAccessService.fetchExistingPassword(auth.getMobileNumber());
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String newPassword = auth.getOneTimePassword();
+        if(encoder.matches(newPassword,existingPassword))
+            return "New Password Cannot be same as old password";
         dataAccessService.resetPassword(auth);
+        return null;
     }
+
 
     @Override
     public String addDetails(UserRegistration registration) {

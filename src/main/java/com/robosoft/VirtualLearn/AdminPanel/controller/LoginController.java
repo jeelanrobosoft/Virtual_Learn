@@ -107,7 +107,9 @@ public class LoginController {
             return new ResponseEntity<>(Collections.singletonMap("message", "Mobile Number not verified"),HttpStatus.NOT_ACCEPTABLE);
         if(!(auth.getOneTimePassword().length() >= 5))
             return new ResponseEntity<>(Collections.singletonMap("message","Enter a valid password"),HttpStatus.NOT_ACCEPTABLE);
-        service.resetPassword(auth);
+        String passwordStatus = service.resetPassword(auth);
+        if(passwordStatus != null)
+            return new ResponseEntity(Collections.singletonMap("message", passwordStatus),HttpStatus.NOT_ACCEPTABLE);
         return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Password Changed Successfully")));
     }
 

@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import java.net.URLEncoder;
 import java.sql.PseudoColumnUsage;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static com.robosoft.VirtualLearn.AdminPanel.common.Constants.DOWNLOAD_URL;
@@ -57,9 +59,8 @@ public class DataAccessService {
         jdbcTemplate.update(query, new BCryptPasswordEncoder().encode(auth.getOneTimePassword()));
         String message = "Successfully changed your Password";
         String photoUrl = String.format(DOWNLOAD_URL, URLEncoder.encode("password_change_success.png"));
-        LocalDateTime dateTime = LocalDateTime.now();
-        DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-        String formatDateTime = dateTime.format(format);
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+        String formatDateTime = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(now);
         jdbcTemplate.update("insert into notification(userName,description,timeStamp,notificationUrl) values(?,?,?,?)", userName, message, formatDateTime, photoUrl);
         String fcmToken = jdbcTemplate.queryForObject("select fcmToken from user where userName='" + userName + "'", String.class);
         sendPushNotification(fcmToken,message,"Virtual Learn");
@@ -71,5 +72,16 @@ public class DataAccessService {
 
     public void storeFcmToken(String query, String fcmToken, String userName) {
         jdbcTemplate.update(query,fcmToken,userName);
+    }
+    public String fetchExistingPassword(String mobileNumber) {
+        String userName = jdbcTemplate.queryForObject("select userName from user where mobileNumber='" + mobileNumber +"'", String.class);
+        String query = "select password from authenticate where userName=?";
+        return jdbcTemplate.queryForObject(query,String.class,userName);
+    }
+
+    public String fetchExistingPassword(){
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        String query = "select password from authenticate where userName=?";
+        return jdbcTemplate.queryForObject(query,String.class,userName);
     }
 }
