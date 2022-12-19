@@ -27,18 +27,9 @@ public class RegistrationServiceImpl implements RegistrationService{
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    private final static String ACCOUNT_SID = "ACd7b80d5a6e82ec89f4be4cc8779fd230";
-    private final static String AUTH_ID = "39e3d1b7d8afb09ba645714abbd184c6";
-//    +19896822968
-
-    /***
-     * React JS
-     */
-//    private final static String ACCOUNT_SID = "AC95acb85e7047ed4bf54677e6c560f01a";
-//    private final static String AUTH_ID = "790a885570499dbaeb7d7aae2c3a3696";
-//    +17207131767
-
-
+    private final static String ACCOUNT_SID = "AC57ae868cbc8ac20dbbd489ad7e70da6a";
+    private final static String AUTH_ID = "455614aac99548ebb4a98f28939c907f";
+//    +18456149581
 
     static {
         Twilio.init(ACCOUNT_SID, AUTH_ID);
@@ -46,7 +37,7 @@ public class RegistrationServiceImpl implements RegistrationService{
 
     @Override
     public long sendOtp(MobileAuth mobileAuth, String twoFaCode) {
-        Message.creator(new PhoneNumber("+919591726087"),new PhoneNumber("+19896822968"), /*new PhoneNumber("+17207131767"),*/
+        Message.creator(new PhoneNumber("+919480715192"),new PhoneNumber("+19498284299"),
                 "Your Two Factor Authentication code is: " + twoFaCode).create();
         return dataAccessService.saveOtp(mobileAuth.getMobileNumber(), twoFaCode);
     }
