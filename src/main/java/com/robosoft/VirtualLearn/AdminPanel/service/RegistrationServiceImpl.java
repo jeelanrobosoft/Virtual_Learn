@@ -27,9 +27,14 @@ public class RegistrationServiceImpl implements RegistrationService{
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    private final static String ACCOUNT_SID = "AC57ae868cbc8ac20dbbd489ad7e70da6a";
-    private final static String AUTH_ID = "455614aac99548ebb4a98f28939c907f";
-//    +18456149581
+    /***
+     * React JS
+     */
+    private final static String ACCOUNT_SID = "AC95acb85e7047ed4bf54677e6c560f01a";
+    private final static String AUTH_ID = "790a885570499dbaeb7d7aae2c3a3696";
+//    +17207131767
+
+
 
     static {
         Twilio.init(ACCOUNT_SID, AUTH_ID);
@@ -37,7 +42,7 @@ public class RegistrationServiceImpl implements RegistrationService{
 
     @Override
     public long sendOtp(MobileAuth mobileAuth, String twoFaCode) {
-        Message.creator(new PhoneNumber("+919480715192"),new PhoneNumber("+19498284299"),
+        Message.creator(new PhoneNumber("+918431913658"),new PhoneNumber("+17207131767"), 
                 "Your Two Factor Authentication code is: " + twoFaCode).create();
         return dataAccessService.saveOtp(mobileAuth.getMobileNumber(), twoFaCode);
     }
@@ -58,9 +63,16 @@ public class RegistrationServiceImpl implements RegistrationService{
     }
 
     @Override
-    public void resetPassword(MobileAuth auth) {
+    public String resetPassword(MobileAuth auth) {
+        String existingPassword = dataAccessService.fetchExistingPassword(auth.getMobileNumber());
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String newPassword = auth.getOneTimePassword();
+        if(encoder.matches(newPassword,existingPassword))
+            return "New Password Cannot be same as old password";
         dataAccessService.resetPassword(auth);
+        return null;
     }
+
 
     @Override
     public String addDetails(UserRegistration registration) {

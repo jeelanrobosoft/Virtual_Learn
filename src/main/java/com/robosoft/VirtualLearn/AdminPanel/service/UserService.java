@@ -6,6 +6,7 @@ import com.robosoft.VirtualLearn.AdminPanel.request.EnrollmentRequest;
 import com.robosoft.VirtualLearn.AdminPanel.request.FilterRequest;
 import com.robosoft.VirtualLearn.AdminPanel.request.VideoPauseRequest;
 import com.robosoft.VirtualLearn.AdminPanel.response.*;
+import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +15,24 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.List;
+
+import static com.robosoft.VirtualLearn.AdminPanel.common.Constants.DOWNLOAD_URL;
+import static com.robosoft.VirtualLearn.AdminPanel.entity.PushNotification.sendPushNotification;
 
 import static com.robosoft.VirtualLearn.AdminPanel.entity.PushNotification.sendPushNotification;
 
@@ -59,6 +70,7 @@ public class UserService {
         List<Category> categories = new ArrayList<>();
         for (Integer categoryId : categoryIds) {
             try {
+
                 int categoryCount = jdbcTemplate.queryForObject("SELECT count(categoryId) FROM course WHERE categoryId = ? AND publishStatus = true", Integer.class, categoryId);
                 if (categoryCount != 0)
                     categories.add(jdbcTemplate.queryForObject("SELECT * FROM category WHERE categoryId = ?", new BeanPropertyRowMapper<>(Category.class), categoryId));
@@ -87,6 +99,7 @@ public class UserService {
         List<SubCategory> subCategories = new ArrayList<>();
         for (Integer subCategoryId : subCategoryIds) {
             try {
+
                 int subCategoryCount = jdbcTemplate.queryForObject("SELECT COUNT(subCategoryId) FROM course WHERE subCategoryId = ? AND publishStatus = true", Integer.class, subCategoryId);
                 if (subCategoryCount != 0)
                     subCategories.add(jdbcTemplate.queryForObject("SELECT * FROM subCategory WHERE subCategoryId = ?", new BeanPropertyRowMapper<>(SubCategory.class), subCategoryId));
@@ -102,6 +115,7 @@ public class UserService {
         List<SubCategory> subCategories = new ArrayList<>();
         for (Integer subCategoryId : subCategoryIds) {
             try {
+
                 int subCategoryCount = jdbcTemplate.queryForObject("SELECT COUNT(subCategoryId) FROM course WHERE subCategoryId = ? AND publishStatus = true", Integer.class, subCategoryId);
                 if (subCategoryCount != 0)
                     subCategories.add(jdbcTemplate.queryForObject("SELECT * FROM subCategory WHERE subCategoryId = ?", new BeanPropertyRowMapper<>(SubCategory.class), subCategoryId));
@@ -175,7 +189,7 @@ public class UserService {
                     } catch (Exception ignored) {
                     }
                 }
-                Counts count = this.getCountEnrolled(courseId, userName);
+                Counts count = this.getCountEnrolled(courseId,userName);
                 assert overviewResponse != null;
                 overviewResponse.setChapterCount(count.getChapterCount());
                 overviewResponse.setLessonCount(count.getLessonCount());
@@ -196,6 +210,7 @@ public class UserService {
                 overviewResponse.setEnrolled(true);
                 return overviewResponse;
             } catch (Exception e) {
+
                 OverviewResponse overviewResponse = jdbcTemplate.queryForObject("SELECT overView.courseId,courseName,coursePhoto,categoryName,courseTagLine,overView.description,courseDuration,admin.fullName as instructorName,admin.designation,admin.url,admin.profilePhoto,admin.description AS instructorDescription FROM overView INNER JOIN admin ON overView.instructorId = admin.emailId  INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(OverviewResponse.class), courseId);
                 int lessonId = 0;
                 List<Integer> chapterIds = jdbcTemplate.queryForList("SELECT chapterId FROM chapter WHERE courseId = ? ORDER BY chapterId", Integer.class, courseId);
@@ -654,47 +669,59 @@ public class UserService {
         User user = jdbcTemplate.queryForObject("SELECT occupation FROM user WHERE userName = ?", (rs, rowNum) -> new User(rs.getString("occupation")), userName);
         if (user != null) {
             if (user.getOccupation().equals("other")) {
-                System.out.println(user.getOccupation());
 //                List<HomeResponseTopHeader> list = jdbcTemplate.query("SELECT coursePhoto, courseName FROM course", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class));
-                List<HomeResponseTopHeader> homeResponseTopHeaders = jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class));
-                for (HomeResponseTopHeader homeResponseTopHeader : homeResponseTopHeaders) {
-                    try {
-                        jdbcTemplate.queryForObject("SELECT * FROM enrollment WHERE courseId = ? and userName = ?", new BeanPropertyRowMapper<>(Enrollment.class), homeResponseTopHeader.getCourseId(), userName);
-                    } catch (Exception e) {
-                        HomeResponseTopHeader homeResponseTopHeader1 = jdbcTemplate.queryForObject("SELECT courseId,coursePhoto, courseName FROM course WHERE courseId = ?", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class), homeResponseTopHeader.getCourseId());
+
+                List<HomeResponseTopHeader> homeResponseTopHeaders = jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course WHERE publishStatus = true", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class));
+                System.out.println(homeResponseTopHeaders);
+                for(HomeResponseTopHeader homeResponseTopHeader:homeResponseTopHeaders)
+                {
+                    try
+                    {
+
+                        String enrolledUser = jdbcTemplate.queryForObject("SELECT userName FROM enrollment WHERE courseId = ? and userName = ?", new BeanPropertyRowMapper<>(String.class), homeResponseTopHeader.getCourseId(), userName);
+
+                    }
+                    catch (Exception e)
+                    {
+                        System.out.println("catch");
+                        HomeResponseTopHeader homeResponseTopHeader1 = jdbcTemplate.queryForObject("SELECT courseId,coursePhoto, courseName FROM course WHERE courseId = ? and publishStatus = true",new BeanPropertyRowMapper<>(HomeResponseTopHeader.class), homeResponseTopHeader.getCourseId());
                         homeTopBar.add(homeResponseTopHeader1);
                     }
                 }
-                System.out.println("other " + homeTopBar);
+
             } else {
                 try {
-                    System.out.println(user.getOccupation());
                     Integer subcategoryId = jdbcTemplate.queryForObject("SELECT subCategoryId FROM subCategory WHERE subCategoryName=?", Integer.class, user.getOccupation());
-                    List<HomeResponseTopHeader> course = jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course WHERE subCategoryId=?", (rs, rowNum) -> new HomeResponseTopHeader(rs.getInt("courseId"), rs.getString("courseName"), rs.getString("coursePhoto")), subcategoryId);
-                    for (HomeResponseTopHeader homeResponseTopHeader : course) {
-                        try {
-                            jdbcTemplate.queryForObject("SELECT * FROM enrollment WHERE courseId = ? and userName = ?", new BeanPropertyRowMapper<>(Enrollment.class), homeResponseTopHeader.getCourseId(), userName);
-                            System.out.println("enrollment for course " + homeResponseTopHeader.getCourseId() + " user " + userName);
-                        } catch (Exception e) {
-                            HomeResponseTopHeader homeResponseTopHeader1 = jdbcTemplate.queryForObject("SELECT courseId,coursePhoto, courseName FROM course WHERE courseId = ?", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class), homeResponseTopHeader.getCourseId());
+                    List<HomeResponseTopHeader> course = jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course WHERE subCategoryId=? and publishStatus = true", (rs, rowNum) -> new HomeResponseTopHeader(rs.getInt("courseId"), rs.getString("courseName"), rs.getString("coursePhoto")), subcategoryId);
+                    for(HomeResponseTopHeader homeResponseTopHeader:course)
+                    {
+                        try
+                        {
+
+                            String enrolledUser = jdbcTemplate.queryForObject("SELECT userName FROM enrollment WHERE courseId = ? and userName = ?", new BeanPropertyRowMapper<>(String.class), homeResponseTopHeader.getCourseId(), userName);
+
+            }
+                        catch (Exception e)
+                        {
+                            HomeResponseTopHeader homeResponseTopHeader1 = jdbcTemplate.queryForObject("SELECT courseId,coursePhoto, courseName FROM course WHERE courseId = ? and publishStatus = true",new BeanPropertyRowMapper<>(HomeResponseTopHeader.class), homeResponseTopHeader.getCourseId());
                             homeTopBar.add(homeResponseTopHeader1);
-                            System.out.println("if not enrolled in catch " + homeResponseTopHeader1);
                         }
                     }
                 } catch (NullPointerException e) {
-                    System.out.println(user.getOccupation());
-                    System.out.println("+++++++++++");
                     Integer categoryId = jdbcTemplate.queryForObject("SELECT categoryId from subCategory WHERE subcategoryName = ?", Integer.class, user.getOccupation());
-                    List<HomeResponseTopHeader> course = jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course WHERE categoryId=?", (rs, rowNum) -> new HomeResponseTopHeader(rs.getInt("courseId"), rs.getString("courseName"), rs.getString("coursePhoto")), categoryId);
-                    for (HomeResponseTopHeader homeResponseTopHeader : course) {
-                        try {
-                            jdbcTemplate.queryForObject("SELECT * FROM enrollment WHERE courseId = ? and userName = ?", new BeanPropertyRowMapper<>(Enrollment.class), homeResponseTopHeader.getCourseId(), userName);
-                        } catch (Exception exception) {
-                            HomeResponseTopHeader homeResponseTopHeader1 = jdbcTemplate.queryForObject("SELECT courseId,coursePhoto, courseName FROM course WHERE courseId = ?", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class), homeResponseTopHeader.getCourseId());
+                    List<HomeResponseTopHeader> course = jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course WHERE categoryId=? and publishStatus = true", (rs, rowNum) -> new HomeResponseTopHeader(rs.getInt("courseId"), rs.getString("courseName"), rs.getString("coursePhoto")), categoryId);
+                    for(HomeResponseTopHeader homeResponseTopHeader:course)
+                    {
+                        try
+                        {
+                            String enrolledUser = jdbcTemplate.queryForObject("SELECT userName FROM enrollment WHERE courseId = ? and userName = ?", new BeanPropertyRowMapper<>(String.class), homeResponseTopHeader.getCourseId(), userName);
+                        }
+                        catch (Exception exception)
+                        {
+                            HomeResponseTopHeader homeResponseTopHeader1 = jdbcTemplate.queryForObject("SELECT courseId,coursePhoto, courseName FROM course WHERE courseId = ? and publishStatus = true",new BeanPropertyRowMapper<>(HomeResponseTopHeader.class), homeResponseTopHeader.getCourseId());
                             homeTopBar.add(homeResponseTopHeader1);
                         }
                     }
-
                 }
             }
         }
@@ -704,45 +731,70 @@ public class UserService {
 
     public List<HomeResponseTopHeader> HomePageTopBarPagination(Integer topHeaderPages)   // front end should send username when ever they call home api as a response
     {
-        topHeaderUpperLimit = topHeaderPages;
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<HomeResponseTopHeader> homeTopBar = new ArrayList<>();
         User user = jdbcTemplate.queryForObject("SELECT occupation FROM user WHERE userName = ?", (rs, rowNum) -> new User(rs.getString("occupation")), userName);
         if (user != null) {
             if (user.getOccupation().equals("other")) {
-                List<HomeResponseTopHeader> list = jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course limit ?,?", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class), topHeaderLowerLimit, topHeaderUpperLimit);
-                topHeaderLowerLimit = topHeaderLowerLimit + topHeaderPages;
-                if (list.size() == 0) {
-                    topHeaderLowerLimit = 0;
-                    return jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course limit ?,?", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class), topHeaderLowerLimit, topHeaderUpperLimit);
+//                List<HomeResponseTopHeader> list = jdbcTemplate.query("SELECT coursePhoto, courseName FROM course", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class));
+                List<HomeResponseTopHeader> homeResponseTopHeaders = jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course WHERE publishStatus = true and userName not in (SELECT * FROM enrollment WHERE courseId = ? and username = ?)", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class));
+                System.out.println(homeResponseTopHeaders);
+                for(HomeResponseTopHeader homeResponseTopHeader:homeResponseTopHeaders)
+                {
+                    try
+                    {
 
+                        String enrolledUser = jdbcTemplate.queryForObject("SELECT userName FROM enrollment WHERE courseId = ? and userName = ?", new BeanPropertyRowMapper<>(String.class), homeResponseTopHeader.getCourseId(), userName);
+
+                    }
+                    catch (Exception e)
+                    {
+                        System.out.println("catch");
+                        HomeResponseTopHeader homeResponseTopHeader1 = jdbcTemplate.queryForObject("SELECT courseId,coursePhoto, courseName FROM course WHERE courseId = ? and publishStatus = true",new BeanPropertyRowMapper<>(HomeResponseTopHeader.class), homeResponseTopHeader.getCourseId());
+                        homeTopBar.add(homeResponseTopHeader1);
+                    }
                 }
-                return list;
-                // return jdbcTemplate.query("SELECT coursePhoto, courseName FROM course limit ?,?", new BeanPropertyRowMapper<>(HomeResponseTopHeader.class),,topHeaderLowerLimit,topHeaderUpperLimit);
             } else {
                 try {
                     Integer subcategoryId = jdbcTemplate.queryForObject("SELECT subCategoryId FROM subCategory WHERE subCategoryName=?", Integer.class, user.getOccupation());
-                    List<HomeResponseTopHeader> course = jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course WHERE subCategoryId= ? limit ?,?", (rs, rowNum) -> new HomeResponseTopHeader(rs.getInt("courseId"), rs.getString("courseName"), rs.getString("coursePhoto")), subcategoryId, topHeaderLowerLimit, topHeaderUpperLimit);
-                    topHeaderLowerLimit = topHeaderLowerLimit + topHeaderPages;
-                    if (course.size() != 0) {
-                        return course;
-                    } else {
-                        topHeaderLowerLimit = 0;
-                        Integer categoryId = jdbcTemplate.queryForObject("SELECT categoryId from subCategory WHERE subcategoryName = ?", Integer.class, user.getOccupation());
-                        return jdbcTemplate.query("SELECT * FROM course WHERE categoryId = ? limit ?,?", (rs, rowNum) -> new HomeResponseTopHeader(rs.getInt("courseId"), rs.getString("courseName"), rs.getString("coursePhoto")), categoryId, topHeaderLowerLimit, topHeaderUpperLimit);
-                    }
-                } catch (Exception e) {
-                    topHeaderLowerLimit = 0;
-                    Integer categoryId = jdbcTemplate.queryForObject("SELECT categoryId from subCategory WHERE subcategoryName = ?", Integer.class, user.getOccupation());
-                    return jdbcTemplate.query("SELECT * FROM course WHERE categoryId = ? limit ?,?", (rs, rowNum) -> new HomeResponseTopHeader(rs.getInt("courseId"), rs.getString("courseName"), rs.getString("coursePhoto")), categoryId, topHeaderLowerLimit, topHeaderUpperLimit);
+                    List<HomeResponseTopHeader> course = jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course WHERE subCategoryId=? and publishStatus = true", (rs, rowNum) -> new HomeResponseTopHeader(rs.getInt("courseId"), rs.getString("courseName"), rs.getString("coursePhoto")), subcategoryId);
+                    for(HomeResponseTopHeader homeResponseTopHeader:course)
+                    {
+                        try
+                        {
+                            String enrolledUser = jdbcTemplate.queryForObject("SELECT userName FROM enrollment WHERE courseId = ? and userName = ?", new BeanPropertyRowMapper<>(String.class), homeResponseTopHeader.getCourseId(), userName);
 
+                        }
+                        catch (Exception e)
+                        {
+                            HomeResponseTopHeader homeResponseTopHeader1 = jdbcTemplate.queryForObject("SELECT courseId,coursePhoto, courseName FROM course WHERE courseId = ? and publishStatus = true",new BeanPropertyRowMapper<>(HomeResponseTopHeader.class), homeResponseTopHeader.getCourseId());
+                            homeTopBar.add(homeResponseTopHeader1);
+                        }
+                    }
+                } catch (NullPointerException e) {
+                    Integer categoryId = jdbcTemplate.queryForObject("SELECT categoryId from subCategory WHERE subcategoryName = ?", Integer.class, user.getOccupation());
+                    List<HomeResponseTopHeader> course = jdbcTemplate.query("SELECT courseId,coursePhoto, courseName FROM course WHERE categoryId=? and publishStatus = true", (rs, rowNum) -> new HomeResponseTopHeader(rs.getInt("courseId"), rs.getString("courseName"), rs.getString("coursePhoto")), categoryId);
+                    for(HomeResponseTopHeader homeResponseTopHeader:course)
+                    {
+                        try
+                        {
+                            String enrolledUser = jdbcTemplate.queryForObject("SELECT userName FROM enrollment WHERE courseId = ? and userName = ?", new BeanPropertyRowMapper<>(String.class), homeResponseTopHeader.getCourseId(), userName);
+                        }
+                        catch (Exception exception)
+                        {
+                            HomeResponseTopHeader homeResponseTopHeader1 = jdbcTemplate.queryForObject("SELECT courseId,coursePhoto, courseName FROM course WHERE courseId = ? and publishStatus = true",new BeanPropertyRowMapper<>(HomeResponseTopHeader.class), homeResponseTopHeader.getCourseId());
+                            homeTopBar.add(homeResponseTopHeader1);
+                        }
+                    }
                 }
             }
         }
-        return null;
+        return homeTopBar;
     }
 
-    public Integer getChapterCount(Integer courseId) {
-        return jdbcTemplate.queryForObject("SELECT count(*) FROM chapter WHERE courseId = ?", Integer.class, courseId);
+    public Integer getChapterCount(Integer courseId)
+    {
+        return jdbcTemplate.queryForObject("SELECT count(*) FROM chapter WHERE courseId = ?",Integer.class, courseId);
     }
 
     public String getCategoryName(Integer categoryId) {
@@ -750,23 +802,33 @@ public class UserService {
     }
 
     public List<HomeAllCourse> getAllCourses() {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        Boolean publishStatus = false;
         List<HomeAllCourse> homeAllCourseList = new ArrayList<>();
         List<Course> courses = jdbcTemplate.query("SELECT * FROM course", new BeanPropertyRowMapper<>(Course.class));
-        for (Course c : courses) {
-            HomeAllCourse homeAllCourse = new HomeAllCourse();
-            String categoryName = getCategoryName(c.getCategoryId());
-            Integer chapterCount = getChapterCount(c.getCourseId());
-            homeAllCourse.setCourseId(c.getCourseId());
-            homeAllCourse.setCoursePhoto(c.getCoursePhoto());
-            homeAllCourse.setCourseName(c.getCourseName());
-            homeAllCourse.setCategoryId(c.getCategoryId());
-            homeAllCourse.setCategoryName(categoryName);
-            homeAllCourse.setChapterCount(chapterCount);
-            homeAllCourseList.add(homeAllCourse);
 
+        for(Course c: courses)
+        {
+            publishStatus = jdbcTemplate.queryForObject("SELECT publishStatus FROM course WHERE courseId = ?", Boolean.class,c.getCourseId());
+            if(publishStatus == true)
+            {
+                String enrolledUser = jdbcTemplate.queryForObject("SELECT userName FROM enrollment WHERE courseId = ? and userName = ?", String.class, c.getCourseId(), userName);
+                if(enrolledUser == null)
+                {
+                    HomeAllCourse homeAllCourse = new HomeAllCourse();
+                    String categoryName =getCategoryName(c.getCategoryId());
+                    Integer chapterCount = getChapterCount(c.getCourseId());
+                    homeAllCourse.setCourseId(c.getCourseId());
+                    homeAllCourse.setCoursePhoto(c.getCoursePhoto());
+                    homeAllCourse.setCourseName(c.getCourseName());
+                    homeAllCourse.setCategoryId(c.getCategoryId());
+                    homeAllCourse.setCategoryName(categoryName);
+                    homeAllCourse.setChapterCount(chapterCount);
+                    homeAllCourseList.add(homeAllCourse);
+                }
+            }
         }
         return homeAllCourseList;
-
     }
 
     public List<HomeAllCourse> getAllCoursesPagination(Integer allCoursePageLimit) {
@@ -786,41 +848,42 @@ public class UserService {
         List<Enrollment> allEnrolledCourses = jdbcTemplate.query("SELECT distinct courseId FROM enrollment", (rs, rowNum) -> new Enrollment(rs.getInt("courseId")));
         for (Enrollment allEnrolledCourse : allEnrolledCourses) {
             Integer enrolmentCount = jdbcTemplate.queryForObject("SELECT count(courseId) FROM enrollment WHERE courseId= ?", Integer.class, allEnrolledCourse.getCourseId());
-            Course course = jdbcTemplate.queryForObject("SELECT * FROM course WHERE courseId = ?", new BeanPropertyRowMapper<>(Course.class), allEnrolledCourse.getCourseId());
-            String categoryName = getCategoryName(course != null ? course.getCategoryId() : null);
-            if (enrolmentCount != null) {
-                if (enrolmentCount >= 0) {
-                    HomeAllCourse homeAllCourse = new HomeAllCourse();
-                    Integer chapterCount = null;
-                    if (course != null) {
-                        chapterCount = getChapterCount(course.getCourseId());
-                    }
-                    homeAllCourse.setCourseId(course != null ? course.getCourseId() : null);
-                    homeAllCourse.setCoursePhoto(course != null ? course.getCoursePhoto() : null);
-                    if (course != null) {
-                        homeAllCourse.setCourseName(course.getCourseName());
-                    }
-                    if (course != null) {
-                        homeAllCourse.setCategoryId(course.getCategoryId());
-                    }
-                    homeAllCourse.setCategoryName(categoryName);
-                    homeAllCourse.setChapterCount(chapterCount);
-                    popularCourseList.add(homeAllCourse);
-                }
+
+            if (enrolmentCount > 2) {
+
+                Course course = jdbcTemplate.queryForObject("SELECT * FROM course WHERE courseId = ?", new BeanPropertyRowMapper<>(Course.class), allEnrolledCourse.getCourseId());
+                String categoryName = getCategoryName(course.getCategoryId());
+                HomeAllCourse homeAllCourse = new HomeAllCourse();
+                Integer chapterCount = getChapterCount(course.getCourseId());
+                homeAllCourse.setCourseId(course.getCourseId());
+                homeAllCourse.setCoursePhoto(course.getCoursePhoto());
+                homeAllCourse.setCourseName(course.getCourseName());
+                homeAllCourse.setCategoryId(course.getCategoryId());
+                homeAllCourse.setCategoryName(categoryName);
+                homeAllCourse.setChapterCount(chapterCount);
+                popularCourseList.add(homeAllCourse);
             }
         }
-        System.out.println(popularCourseList);
+        Collections.sort(popularCourseList);
         return popularCourseList;
     }
 
 
     public List<HomeAllCourse> getNewCourses() {
         List<HomeAllCourse> newCourseList = new ArrayList<>();
-        List<HomeAllCourse> allNewCourses = getAllCourses();
+        List<HomeAllCourse> allNewCourses =  getAllCourses();
+        Boolean publishStatus = false;
+        Collections.sort(allNewCourses);
         int size = allNewCourses.size() - 1;
         int newCourseLimit = size / 2;
         for (int i = size; i >= newCourseLimit; i--) {
-            newCourseList.add(allNewCourses.get(i));
+
+            // HomeAllCourse homeAllCourse = jdbcTemplate.queryForObject("SELECT overView.courseId, coursePhoto, courseName,course.categoryId,categoryName,chapterCount FROM course,overView, category WHERE course.courseId=? and course.courseId = overView.courseId and categoryName=(SELECT categoryName FROM category ct WHERE ct.categoryId=course.categoryId)", new BeanPropertyRowMapper<>(HomeAllCourse.class), allNewCourses.get(i).getCourseId());
+            publishStatus = jdbcTemplate.queryForObject("SELECT publishStatus FROM course WHERE courseId = ?", Boolean.class, allNewCourses.get(i).getCourseId());
+            if (publishStatus == true) {
+                newCourseList.add(allNewCourses.get(i));
+            }
+
         }
         return newCourseList;
     }
@@ -915,88 +978,94 @@ public class UserService {
     public void updateVideoPauseTime(VideoPauseRequest videoPauseRequest) throws IOException, ParseException {
 
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        jdbcTemplate.queryForObject("SELECT chapterCompletedStatus FROM chapterProgress WHERE chapterId = ? and userName=?", Boolean.class, videoPauseRequest.getChapterId(), userName);
-        jdbcTemplate.update("UPDATE chapterProgress SET chapterStatus=? WHERE chapterId=? and userName=? and courseId=?", true, videoPauseRequest.getChapterId(), userName, videoPauseRequest.getCourseId());
-        jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonID=? and username=?", true, videoPauseRequest.getLessonId(), userName);
-        java.sql.Time pauseTime = videoPauseRequest.getPauseTime();
-        String videoPauseTime = pauseTime.toString();
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String formatDateTime = now.format(format);
-        List<Lesson> lessonList = jdbcTemplate.query("SELECT * FROM lesson WHERE chapterId=?", new BeanPropertyRowMapper<>(Lesson.class), videoPauseRequest.getChapterId());
-        // List<Lesson> sortedList = lessonList.stream().sorted().collect(Collectors.toList());
-        Collections.sort(lessonList);
-        //System.out.println("******"+pauseTime+"ll ll"+videoPauseRequest.getLessonId());
+        boolean chapterCompletedStatus= jdbcTemplate.queryForObject("SELECT chapterCompletedStatus FROM chapterProgress WHERE chapterId = ? and userName=?",Boolean.class,videoPauseRequest.getChapterId(), userName);
+             jdbcTemplate.update("UPDATE chapterProgress SET chapterStatus=? WHERE chapterId=? and userName=? and courseId=?", true, videoPauseRequest.getChapterId(), userName, videoPauseRequest.getCourseId());
+             jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonID=? and username=?", true, videoPauseRequest.getLessonId(), userName);
+             java.sql.Time pauseTime = videoPauseRequest.getPauseTime();
+             String videoPauseTime = pauseTime.toString();
+             LocalDateTime now = LocalDateTime.now();
+             DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+             String formatDateTime = now.format(format);
+             List<Lesson> lessonList = jdbcTemplate.query("SELECT * FROM lesson WHERE chapterId=?", new BeanPropertyRowMapper<>(Lesson.class), videoPauseRequest.getChapterId());
+             // List<Lesson> sortedList = lessonList.stream().sorted().collect(Collectors.toList());
+             Collections.sort(lessonList);
+             //System.out.println("******"+pauseTime+"llll"+videoPauseRequest.getLessonId());
+             System.out.println("lessons list : "+lessonList);
+             List<Chapter> chaptersList = jdbcTemplate.query("SELECT * FROM chapter WHERE courseId=?", new BeanPropertyRowMapper<>(Chapter.class), videoPauseRequest.getCourseId());
+             //List<Chapter> sortedChapterList = chaptersList.stream().sorted().collect(Collectors.toList());
+             Collections.sort(chaptersList);
+             //System.out.println("lesson list"+lessonList);
+             for (int i = 0; i < lessonList.size(); i++) {
+                 if (lessonList.get(i).getLessonId().compareTo(videoPauseRequest.getLessonId()) == 0) {
+                     jdbcTemplate.update("UPDATE lessonProgress SET pauseTime=? WHERE lessonId=? and userName=? and chapterId=?", videoPauseTime, videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
+                     // jdbcTemplate.update("UPDATE lessonProgress SET updatedTime = ? WHERE lessonId=? and userName=? and chapterId=?", formatDateTime,videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
+                     String lessonDuration = jdbcTemplate.queryForObject("SELECT lessonDuration FROM lesson WHERE lessonId=?", String.class, videoPauseRequest.getLessonId());
+                     SimpleDateFormat format1 = new SimpleDateFormat("HH:mm:ss"); // 12 hour format
+                     java.util.Date d1 = (java.util.Date) format1.parse(lessonDuration);
+                     java.sql.Time ppstime = new java.sql.Time(d1.getTime());
+                     if (lessonDuration != null) {
+                         if (pauseTime.compareTo(ppstime) == 0 || pauseTime.after(ppstime)) {
+                             System.out.println(ppstime + "  " + pauseTime);
+                             jdbcTemplate.update("UPDATE lessonProgress SET lessonCompletedStatus=? WHERE lessonId = ? and userName=? and chapterId=?", true, videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
 
-        List<Chapter> chaptersList = jdbcTemplate.query("SELECT * FROM chapter WHERE courseId=?", new BeanPropertyRowMapper<>(Chapter.class), videoPauseRequest.getCourseId());
-        //List<Chapter> sortedChapterList = chaptersList.stream().sorted().collect(Collectors.toList());
-        Collections.sort(chaptersList);
-        //System.out.println("lesson list"+lessonList);
-        for (int i = 0; i < lessonList.size(); i++) {
-            if (lessonList.get(i).getLessonId().compareTo(videoPauseRequest.getLessonId()) == 0) {
-                jdbcTemplate.update("UPDATE lessonProgress SET pauseTime=? WHERE lessonId=? and userName=? and chapterId=?", videoPauseTime, videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
-                // jdbcTemplate.update("UPDATE lessonProgress SET updatedTime = ? WHERE lessonId=? and userName=? and chapterId=?", formatDateTime,videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
-                String lessonDuration = jdbcTemplate.queryForObject("SELECT lessonDuration FROM lesson WHERE lessonId=?", String.class, videoPauseRequest.getLessonId());
-                SimpleDateFormat format1 = new SimpleDateFormat("HH:mm:ss"); // 12-hour format
-                java.util.Date d1 = (java.util.Date) format1.parse(lessonDuration);
-                java.sql.Time ppstime = new java.sql.Time(d1.getTime());
-                if (lessonDuration != null) {
-                    if (pauseTime.compareTo(ppstime) == 0 || pauseTime.after(ppstime)) {
-                        System.out.println(ppstime + "  " + pauseTime);
-                        jdbcTemplate.update("UPDATE lessonProgress SET lessonCompletedStatus=? WHERE lessonId = ? and userName=? and chapterId=?", true, videoPauseRequest.getLessonId(), userName, videoPauseRequest.getChapterId());
+                             try {
 
-                        try {
+                                 jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonId=?", true, lessonList.get(i + 1).getLessonId());
+                             } catch (Exception e) {
+                                 try {
 
-                            jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonId=?", true, lessonList.get(i + 1).getLessonId());
-                        } catch (Exception e) {
-                            try {
+                                     Integer testId = jdbcTemplate.queryForObject("SELECT testId FROM test WHERE chapterId=?", Integer.class, videoPauseRequest.getChapterId());
+                                 } catch (Exception exception) {
 
-                                jdbcTemplate.queryForObject("SELECT testId FROM test WHERE chapterId=?", Integer.class, videoPauseRequest.getChapterId());
-                            } catch (Exception exception) {
-                                jdbcTemplate.update("UPDATE chapterProgress SET chapterStatus=? WHERE chapterId=?", false, videoPauseRequest.getChapterId());
-                                jdbcTemplate.update("UPDATE chapterProgress SET chapterCompletedStatus=? WHERE chapterId=?", true, videoPauseRequest.getChapterId());
+                                     jdbcTemplate.update("UPDATE chapterProgress SET chapterStatus=? WHERE chapterId=?", false, videoPauseRequest.getChapterId());
+                                     jdbcTemplate.update("UPDATE chapterProgress SET chapterCompletedStatus=? WHERE chapterId=?", true, videoPauseRequest.getChapterId());
 
-                            }
-                            boolean chapterCompleted = jdbcTemplate.queryForObject("SELECT chapterCompletedStatus FROM chapterProgress WHERE chapterId=? and userName=?", Boolean.class, videoPauseRequest.getChapterId(), userName);
-                            if (chapterCompleted) {
-                                for (int j = 0; j < chaptersList.size(); j++) {
-                                    if (chaptersList.get(j).getChapterId() == videoPauseRequest.getChapterId()) {
-                                        try {
-                                            List<Lesson> lessonsList = jdbcTemplate.query("SELECT *  FROM lesson WHERE chapterId=?", new BeanPropertyRowMapper<>(Lesson.class), chaptersList.get(j + 1).getChapterId());
-                                            Collections.sort(lessonsList);
-                                            //List<Lesson> sortedLessonsList = lessonsList.stream().sorted().collect(Collectors.toList());
-                                            jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonId=?", true, lessonsList.get(0).getLessonId());
-                                            jdbcTemplate.update("Update chapterProgress set chapterStatus=? where chapterId=?", true, chaptersList.get(j + 1).getChapterId());
-                                        } catch (Exception ex) {
-                                            break;
-                                        }
-                                    }
-                                }
-                                boolean completedStatus = true;
-                                for (Chapter ch : chaptersList) {
-                                    completedStatus = jdbcTemplate.queryForObject("SELECT chapterCompletedStatus FROM chapterProgress WHERE chapterId=?", Boolean.class, ch.getChapterId());
-                                    if (!completedStatus) {
-                                        break;
-                                    } else {
-                                        jdbcTemplate.update("UPDATE chapterProgress SET chapterStatus=? WHERE chapterId=?", false, ch.getChapterId());
-                                    }
-                                }
-                                if (completedStatus) {
-                                    jdbcTemplate.update("UPDATE courseCompletedStatus= ? WHERE courseId=?", true, videoPauseRequest.getCourseId());
-                                    finalTestService.certificateWithoutTest(videoPauseRequest.getCourseId());
+                                 }
 
-                                }
-                            }
-                        }
-                    }
+                                 boolean chapterCompleted = jdbcTemplate.queryForObject("SELECT chapterCompletedStatus FROM chapterProgress WHERE chapterId=? and userName=?", Boolean.class, videoPauseRequest.getChapterId(), userName);
+                                  if (chapterCompleted == true) {
 
-                }
+                                     for (int j = 0; j < chaptersList.size(); j++) {
+                                          if (chaptersList.get(j).getChapterId().compareTo(videoPauseRequest.getChapterId()) == 0) {
+                                             try {
 
-            }
+                                                 List<Lesson> lessonsList = jdbcTemplate.query("SELECT *  FROM lesson WHERE chapterId=?", new BeanPropertyRowMapper<>(Lesson.class), chaptersList.get(j + 1).getChapterId());
+                                                 Collections.sort(lessonsList);
 
-        }
+                                                 //List<Lesson> sortedLessonsList = lessonsList.stream().sorted().collect(Collectors.toList());
 
+                                                 jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonId=?", true, lessonsList.get(0).getLessonId());
+                                                 jdbcTemplate.update("Update chapterProgress set chapterStatus=? where chapterId=?", true, chaptersList.get(j + 1).getChapterId());
+                                             } catch (Exception ex) {
 
+                                                 break;
+                                             }
+                                         }
+                                     }
+                                     boolean completedStatus = true;
+                                     for (Chapter ch : chaptersList) {
+                                         completedStatus = jdbcTemplate.queryForObject("SELECT chapterCompletedStatus FROM chapterProgress WHERE chapterId=? and username = ?", Boolean.class, ch.getChapterId(), userName);
+                                         if (completedStatus == false) {
+                                             completedStatus = false;
+                                             break;
+                                         } else {
+                                             jdbcTemplate.update("UPDATE chapterProgress SET chapterStatus=? WHERE chapterId=? and userName = ?", false, ch.getChapterId(),userName);
+                                         }
+                                     }
+                                     if (completedStatus == true) {
+                                         jdbcTemplate.update("UPDATE courseProgress set courseCompletedStatus= ? WHERE courseId=? and userName = ?", true, videoPauseRequest.getCourseId(), userName);
+                                         finalTestService.certificateWithoutTest(videoPauseRequest.getCourseId());
+
+                                     }
+                                 }
+                             }
+                         } else {
+                             //  jdbcTemplate.update("UPDATE chapterProgress SET chapterStatus=? WHERE chapterId=? and userName=? and courseId=?", true, videoPauseRequest.getChapterId(), userName, videoPauseRequest.getCourseId());
+                             // jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonID=? and username=?", true, videoPauseRequest.getLessonId(), userName);
+                         }
+                     }
+                 }
+             }
     }
-
+    }
 }
