@@ -6,7 +6,6 @@ import com.robosoft.VirtualLearn.AdminPanel.request.EnrollmentRequest;
 import com.robosoft.VirtualLearn.AdminPanel.request.FilterRequest;
 import com.robosoft.VirtualLearn.AdminPanel.request.VideoPauseRequest;
 import com.robosoft.VirtualLearn.AdminPanel.response.*;
-import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,24 +14,14 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.List;
-
-import static com.robosoft.VirtualLearn.AdminPanel.common.Constants.DOWNLOAD_URL;
-import static com.robosoft.VirtualLearn.AdminPanel.entity.PushNotification.sendPushNotification;
 
 import static com.robosoft.VirtualLearn.AdminPanel.entity.PushNotification.sendPushNotification;
 
@@ -1068,4 +1057,4 @@ public class UserService {
              }
     }
     }
-}
+
