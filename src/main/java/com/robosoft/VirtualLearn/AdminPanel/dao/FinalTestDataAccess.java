@@ -98,12 +98,7 @@ public class FinalTestDataAccess {
         float chapterTestPercentage = updateUserAnswerTable(userAnswers);
         jdbcTemplate.update("update chapterProgress set chapterTestPercentage=" + chapterTestPercentage + ",chapterCompletedStatus=true,chapterStatus=false where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'");
         int courseId = jdbcTemplate.queryForObject("select courseId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'", Integer.class);
-        float sumOfChapterPercentage = jdbcTemplate.queryForObject("select sum(chapterTestPercentage) from chapterProgress where courseId=" + courseId + " and userName='" + userName + "' and chapterTestPercentage>=0", Integer.class);
-        System.out.println("sumOfChapterPercentage "+sumOfChapterPercentage);
-        float totalPercentage = Integer.parseInt(((String.valueOf(jdbcTemplate.queryForObject("select count(testId) from chapterProgress where courseId=" + courseId + " and userName='" + userName + "'", Integer.class))) + "00"));
-        float coursePercentage = (sumOfChapterPercentage / totalPercentage) * 100;
-        System.out.println("totalPercentage "+totalPercentage);
-        System.out.println("coursePercentage "+coursePercentage);
+        float coursePercentage = calculateOverallScore(courseId,userName);
         String coursePhoto = jdbcTemplate.queryForObject("select coursePhoto from course where courseId=(select courseId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName + "')", String.class);
         String chapterName = jdbcTemplate.queryForObject("select chapterName from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class);
         String description = "Completed course" + " - " + jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'))", String.class);
