@@ -35,7 +35,6 @@ public class ModuleTestService {
             float coursePercentage = finalTestDataAccess.calculateOverallScore(courseId,userName);
             finalTestDataAccess.updateCourseScore(coursePercentage,courseId,userName);
         }
-
         return dataAccess.userAnswers(userAnswers);
     }
 

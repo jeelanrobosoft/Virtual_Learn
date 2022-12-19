@@ -13,7 +13,7 @@ public interface RegistrationService {
 
     public int checkMobileNumber(MobileAuth mobileAuth);
 
-    public void resetPassword(MobileAuth auth);
+    public String resetPassword(MobileAuth auth);
 
     public String addDetails(UserRegistration registration);
 }
