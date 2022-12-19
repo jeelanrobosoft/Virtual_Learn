@@ -40,7 +40,6 @@ public class FinalTestDataAccess {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-
     public FinalTest getFinalTestS(Integer testId) {
         List<Question> questions;
         FinalTest finalTest;
