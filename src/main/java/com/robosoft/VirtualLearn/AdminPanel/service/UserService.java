@@ -180,7 +180,7 @@ public class UserService {
         try {
 
             try {
-                jdbcTemplate.queryForObject("SELECT userName FROM enrollment WHERE userName = ? AND courseId = ?", new BeanPropertyRowMapper<>(Enrollment.class), userName, courseId);
+                jdbcTemplate.queryForObject("SELECT userName FROM enrollment WHERE userName = ? AND courseId = ? AND deleteStatus = false", new BeanPropertyRowMapper<>(Enrollment.class), userName, courseId);
                 OverviewResponse overviewResponse = jdbcTemplate.queryForObject("SELECT overView.courseId,courseName,coursePhoto,categoryName,courseTagLine,overView.description,courseDuration,fullName as instructorName,designation,url,profilePhoto,admin.description AS instructorDescription FROM overView INNER JOIN admin ON overView.instructorId = admin.emailId INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId", new BeanPropertyRowMapper<>(OverviewResponse.class), courseId);
                 List<Integer> chapterIds = jdbcTemplate.queryForList("SELECT chapterId FROM chapter WHERE courseId = ? ORDER BY chapterId", Integer.class,courseId);
                 int lessonId = 0;
@@ -258,20 +258,20 @@ public class UserService {
 
         List<Integer> courseIds = jdbcTemplate.queryForList("SELECT courseId FROM course WHERE categoryId = ? AND publishStatus = true" ,Integer.class, categoryId );
         List<CourseResponse> courseResponses = new ArrayList<>();
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         for(Integer courseId :courseIds){
-            try {
-                String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+            System.out.println(courseId);
+//            try {
                 try {
-                    jdbcTemplate.queryForObject("SELECT * FROM enrollment WHERE userName = ? AND courseId = ?",new BeanPropertyRowMapper<>(Enrollment.class),userName,courseId);
-                    CourseResponse courseResponse = jdbcTemplate.queryForObject("SELECT course.courseId,coursePhoto,courseName,previewVideo,courseDuration FROM overView INNER JOIN course ON course.courseId = overView.courseId WHERE overView.courseId = ? AND difficultyLevel = 'Beginner'", new BeanPropertyRowMapper<>(CourseResponse.class),courseId);
-                    Counts count = getCountEnrolled(courseId,userName);
-                    courseResponse.setChapterCount(count.getChapterCount());
-                    courseResponses.add(courseResponse);
-                }
-                catch (Exception e)
-                {
-
-                }
+                    jdbcTemplate.queryForObject("SELECT courseId FROM enrollment WHERE userName = ? AND courseId = ?",new BeanPropertyRowMapper<>(Enrollment.class),userName,courseId);
+//                    CourseResponse courseResponse = jdbcTemplate.queryForObject("SELECT course.courseId,coursePhoto,courseName,previewVideo,courseDuration FROM overView INNER JOIN course ON course.courseId = overView.courseId WHERE overView.courseId = ? AND difficultyLevel = 'Beginner'", new BeanPropertyRowMapper<>(CourseResponse.class),courseId);
+//                    Counts count = getCountEnrolled(courseId,userName);
+//                    courseResponse.setChapterCount(count.getChapterCount());
+//                    courseResponses.add(courseResponse);
+//                }
+//                catch (Exception e)
+//                {
+//                }
             }
             catch (Exception e) {
                 try {
@@ -280,7 +280,6 @@ public class UserService {
                     courseResponse.setChapterCount(count.getChapterCount());
                     courseResponses.add(courseResponse);
                 } catch (Exception exception) {
-
                 }
             }
         }
@@ -288,22 +287,23 @@ public class UserService {
     }
 
     public List<CourseResponse> getAdvanceCourses(int categoryId) {
-        List<Integer> courseIds = jdbcTemplate.queryForList("SELECT courseId FROM course WHERE  categoryId = " + categoryId ,Integer.class);
+        List<Integer> courseIds = jdbcTemplate.queryForList("SELECT courseId FROM course WHERE  categoryId = ? AND publishStatus = true"  ,Integer.class,categoryId);
         List<CourseResponse> courseResponses = new ArrayList<>();
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         for(Integer courseId :courseIds){
-            try {
-                String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+//            try {
                 try {
                     jdbcTemplate.queryForObject("SELECT * FROM enrollment WHERE userName = ? AND courseId = ?",new BeanPropertyRowMapper<>(Enrollment.class),userName,courseId);
-                    CourseResponse courseResponse = jdbcTemplate.queryForObject("SELECT course.courseId,coursePhoto,courseName,previewVideo,courseDuration FROM overView INNER JOIN course ON course.courseId = overView.courseId WHERE course.courseId = ? AND difficultyLevel = 'Advanced'", new BeanPropertyRowMapper<>(CourseResponse.class),courseId);
-                    Counts count = getCountEnrolled(courseId,userName);
-                    courseResponse.setChapterCount(count.getChapterCount());
-                    courseResponses.add(courseResponse);
-                }
-                catch (Exception e)
-                {
-
-                }
+                    System.out.println(courseId);
+//                    CourseResponse courseResponse = jdbcTemplate.queryForObject("SELECT course.courseId,coursePhoto,courseName,previewVideo,courseDuration FROM overView INNER JOIN course ON course.courseId = overView.courseId WHERE course.courseId = ? AND difficultyLevel = 'Advanced'", new BeanPropertyRowMapper<>(CourseResponse.class),courseId);
+//                    Counts count = getCountEnrolled(courseId,userName);
+//                    courseResponse.setChapterCount(count.getChapterCount());
+//                    courseResponses.add(courseResponse);
+//                }
+//                catch (Exception e)
+//                {
+//
+//                }
             }
             catch (Exception exception) {
                 try {
@@ -312,7 +312,7 @@ public class UserService {
                     courseResponse.setChapterCount(count.getChapterCount());
                     courseResponses.add(courseResponse);
                 } catch (Exception e) {
-
+                    e.printStackTrace();
                 }
             }
         }
@@ -399,7 +399,7 @@ public class UserService {
     public CourseChapterResponse getCourseChapterResponse(Integer courseId) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         try {
-            jdbcTemplate.queryForObject("SELECT * FROM enrollment WHERE userName = ? AND courseId = ? AND deleteStatus = false",new BeanPropertyRowMapper<>(Enrollment.class),userName,courseId);
+            jdbcTemplate.queryForObject("SELECT courseId FROM enrollment WHERE userName = ? AND courseId = ? AND deleteStatus = false",new BeanPropertyRowMapper<>(Enrollment.class),userName,courseId);
             List<Integer> chapterIds = jdbcTemplate.queryForList("SELECT chapterId from chapter WHERE courseId = ?", Integer.class, courseId);
             CourseChapterResponse courseChapterResponse = jdbcTemplate.queryForObject("SELECT course.courseId,courseName,categoryName,courseDuration,courseCompletedStatus FROM overView INNER JOIN course ON overView.courseId = course.courseId AND course.courseId = ? INNER JOIN category ON course.categoryId = category.categoryId INNER JOIN courseProgress on course.courseId = courseProgress.courseId AND userName = ?", new BeanPropertyRowMapper<>(CourseChapterResponse.class), courseId, userName);
             Counts counts = this.getCountEnrolled(courseId,userName);
