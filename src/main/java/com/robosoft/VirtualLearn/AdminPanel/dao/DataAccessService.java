@@ -73,7 +73,6 @@ public class DataAccessService {
     public void storeFcmToken(String query, String fcmToken, String userName) {
         jdbcTemplate.update(query,fcmToken,userName);
     }
-
     public String fetchExistingPassword(String mobileNumber) {
         String userName = jdbcTemplate.queryForObject("select userName from user where mobileNumber='" + mobileNumber +"'", String.class);
         String query = "select password from authenticate where userName=?";

@@ -3,6 +3,7 @@ package com.robosoft.VirtualLearn.AdminPanel.exceptions;
 
 import com.twilio.exception.ApiException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,7 +18,7 @@ public class MyControllerAdvice {
 
     @ExceptionHandler(EmptyResultDataAccessException.class)
     public ResponseEntity<Map> handleEmptyResult(EmptyResultDataAccessException exception) {
-        return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Input field is incorrect")));
+        return new ResponseEntity<>(Collections.singletonMap("message", "Input field is incorrect"), HttpStatus.BAD_GATEWAY);
     }
 
     @ExceptionHandler(ParseException.class)

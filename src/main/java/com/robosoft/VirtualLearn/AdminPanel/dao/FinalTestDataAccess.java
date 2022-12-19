@@ -40,7 +40,6 @@ public class FinalTestDataAccess {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-
     public FinalTest getFinalTestS(Integer testId) {
         List<Question> questions;
         FinalTest finalTest;
@@ -98,12 +97,7 @@ public class FinalTestDataAccess {
         float chapterTestPercentage = updateUserAnswerTable(userAnswers);
         jdbcTemplate.update("update chapterProgress set chapterTestPercentage=" + chapterTestPercentage + ",chapterCompletedStatus=true,chapterStatus=false where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'");
         int courseId = jdbcTemplate.queryForObject("select courseId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'", Integer.class);
-        float sumOfChapterPercentage = jdbcTemplate.queryForObject("select sum(chapterTestPercentage) from chapterProgress where courseId=" + courseId + " and userName='" + userName + "' and chapterTestPercentage>=0", Integer.class);
-        System.out.println("sumOfChapterPercentage "+sumOfChapterPercentage);
-        float totalPercentage = Integer.parseInt(((String.valueOf(jdbcTemplate.queryForObject("select count(testId) from chapterProgress where courseId=" + courseId + " and userName='" + userName + "'", Integer.class))) + "00"));
-        float coursePercentage = (sumOfChapterPercentage / totalPercentage) * 100;
-        System.out.println("totalPercentage "+totalPercentage);
-        System.out.println("coursePercentage "+coursePercentage);
+        float coursePercentage = calculateOverallScore(courseId,userName);
         String coursePhoto = jdbcTemplate.queryForObject("select coursePhoto from course where courseId=(select courseId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName + "')", String.class);
         String chapterName = jdbcTemplate.queryForObject("select chapterName from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + ")", String.class);
         String description = "Completed course" + " - " + jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select chapterId from chapterProgress where testId=" + userAnswers.getTestId() + " and userName='" + userName + "'))", String.class);
@@ -112,7 +106,7 @@ public class FinalTestDataAccess {
         String formatDateTime = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(now);
         jdbcTemplate.update("insert into notification(userName,description,timeStamp,notificationUrl) values(?,?,?,?)", userName, description, formatDateTime, coursePhoto);
         jdbcTemplate.update("insert into notification(userName,description,timeStamp,notificationUrl) values(?,?,?,?)", userName, description1, formatDateTime, coursePhoto);
-        jdbcTemplate.update("update courseProgress set coursePercentage=" + coursePercentage + ",courseCompletedStatus=true where courseId=" + courseId + " and userName='" + userName + "'");
+        updateCourseScore(coursePercentage,courseId,userName);
         String fcmToken = jdbcTemplate.queryForObject("select fcmToken from user where userName='" + userName + "'", String.class);
         sendPushNotification(fcmToken,description,"Congratulations");
         sendPushNotification(fcmToken,description1,"Hooray...!");
@@ -127,7 +121,6 @@ public class FinalTestDataAccess {
         String courseName = jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select distinct(chapterId) from chapterProgress where testId=" + userAnswers.getTestId() + "))", String.class);
         return new SubmitResponse(chapterTestPercentage,chapterNumber,courseName,chapterName);
     }
-
 
     public void certificate(Integer testId) throws IOException, ParseException {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();

@@ -106,7 +106,7 @@ public class ModuleTestDataAccess {
         String courseName = jdbcTemplate.queryForObject("select courseName from course where courseId=(select courseId from chapter where chapterId=(select chapterId from test where testId=" + testId + "))", String.class);
         int totalNumberOfQuestions = jdbcTemplate.queryForObject("select questionsCount from test where testId=" + testId, Integer.class);
         System.out.println(totalNumberOfQuestions);
-        int correctAnswers = jdbcTemplate.queryForObject("select count(*) from userAnswer where userAnswerStatus=true and testId=" + testId + "' and userName='" + userName + "'", Integer.class);
+        int correctAnswers = jdbcTemplate.queryForObject("select count(*) from userAnswer where userAnswerStatus=true and testId=" + testId + " and userName='" + userName + "'", Integer.class);
         System.out.println(correctAnswers);
         int wrongAnswers = totalNumberOfQuestions - correctAnswers;
         System.out.println(wrongAnswers);
@@ -115,7 +115,7 @@ public class ModuleTestDataAccess {
 
     public List<ResultAnswerRequest> getResultAnswers(Integer testId) {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        return jdbcTemplate.query("select question.questionId,questionName,option_1,option_2,option_3,option_4,correctAnswer,userAnswer,userAnswerStatus from question inner join userAnswer on question.questionId=userAnswer.questionId where userAnswer.testId=" + testId + " and userName='" + userName + "'", new BeanPropertyRowMapper<>(ResultAnswerRequest.class));
+        return jdbcTemplate.query("select questionNumber,questionName,option_1,option_2,option_3,option_4,correctAnswer,userAnswer,userAnswerStatus from question inner join userAnswer on question.questionId=userAnswer.questionId where userAnswer.testId=" + testId + " and userName='" + userName + "'", new BeanPropertyRowMapper<>(ResultAnswerRequest.class));
     }
 
     public String checkForCompletedStatus(Integer testId) {
@@ -153,7 +153,6 @@ public class ModuleTestDataAccess {
         return jdbcTemplate.queryForObject("select courseId from chapter where chapterId=(select chapterId from chapterProgress where testId=" + testId + " and userName='" + userName + "')",Integer.class);
 
     }
-
 }
 
 
