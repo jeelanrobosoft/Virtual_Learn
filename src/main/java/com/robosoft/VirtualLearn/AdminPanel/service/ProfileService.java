@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -32,6 +33,9 @@ import static com.robosoft.VirtualLearn.AdminPanel.common.Constants.*;
 public class ProfileService {
     @Autowired
     ProfileDao profileDao;
+
+    @Autowired
+    FinalTestService finalTestService;
 
     private File convertMultiPartToFile(MultipartFile file) throws IOException {
         File convertedFile = new File(Objects.requireNonNull(file.getOriginalFilename()));
@@ -71,7 +75,9 @@ public class ProfileService {
             {
 
         if (saveProfile.getProfilePhoto().isEmpty() != true) {
-            profilePhotoLink = getFileUrl(saveProfile.getProfilePhoto());
+            //profilePhotoLink = getFileUrl(saveProfile.getProfilePhoto());
+            profilePhotoLink =  finalTestService.uploadProfilePhoto(saveProfile.getProfilePhoto());
+            System.out.println(profilePhotoLink);
         }
         System.out.println();
         if (saveProfile.getDateOfBirth().isEmpty() != true) {

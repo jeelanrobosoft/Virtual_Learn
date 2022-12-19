@@ -585,7 +585,7 @@ public class UserService {
         for (Enrollment allEnrolledCourse : allEnrolledCourses) {
             Integer enrolmentCount = jdbcTemplate.queryForObject("SELECT count(courseId) FROM enrollment WHERE courseId= ?", Integer.class, allEnrolledCourse.getCourseId());
             if (enrolmentCount != null) {
-                if (enrolmentCount > 1) {
+                if (enrolmentCount >= 0 || enrolmentCount==null) {
                     HomeAllCourse homeAllCourse = jdbcTemplate.queryForObject("SELECT overView.courseId, coursePhoto, courseName,course.categoryId,categoryName,chapterCount FROM course,overView, category WHERE course.courseId=? and course.courseId = overView.courseId and categoryName=(SELECT categoryName FROM category ct WHERE ct.categoryId=course.categoryId)", (rs, rowNum) -> new HomeAllCourse(rs.getInt("courseId"), rs.getString("coursePhoto"), rs.getString("courseName"), rs.getInt("categoryId"), rs.getString("categoryName"), rs.getInt("chapterCount")), allEnrolledCourse.getCourseId());
                     popularCourseList.add(homeAllCourse);
                 }
@@ -618,7 +618,7 @@ public class UserService {
             TopCourseResponse topCourseResponse = new TopCourseResponse();
             Integer enrollmentCount = jdbcTemplate.queryForObject("SELECT count(c.courseId) FROM enrollment e, course c , category ct WHERE  ct.categoryId = ? and ct.categoryId = c.categoryId and c.courseId = e.courseId", Integer.class, category.getCategoryId());
             if (enrollmentCount != null) {
-                if (enrollmentCount > 2) {
+                if (enrollmentCount >= 0) {
                     try {
                         List<PopularCourseInEachCategory> popularCourseInEachCategory = jdbcTemplate.query("SELECT c.courseName,c.coursePhoto,o.chapterCount, c.courseDuration,c.previewVideo from course c, overView o , category ct WHERE ct.categoryId = ? and  ct.categoryId = c.categoryId and c.courseId = o.courseId", (rs, rowNum) -> new PopularCourseInEachCategory(rs.getString("courseName"), rs.getString("coursePhoto"), rs.getInt("chapterCount"), rs.getString("courseDuration"), rs.getString("previewVideo")), category.getCategoryId());
                         String categoryName = jdbcTemplate.queryForObject("SELECT categoryName FROM category WHERE categoryId=?", String.class, category.getCategoryId());
@@ -674,7 +674,7 @@ public class UserService {
     }
 
     public void updateVideoPauseTime(VideoPauseRequest videoPauseRequest) throws IOException, ParseException, IOException, ParseException {
-
+        jdbcTemplate.update("UPDATE chapterProgress SET chapterStatus=? WHERE chapterId=?",true,videoPauseRequest.getChapterId());
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         jdbcTemplate.update("UPDATE chapterProgress SET chapterStatus=? WHERE chapterId=? and userName=? and courseId=?", true, videoPauseRequest.getChapterId(), userName, videoPauseRequest.getCourseId());
         jdbcTemplate.update("UPDATE lessonProgress SET lessonStatus = ? WHERE lessonID=? and username=?", true, videoPauseRequest.getLessonId(), userName);
@@ -714,7 +714,7 @@ public class UserService {
                             catch(Exception exception)
                             {
                                 jdbcTemplate.update("UPDATE chapterProgress SET chapterCompletedStatus=? WHERE chapterId=?",true,videoPauseRequest.getChapterId());
-                                jdbcTemplate.update("UPDATE chapterProgress SEt chapterStatus=? WHERE chapterId=?",false,videoPauseRequest.getChapterId());
+                                jdbcTemplate.update("UPDATE chapterProgress SET chapterStatus=? WHERE chapterId=?",false,videoPauseRequest.getChapterId());
                             }
                             boolean chapterCompleted = jdbcTemplate.queryForObject("SELECT chapterCompletedStatus FROM chapterProgress WHERE chapterId=? and userName=?", Boolean.class,videoPauseRequest.getChapterId(),userName);
                             if(chapterCompleted == true)
@@ -747,6 +747,10 @@ public class UserService {
                                     {
                                         completedStatus=false;
                                         break;
+                                    }
+                                    else
+                                    {
+                                        jdbcTemplate.update("UPDATE chapterProgress SET chapterStatus=? WHERE chapterId=?",false,ch.getChapterId());
                                     }
                                 }
                                 if(completedStatus == true)

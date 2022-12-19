@@ -4,6 +4,8 @@ package com.robosoft.VirtualLearn.AdminPanel.service;
 import com.aspose.pdf.Document;
 import com.aspose.pdf.Image;
 import com.aspose.pdf.Page;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
@@ -11,10 +13,12 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.robosoft.VirtualLearn.AdminPanel.dao.FinalTestDataAccess;
 import com.robosoft.VirtualLearn.AdminPanel.entity.FinalTest;
+import com.robosoft.VirtualLearn.AdminPanel.entity.MultipartImage;
 import com.robosoft.VirtualLearn.AdminPanel.entity.UserAnswers;
 import com.robosoft.VirtualLearn.AdminPanel.response.FinalTestResultResponse;
 import com.robosoft.VirtualLearn.AdminPanel.response.SubmitResponse;
 import org.apache.commons.io.IOUtils;
+import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
@@ -29,6 +33,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,6 +41,7 @@ import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 
 import static com.robosoft.VirtualLearn.AdminPanel.common.Constants.*;
@@ -91,6 +97,49 @@ public class FinalTestService {
         return String.format(DOWNLOAD_URL, URLEncoder.encode(objectName));
     }
 
+    public String getFileUrlCertificate(MultipartFile multipartFile) throws IOException {
+
+        FileInputStream serviceAccount = new FileInputStream(FIREBASE_SDK_JSON);
+        File file = convertMultiPartToFile(multipartFile);
+        Path filePath = file.toPath();
+        Storage storage = StorageOptions.newBuilder().setCredentials(GoogleCredentials.fromStream(serviceAccount)).setProjectId(FIREBASE_PROJECT_ID).build().getService();
+        BlobId blobId = BlobId.of(FIREBASE_BUCKET, multipartFile.getName());
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(multipartFile.getContentType()).build();
+        storage.create(blobInfo, Files.readAllBytes(filePath));
+        //file.delete();
+//        Blob blob = storage.create(blobInfo, Files.readAllBytes(filePath));
+        return String.format(DOWNLOAD_URL, URLEncoder.encode(multipartFile.getName()));
+    }
+
+
+    public String uploadProfilePhoto(MultipartFile profilePhoto)
+    {
+        Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
+                "cloud_name", "dbmgzhnzv",
+                "api_key", "517396485856626",
+                "api_secret", "iJJQWYkddrRz8DA_MRg01ZYXXbk",
+                "secure", "true"));
+        cloudinary.config.secure = true;
+        try
+        {
+            // Upload the image
+            Map params1 = ObjectUtils.asMap(
+                    "use_filename", true,
+                    "unique_filename", false,
+                    "overwrite", true
+            );
+            Map uploadResult = cloudinary.uploader().upload(profilePhoto.getBytes(), params1);
+            //String publicId = uploadResult.get("public_id").toString();
+            String url = uploadResult.get("secure_url").toString();
+
+            return url;
+        }
+        catch (Exception e)
+        {
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
     public void certificate(Integer testId) throws IOException, ParseException {
 
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -100,7 +149,14 @@ public class FinalTestService {
         String joinDate = jdbcTemplate.queryForObject("SELECT joinDate FROM enrollment WHERE userName = ? and courseId=?", String.class, userName, courseId);
         String completedDate = jdbcTemplate.queryForObject("SELECT completedDate FROM enrollment WHERE userName = ? and courseId=?", String.class, userName, courseId);
         String duration = jdbcTemplate.queryForObject("SELECT courseDuration FROM course WHERE courseId = ?", String.class, courseId);
-        BufferedImage image = ImageIO.read(new File("src/main/resources/Final Certificate.png"));
+//     File f = new File("src/main/resources/Final Certificate.png");
+//        f.setReadable(true); //read
+//        f.setWritable(true); //write
+//       // f.setExecutable(true); //execute
+        // System.out.println(System.getProperty("com/robosoft/VirtualLearn/FinalCertificate.png"));
+        String certificateUrl = String.format(DOWNLOAD_URL, URLEncoder.encode("FinalCertificate.png"));
+
+        BufferedImage image = ImageIO.read(new URL(certificateUrl));
         SimpleDateFormat format = new SimpleDateFormat("HH:mm"); // 12-hour format
         java.util.Date d1 = format.parse(duration);
         java.sql.Time pastime = new java.sql.Time(d1.getTime());
@@ -124,14 +180,33 @@ public class FinalTestService {
         String certificateNumber = " Certificate Number: CER57RF9" + userName + "S978" + courseId;
         g.drawString(certificateNumber, 90, 700);
         g.dispose();
-        ImageIO.write(image, "jpg", new File("src/main/resources/CertificateData/" + userName + courseId + ".png"));
-        File fileItem = new File("src/main/resources/CertificateData/" + userName + courseId + ".png");
-        FileInputStream input = new FileInputStream(fileItem);
-        MultipartFile multipartFile = new MockMultipartFile("fileItem", fileItem.getName(), "image/png", IOUtils.toByteArray(input));
-        String url = getFileUrl(multipartFile);
-        String pdfUrl = pdf(userName,courseId);
+
+        //*****************************************
+
+
+        //BufferedImage  Convert to  ByteArrayOutputStream
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", out);
+        //ByteArrayOutputStream  Convert to  byte[]
+        byte[] imageByte = out.toByteArray();
+        // Will  byte[]  Convert to  MultipartFile
+        MultipartFile multipartFile11 = new MultipartImage(imageByte, userName+courseId, "image", "png", imageByte.length);
+        //System.out.println(multipartFile11.getName());
+       // String url = getFileUrlCertificate(multipartFile11);
+        String url = uploadProfilePhoto(multipartFile11);
+        System.out.println(url);
+        //**********************************************
+
+
+        // ImageIO.write(image, "png", new File("src/main/resources/" + userName + courseId + ".png"));
+        //File fileItem = new File("src/main/resources/" + userName + courseId + ".png");
+        // FileInputStream input = new FileInputStream(fileItem);
+        //MultipartFile multipartFile = new MockMultipartFile("fileItem", fileItem.getName(), "image/png", IOUtils.toByteArray(input));
+        //String url = getFileUrl(multipartFile);
+        //String pdfUrl = pdf(userName,courseId);
+        //System.out.println(pdfUrl);
         jdbcTemplate.update("delete from certificate where userName='" + userName + "' and courseId=" + courseId);
-        jdbcTemplate.update("INSERT INTO certificate(certificateNumber,courseId,UserName,certificateUrl,pdfUrl) values(?,?,?,?,?)", certificateNumber, courseId, userName, url,pdfUrl);
+        jdbcTemplate.update("INSERT INTO certificate(certificateNumber,courseId,UserName,certificateUrl) values(?,?,?,?)", certificateNumber, courseId, userName, url);
     }
 
     public void certificateWithoutTest(Integer courseId) throws IOException, ParseException {
@@ -143,7 +218,11 @@ public class FinalTestService {
         String joinDate = jdbcTemplate.queryForObject("SELECT joinDate FROM enrollment WHERE userName = ? and courseId=?", String.class, userName, courseId);
         String completedDate = jdbcTemplate.queryForObject("SELECT completedDate FROM enrollment WHERE userName = ? and courseId=?", String.class, userName, courseId);
         String duration = jdbcTemplate.queryForObject("SELECT courseDuration FROM course WHERE courseId = ?", String.class, courseId);
-        BufferedImage image = ImageIO.read(new File("src/main/resources/Final Certificate.png"));
+
+
+        String certificateUrl = String.format(DOWNLOAD_URL, URLEncoder.encode("FinalCertificate.png"));
+
+        BufferedImage image = ImageIO.read(new URL(certificateUrl));
         SimpleDateFormat format = new SimpleDateFormat("HH:mm"); // 12-hour format
         java.util.Date d1 = format.parse(duration);
         java.sql.Time pastime = new java.sql.Time(d1.getTime());
@@ -167,15 +246,30 @@ public class FinalTestService {
         String certificateNumber = " Certificate Number: CER57RF9" + userName + "S978" + courseId;
         g.drawString(certificateNumber, 90, 700);
         g.dispose();
-        ImageIO.write(image, "jpg", new File("src/main/resources/CertificateData/" + userName + courseId + ".png"));
-        File fileItem = new File("src/main/resources/CertificateData/" + userName + courseId + ".png");
-        FileInputStream input = new FileInputStream(fileItem);
-        MultipartFile multipartFile = new MockMultipartFile("fileItem", fileItem.getName(), "image/png", IOUtils.toByteArray(input));
-        String url = getFileUrl(multipartFile);
-        String pdfUrl = pdf(userName,courseId);
+        //BufferedImage  Convert to  ByteArrayOutputStream
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", out);
+        //ByteArrayOutputStream  Convert to  byte[]
+        byte[] imageByte = out.toByteArray();
+        // Will  byte[]  Convert to  MultipartFile
+        MultipartFile multipartFile11 = new MultipartImage(imageByte, userName+courseId, "image", "png", imageByte.length);
+        //System.out.println(multipartFile11.getName());
+        String url = uploadProfilePhoto(multipartFile11);
+        System.out.println(url);
+        //**********************************************
+
+
+        // ImageIO.write(image, "png", new File("src/main/resources/" + userName + courseId + ".png"));
+        //File fileItem = new File("src/main/resources/" + userName + courseId + ".png");
+        // FileInputStream input = new FileInputStream(fileItem);
+        //MultipartFile multipartFile = new MockMultipartFile("fileItem", fileItem.getName(), "image/png", IOUtils.toByteArray(input));
+        //String url = getFileUrl(multipartFile);
+        //String pdfUrl = pdf(userName,courseId);
+        //System.out.println(pdfUrl);
         jdbcTemplate.update("delete from certificate where userName='" + userName + "' and courseId=" + courseId);
-        jdbcTemplate.update("INSERT INTO certificate(certificateNumber,courseId,UserName,certificateUrl,pdfUrl) values(?,?,?,?,?)", certificateNumber, courseId, userName, url,pdfUrl);
+        jdbcTemplate.update("INSERT INTO certificate(certificateNumber,courseId,UserName,certificateUrl) values(?,?,?,?)", certificateNumber, courseId, userName, url);
     }
+
 
     public String pdf(String userName, Integer courseId) throws IOException {
         Path _dataDir = Paths.get("src/main/resources/CertificateData");
