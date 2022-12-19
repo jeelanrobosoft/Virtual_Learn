@@ -3,6 +3,7 @@ package com.robosoft.VirtualLearn.AdminPanel.controller;
 import com.robosoft.VirtualLearn.AdminPanel.entity.FcmToken;
 import com.robosoft.VirtualLearn.AdminPanel.entity.MobileAuth;
 import com.robosoft.VirtualLearn.AdminPanel.request.JwtRequest;
+import com.robosoft.VirtualLearn.AdminPanel.response.JwtResponse;
 import com.robosoft.VirtualLearn.AdminPanel.service.MyUserDetailsService;
 import com.robosoft.VirtualLearn.AdminPanel.service.RegistrationServiceImpl;
 import com.robosoft.VirtualLearn.AdminPanel.service.UserService;
@@ -63,7 +64,6 @@ public class LoginController {
 
 
     /****
-     *
      * For sending token in header
      * ResponseEntity.ok().headers(headers).body(Collections.singletonMap("status","Login successfully"))
      * ResponseEntity<?>

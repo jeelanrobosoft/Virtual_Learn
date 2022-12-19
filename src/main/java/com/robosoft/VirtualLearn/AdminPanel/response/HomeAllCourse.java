@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class HomeAllCourse {
+public class HomeAllCourse implements Comparable<HomeAllCourse>{
     private Integer courseId;
 
     private String coursePhoto;
@@ -24,5 +24,10 @@ public class HomeAllCourse {
         this.courseName = courseName;
         this.categoryId = categoryId;
         this.chapterCount = chapterCount;
+    }
+
+    @Override
+    public int compareTo(HomeAllCourse o) {
+        return this.courseId.compareTo(o.getCourseId());
     }
 }
