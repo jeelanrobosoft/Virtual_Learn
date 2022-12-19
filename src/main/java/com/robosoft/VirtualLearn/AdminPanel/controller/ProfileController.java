@@ -50,9 +50,12 @@ public class ProfileController {
     @PostMapping("/changePassword")
     public ResponseEntity<?> changePassword(@RequestBody ChangePassword password) {
         String status = profileService.changePassword(password);
+        if(status.startsWith("New"))
+            return new ResponseEntity<>(Collections.singletonMap("message",status),HttpStatus.NOT_ACCEPTABLE);
         if (status.equals("Reset Password Failed"))
             return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Reset Password Failed")));
         return ResponseEntity.of(Optional.of(Collections.singletonMap("message", "Password Changed Successfully")));
-
     }
+
+
 }
