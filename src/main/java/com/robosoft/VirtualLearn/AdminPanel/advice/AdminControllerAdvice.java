@@ -25,8 +25,8 @@ public class AdminControllerAdvice extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>("Please Change the Http Method Type", HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(EmptyStackException.class)
-    public ResponseEntity<String> handleEmptyStackException(EmptyStackException e) {
-        return new ResponseEntity<>("Invalid or Empty Input", HttpStatus.BAD_REQUEST);
-    }
+//    @ExceptionHandler(EmptyStackException.class)
+//    public ResponseEntity<String> handleEmptyStackException(EmptyStackException e) {
+//        return new ResponseEntity<>("Invalid or Empty Input", HttpStatus.BAD_REQUEST);
+//    }
 }

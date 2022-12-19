@@ -16,6 +16,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/user")
+@CrossOrigin(origins = "http://localhost:3000")
 public class ModuleTestController {
     @Autowired
     ModuleTestService testService;
@@ -24,7 +25,7 @@ public class ModuleTestController {
 
     @GetMapping("/moduleTest")
     public ResponseEntity<?> moduleTest(@RequestParam Integer testId) {
-//        String status = testService.checkForCompletedStatus(testId);
+       //String status = testService.checkForCompletedStatus(testId);
 //        if(status != null)
 //            return new ResponseEntity<>(Collections.singletonMap("message",status),HttpStatus.NOT_ACCEPTABLE);
         ModuleTest moduleTest = testService.moduleTestQuestions(testId);

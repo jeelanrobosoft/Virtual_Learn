@@ -17,9 +17,7 @@ import java.util.Random;
 
 @RestController
 @RequestMapping("/newUser")
-@CrossOrigin(
-        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS},
-        origins ={"http://localhost:3000"})
+@CrossOrigin(origins = "http://localhost:3000")
 public class RegistrationController {
 
     @Autowired

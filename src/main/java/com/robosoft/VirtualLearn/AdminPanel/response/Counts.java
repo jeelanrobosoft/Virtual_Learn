@@ -7,11 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PopularCourseInEachCategory {
-    private String courseName;
-    private Integer courseId;
-    private String coursePhoto;
+public class Counts {
     private Integer chapterCount;
-    private String courseDuration;
-    private String previewVideo;
+    private Integer lessonCount;
+    private Integer testCount;
 }

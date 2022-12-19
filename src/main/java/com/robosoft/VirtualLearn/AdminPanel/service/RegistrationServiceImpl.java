@@ -2,15 +2,20 @@ package com.robosoft.VirtualLearn.AdminPanel.service;
 
 
 import com.robosoft.VirtualLearn.AdminPanel.dao.DataAccessService;
+import com.robosoft.VirtualLearn.AdminPanel.entity.FcmToken;
 import com.robosoft.VirtualLearn.AdminPanel.entity.MobileAuth;
+import com.robosoft.VirtualLearn.AdminPanel.entity.PushNotificationResponse;
 import com.robosoft.VirtualLearn.AdminPanel.entity.UserRegistration;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import static com.robosoft.VirtualLearn.AdminPanel.entity.PushNotification.sendPushNotification;
 
 @Service
 public class RegistrationServiceImpl implements RegistrationService{
@@ -22,8 +27,18 @@ public class RegistrationServiceImpl implements RegistrationService{
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    private final static String ACCOUNT_SID = "ACd7b80d5a6e82ec89f4be4cc8779fd230";
-    private final static String AUTH_ID = "39e3d1b7d8afb09ba645714abbd184c6";
+//    private final static String ACCOUNT_SID = "ACd7b80d5a6e82ec89f4be4cc8779fd230";
+//    private final static String AUTH_ID = "39e3d1b7d8afb09ba645714abbd184c6";
+//    +19896822968
+
+    /***
+     * React JS
+     */
+    private final static String ACCOUNT_SID = "AC95acb85e7047ed4bf54677e6c560f01a";
+    private final static String AUTH_ID = "790a885570499dbaeb7d7aae2c3a3696";
+//    +17207131767
+
+
 
     static {
         Twilio.init(ACCOUNT_SID, AUTH_ID);
@@ -31,7 +46,7 @@ public class RegistrationServiceImpl implements RegistrationService{
 
     @Override
     public long sendOtp(MobileAuth mobileAuth, String twoFaCode) {
-        Message.creator(new PhoneNumber(mobileAuth.getMobileNumber()), new PhoneNumber("+19896822968"),
+        Message.creator(new PhoneNumber("+918431913658"),new PhoneNumber("+17207131767"), /*new PhoneNumber("+17207131767"),*/
                 "Your Two Factor Authentication code is: " + twoFaCode).create();
         return dataAccessService.saveOtp(mobileAuth.getMobileNumber(), twoFaCode);
     }
@@ -52,9 +67,16 @@ public class RegistrationServiceImpl implements RegistrationService{
     }
 
     @Override
-    public void resetPassword(MobileAuth auth) {
+    public String resetPassword(MobileAuth auth) {
+        String existingPassword = dataAccessService.fetchExistingPassword(auth.getMobileNumber());
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String newPassword = auth.getOneTimePassword();
+        if(encoder.matches(newPassword,existingPassword))
+            return "New Password Cannot be same as old password";
         dataAccessService.resetPassword(auth);
+        return null;
     }
+
 
     @Override
     public String addDetails(UserRegistration registration) {
@@ -89,4 +111,18 @@ public class RegistrationServiceImpl implements RegistrationService{
     }
 
 
+    public String storeFcmToken(FcmToken fcmToken) {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        String title = "Virtual Learn";
+        String body = "Login Successfully";
+        PushNotificationResponse notificationResponse = sendPushNotification(fcmToken.getFcmToken(),body,title);
+        if(notificationResponse.getSuccess() == 1)
+        {
+        String query = "update user set fcmToken=? where userName=?";
+        dataAccessService.storeFcmToken(query,fcmToken.getFcmToken(),userName);
+        return "Ok..!";
+        }
+        else
+            return "Invalid FCM Token";
+    }
 }
